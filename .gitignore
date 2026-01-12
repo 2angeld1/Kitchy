@@ -1,0 +1,38 @@
+# Dependencies
+**/node_modules/
+
+# Production / Build
+**/dist/
+**/build/
+Frontend/www/
+Backend/dist/
+
+# Environment
+.env
+Backend/.env
+Frontend/.env
+**/.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+.eslintcache
+/coverage

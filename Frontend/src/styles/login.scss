@@ -1,0 +1,80 @@
+@use 'variables' as *;
+
+.login-content {
+  --background: var(--ion-background-color);
+}
+
+.login-container {
+  @include flex-center;
+  flex-direction: column;
+  min-height: 100%;
+  padding: $spacing-xl;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: $spacing-2xl;
+
+  h1 {
+    font-size: 2.2rem;
+    margin: 0;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    font-size: 0.95rem;
+    margin: $spacing-xs 0 0;
+    color: var(--ion-color-medium);
+  }
+}
+
+.logo-container {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto $spacing-md;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 24px; // App icon style
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.login-form {
+  width: 100%;
+  max-width: 380px;
+  @include flex-column;
+  gap: $spacing-md;
+}
+
+.login-input {
+  --background: var(--ion-item-background);
+  --border-color: var(--ion-border-color);
+  --border-radius: #{$radius-md};
+  --border-width: 1px;
+  --highlight-color-focused: var(--ion-color-primary);
+  --padding-start: 16px;
+  --padding-end: 16px;
+}
+
+.login-button {
+  margin-top: $spacing-sm;
+  --background: var(--ion-color-primary);
+  --border-radius: #{$radius-md};
+  height: 48px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.login-footer {
+  margin-top: $spacing-lg;
+}
+
+.register-link {
+  --color: var(--ion-color-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}

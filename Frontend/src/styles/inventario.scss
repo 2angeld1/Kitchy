@@ -1,0 +1,82 @@
+@use 'variables' as *;
+
+.inventario-container {
+  padding: 0;
+}
+
+.inventario-segment {
+  margin-bottom: $spacing-md;
+}
+
+ion-item-sliding {
+  margin-bottom: $spacing-xs;
+}
+
+.item-stock {
+  @include flex-column;
+  align-items: flex-end;
+  gap: $spacing-xs;
+
+  .cantidad {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--ion-color-success);
+
+    &.bajo {
+      color: var(--ion-color-warning);
+    }
+    
+    &.critico {
+      color: var(--ion-color-danger);
+    }
+  }
+  
+  .unidad {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty-state {
+  @include empty-state;
+}
+
+// Modal de inventario
+.inventario-form {
+  @include flex-column;
+  gap: $spacing-md;
+  padding: $spacing-md;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+}
+
+.movimiento-card {
+  @include card-minimal;
+  margin: $spacing-sm 0;
+  
+  ion-card-content {
+    padding: $spacing-md;
+  }
+  
+  .movimiento-header {
+    @include flex-between;
+    margin-bottom: $spacing-sm;
+  }
+  
+  .movimiento-cantidad {
+    font-size: 1.2rem;
+    font-weight: 700;
+    
+    &.entrada {
+      color: var(--ion-color-success);
+    }
+    
+    &.salida {
+      color: var(--ion-color-danger);
+    }
+  }
+}

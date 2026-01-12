@@ -1,0 +1,155 @@
+@use 'variables' as *;
+
+.productos-container {
+  padding: 0;
+
+  ion-searchbar {
+    --background: var(--ion-card-background);
+    --color: var(--ion-text-color);
+    --placeholder-color: var(--ion-color-medium);
+    --icon-color: var(--ion-color-primary);
+    --border-radius: #{$radius-md};
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: $spacing-sm $spacing-md !important;
+    
+    // Remove the default ionic box shadow/border if any
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+ion-item-sliding {
+  margin-bottom: $spacing-xs;
+}
+
+.producto-item {
+  --padding-start: $spacing-md;
+  --padding-end: $spacing-md;
+  
+  ion-thumbnail {
+    --size: 48px;
+    --border-radius: #{$radius-sm};
+    margin-right: $spacing-md;
+    background: var(--ion-color-light);
+    @include flex-center;
+    
+    .producto-emoji {
+      font-size: 28px;
+    }
+  }
+}
+
+.producto-info {
+  h2 {
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0 0 $spacing-xs;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+.producto-precio {
+  @include flex-column;
+  align-items: flex-end;
+  gap: $spacing-xs;
+
+  .precio {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+}
+
+.empty-state {
+  @include empty-state;
+}
+
+// Modal de producto
+.producto-form {
+  @include flex-column;
+  gap: $spacing-md;
+  padding: $spacing-md;
+}
+
+.categoria-select {
+  width: 100%;
+}
+
+.disponibilidad-toggle {
+  @include flex-between;
+  padding: $spacing-md;
+  background: var(--ion-item-background);
+  border-radius: $radius-md;
+  border: 1px solid var(--ion-border-color);
+}
+
+// Image Upload
+.image-upload-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md 0;
+}
+
+.image-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: $radius-md;
+  background-color: var(--ion-color-light);
+  background-size: cover;
+  background-position: center;
+  border: 2px dashed var(--ion-color-medium);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--ion-color-primary);
+    background-color: rgba(var(--ion-color-primary-rgb), 0.05);
+  }
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-xs;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    font-size: 2rem;
+  }
+  
+  span {
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+}
+
+.producto-emoji {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-color-light);
+  border-radius: $radius-sm;
+  font-size: 24px;
+}
+
+.producto-imagen-list {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: $radius-sm;
+}

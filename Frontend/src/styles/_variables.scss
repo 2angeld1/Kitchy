@@ -1,0 +1,107 @@
+// Kitchy Theme - Minimalista con colores vivos
+// Primary - Rojo vibrante
+$primary: #e11d48;
+$primary-light: #fb7185;
+$primary-dark: #be123c;
+
+// Secondary - Naranja vibrante  
+$secondary: #f97316;
+$secondary-light: #fb923c;
+$secondary-dark: #ea580c;
+
+// Accent colors
+$accent: #ff6b6b;
+$success: #10b981;
+$warning: #f59e0b;
+$danger: #ef4444;
+$info: #3b82f6;
+
+// Light mode
+$light-bg: #fafafa;
+$light-surface: #ffffff;
+$light-text: #18181b;
+$light-text-secondary: #71717a;
+$light-border: #e4e4e7;
+
+// Dark mode
+$dark-bg: #09090b;
+$dark-surface: #18181b;
+$dark-text: #fafafa;
+$dark-text-secondary: #a1a1aa;
+$dark-border: #27272a;
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// Border radius
+$radius-xs: 4px;
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
+$radius-round: 50%;
+
+// Transitions
+$transition-fast: 0.15s ease;
+$transition-normal: 0.25s ease;
+
+// Shadows - muy sutiles
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-minimal {
+  background: var(--ion-card-background);
+  border-radius: $radius-lg;
+  border: 1px solid var(--ion-border-color);
+}
+
+@mixin empty-state {
+  @include flex-center;
+  flex-direction: column;
+  padding: $spacing-2xl $spacing-lg;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    font-size: 56px;
+    margin-bottom: $spacing-md;
+    opacity: 0.6;
+  }
+  
+  p {
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+@mixin hover-lift {
+  transition: transform $transition-fast, box-shadow $transition-fast;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
