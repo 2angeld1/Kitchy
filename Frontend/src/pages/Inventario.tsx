@@ -279,15 +279,13 @@ const Inventario: React.FC = () => {
                                     <IonItemOption color="warning" onClick={() => openMovModal(item, 'salida')}>
                                         <IonIcon icon={arrowUp} slot="icon-only" />
                                     </IonItemOption>
+                                    <IonItemOption color="primary" onClick={() => openEditModal(item)}>
+                                        <IonIcon icon={create} slot="icon-only" />
+                                    </IonItemOption>
                                     {isAdmin && (
-                                        <>
-                                            <IonItemOption color="primary" onClick={() => openEditModal(item)}>
-                                                <IonIcon icon={create} slot="icon-only" />
-                                            </IonItemOption>
-                                            <IonItemOption color="danger" onClick={() => handleDelete(item._id)}>
-                                                <IonIcon icon={trash} slot="icon-only" />
-                                            </IonItemOption>
-                                        </>
+                                        <IonItemOption color="danger" onClick={() => handleDelete(item._id)}>
+                                            <IonIcon icon={trash} slot="icon-only" />
+                                        </IonItemOption>
                                     )}
                                 </IonItemOptions>
                             </IonItemSliding>
@@ -303,8 +301,7 @@ const Inventario: React.FC = () => {
                 </div>
 
                 {/* Modal Crear/Editar */}
-                {isAdmin && (
-                    <IonModal isOpen={showModal} onDidDismiss={() => { setShowModal(false); resetForm(); }}>
+                <IonModal isOpen={showModal} onDidDismiss={() => { setShowModal(false); resetForm(); }}>
                         <IonHeader>
                             <IonToolbar>
                                 <IonTitle>{editItem ? 'Editar' : 'Nuevo'} Item</IonTitle>
@@ -357,7 +354,7 @@ const Inventario: React.FC = () => {
                             </IonButton>
                         </IonContent>
                     </IonModal>
-                )}
+
 
                 {/* Modal Movimiento */}
                 <IonModal isOpen={showMovModal} onDidDismiss={() => setShowMovModal(false)}>
@@ -419,13 +416,12 @@ const Inventario: React.FC = () => {
                 </IonModal>
 
                 {/* FAB para agregar */}
-                {isAdmin && (
-                    <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                        <IonFabButton onClick={() => { resetForm(); setShowModal(true); }}>
-                            <IonIcon icon={add} />
-                        </IonFabButton>
-                    </IonFab>
-                )}
+                <IonFab vertical="bottom" horizontal="end" slot="fixed">
+                    <IonFabButton onClick={() => { resetForm(); setShowModal(true); }}>
+                        <IonIcon icon={add} />
+                    </IonFabButton>
+                </IonFab>
+
 
                 <IonLoading isOpen={loading} message="Cargando..." />
                 <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={() => setError('')} />
