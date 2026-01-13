@@ -21,10 +21,13 @@ app.use(cors({
         'http://localhost:3000',
         'http://localhost:8100',
         'http://localhost:5173',
+        'https://kitchy-one.vercel.app',
         'capacitor://localhost',
         'ionic://localhost'
     ],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 // Aumentar el límite de tamaño para permitir imágenes en base64
 app.use(express.json({ limit: '50mb' }));
