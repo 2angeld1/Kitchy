@@ -244,13 +244,12 @@ const Inventario: React.FC = () => {
                         value={busqueda}
                         onIonInput={(e) => setBusqueda(e.detail.value || '')}
                         placeholder="Buscar..."
+                        className="search-bar"
                     />
 
                     <IonSegment value={filtro} onIonChange={(e) => setFiltro(e.detail.value as string)}>
                         <IonSegmentButton value="todos">Todos</IonSegmentButton>
-                        <IonSegmentButton value="stockBajo">
-                            Stock Bajo
-                        </IonSegmentButton>
+                        <IonSegmentButton value="stockBajo">Stock Bajo</IonSegmentButton>
                         <IonSegmentButton value="ingrediente">Ingredientes</IonSegmentButton>
                     </IonSegment>
 

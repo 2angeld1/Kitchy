@@ -4,12 +4,24 @@
   padding: 0;
 }
 
+.search-bar {
+  margin-bottom: $spacing-sm;
+  --background: var(--ion-card-background);
+  --color: var(--ion-text-color);
+  --placeholder-color: var(--ion-color-medium);
+  --icon-color: var(--ion-color-primary);
+  --border-radius: #{$radius-md};
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: $spacing-sm $spacing-md !important;
+  border: none !important;
+}
 .inventario-segment {
   margin-bottom: $spacing-md;
 }
 
 ion-item-sliding {
   margin-bottom: $spacing-xs;
+  margin-top: $spacing-sm;
 }
 
 .item-stock {
