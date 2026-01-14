@@ -8,7 +8,7 @@ import {
     IonToast,
     IonIcon
 } from '@ionic/react';
-import { restaurant, logIn } from 'ionicons/icons';
+import { logIn } from 'ionicons/icons';
 import { useAuth } from '../context/AuthContext';
 import { useHistory } from 'react-router-dom';
 
@@ -39,55 +39,71 @@ const Login: React.FC = () => {
     };
 
     return (
-        <IonPage>
-            <IonContent className="login-content">
-                <div className="login-container">
-                    <div className="login-header">
-                        <div className="logo-container">
-                            <img src="/logo.png" alt="Kitchy Logo" className="logo-image" />
+        <IonPage className="login-page">
+            <IonContent className="login-content" scrollY={false}>
+                <div className="auth-full-container">
+                    <div className="auth-wrapper">
+                        {/* Visual Panel - Visible on Desktop */}
+                        <div className="auth-visual-panel">
+                            <div className="visual-content">
+                                <img src="/logo.png" alt="Kitchy Logo" className="logo-large" />
+                                <h1>Kitchy</h1>
+                                <p>Gestión inteligente para tu negocio gastronómico.</p>
+                            </div>
                         </div>
-                        <p>Sistema de Punto de Venta</p>
-                    </div>
 
-                    <form onSubmit={handleLogin} className="login-form">
-                        <IonInput
-                            type="email"
-                            label="Correo electrónico"
-                            labelPlacement="floating"
-                            value={email}
-                            onIonInput={(e) => setEmail(e.detail.value || '')}
-                            className="login-input"
-                            fill="outline"
-                        />
+                        {/* Form Panel */}
+                        <div className="auth-form-panel">
+                            <div className="auth-header">
+                                <img src="/logo.png" alt="Kitchy Logo" className="mobile-logo" />
+                                <h2>¡Bienvenido de nuevo!</h2>
+                                <p>Ingresa tus credenciales para continuar.</p>
+                            </div>
 
-                        <IonInput
-                            type="password"
-                            label="Contraseña"
-                            labelPlacement="floating"
-                            value={password}
-                            onIonInput={(e) => setPassword(e.detail.value || '')}
-                            className="login-input"
-                            fill="outline"
-                        />
+                            <form onSubmit={handleLogin} className="login-form">
+                                <IonInput
+                                    type="email"
+                                    label="Correo electrónico"
+                                    labelPlacement="floating"
+                                    value={email}
+                                    onIonInput={(e) => setEmail(e.detail.value || '')}
+                                    className="login-input"
+                                    fill="outline"
+                                />
 
-                        <IonButton
-                            expand="block"
-                            type="submit"
-                            className="login-button"
-                        >
-                            <IonIcon icon={logIn} slot="start" />
-                            Iniciar Sesión
-                        </IonButton>
-                    </form>
+                                <IonInput
+                                    type="password"
+                                    label="Contraseña"
+                                    labelPlacement="floating"
+                                    value={password}
+                                    onIonInput={(e) => setPassword(e.detail.value || '')}
+                                    className="login-input"
+                                    fill="outline"
+                                />
 
-                    <div className="login-footer">
-                        <IonButton
-                            fill="clear"
-                            routerLink="/register"
-                            className="register-link"
-                        >
-                            ¿No tienes cuenta? Regístrate
-                        </IonButton>
+                                <IonButton
+                                    expand="block"
+                                    type="submit"
+                                    className="login-button"
+                                >
+                                    <IonIcon icon={logIn} slot="start" />
+                                    Iniciar Sesión
+                                </IonButton>
+                            </form>
+
+                            <div className="auth-footer">
+                                <p>
+                                    ¿No tienes cuenta?
+                                    <IonButton
+                                        fill="clear"
+                                        routerLink="/register"
+                                        className="link-button"
+                                    >
+                                        Regístrate aquí
+                                    </IonButton>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
