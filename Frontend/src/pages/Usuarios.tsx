@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
     IonPage,
     IonHeader,
@@ -26,79 +26,23 @@ import {
     IonAlert
 } from '@ionic/react';
 import { personCircle, trash, shieldCheckmark } from 'ionicons/icons';
-import { getUsers, updateUserRole, deleteUser } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-
-interface Usuario {
-    _id: string;
-    email: string;
-    nombre: string;
-    rol: string;
-    activo?: boolean;
-    createdAt?: string;
-}
+import { useUsuarios } from '../hooks/useUsuarios';
 
 const Usuarios: React.FC = () => {
-    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [busqueda, setBusqueda] = useState('');
-    const [showRoleAlert, setShowRoleAlert] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<Usuario | null>(null);
-    const { user: currentUser } = useAuth();
-
-    useEffect(() => {
-        cargarUsuarios();
-    }, []);
-
-    const cargarUsuarios = async () => {
-        setLoading(true);
-        try {
-            const response = await getUsers();
-            setUsuarios(response.data);
-        } catch (err) {
-            setError('Error al cargar usuarios');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRefresh = async (event: CustomEvent) => {
-        await cargarUsuarios();
-        event.detail.complete();
-    };
-
-    const handleChangeRole = async (userId: string, newRole: string) => {
-        setLoading(true);
-        try {
-            await updateUserRole(userId, newRole);
-            setSuccess('Rol actualizado');
-            cargarUsuarios();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al actualizar rol');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (id === currentUser?.id) {
-            setError('No puedes eliminarte a ti mismo');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            await deleteUser(id);
-            setSuccess('Usuario eliminado');
-            cargarUsuarios();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al eliminar');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const {
+        loading,
+        error,
+        clearError,
+        success,
+        clearSuccess,
+        busqueda,
+        setBusqueda,
+        handleRefresh,
+        handleChangeRole,
+        handleDelete,
+        usuariosFiltrados,
+        currentUser
+    } = useUsuarios();
 
     const getRolColor = (rol: string) => {
         switch (rol) {
@@ -107,11 +51,6 @@ const Usuarios: React.FC = () => {
             default: return 'medium';
         }
     };
-
-    const usuariosFiltrados = usuarios.filter(u =>
-        u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        u.email.toLowerCase().includes(busqueda.toLowerCase())
-    );
 
     return (
         <IonPage>
@@ -177,8 +116,8 @@ const Usuarios: React.FC = () => {
                 </div>
 
                 <IonLoading isOpen={loading} message="Cargando..." />
-                <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={() => setError('')} />
-                <IonToast isOpen={!!success} message={success} duration={2000} color="success" onDidDismiss={() => setSuccess('')} />
+                <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={clearError} />
+                <IonToast isOpen={!!success} message={success} duration={2000} color="success" onDidDismiss={clearSuccess} />
             </IonContent>
         </IonPage>
     );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
     IonPage,
     IonHeader,
@@ -32,163 +32,42 @@ import {
     IonThumbnail
 } from '@ionic/react';
 import { add, restaurant, trash, create, eye, eyeOff, camera, image } from 'ionicons/icons';
-import { getProductos, createProducto, updateProducto, deleteProducto, toggleDisponibilidad } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-
-interface Producto {
-    _id: string;
-    nombre: string;
-    descripcion?: string;
-    precio: number;
-    categoria: string;
-    disponible: boolean;
-    imagen?: string;
-}
+import { useProductos } from '../hooks/useProductos';
 
 const Productos: React.FC = () => {
-    const [productos, setProductos] = useState<Producto[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [editItem, setEditItem] = useState<Producto | null>(null);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [busqueda, setBusqueda] = useState('');
-    const { isAdmin } = useAuth();
-
-    // Form state
-    const [nombre, setNombre] = useState('');
-    const [descripcion, setDescripcion] = useState('');
-    const [precio, setPrecio] = useState('');
-    const [categoria, setCategoria] = useState('comida');
-    const [disponible, setDisponible] = useState(true);
-    const [imagen, setImagen] = useState('');
-
-    useEffect(() => {
-        cargarProductos();
-    }, []);
-
-    const cargarProductos = async () => {
-        setLoading(true);
-        try {
-            const response = await getProductos();
-            setProductos(response.data);
-        } catch (err) {
-            setError('Error al cargar productos');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRefresh = async (event: CustomEvent) => {
-        await cargarProductos();
-        event.detail.complete();
-    };
-
-    const resetForm = () => {
-        setNombre('');
-        setDescripcion('');
-        setPrecio('');
-        setCategoria('comida');
-        setDisponible(true);
-        setImagen('');
-        setEditItem(null);
-    };
-
-    const openEditModal = (item: Producto) => {
-        setEditItem(item);
-        setNombre(item.nombre);
-        setDescripcion(item.descripcion || '');
-        setPrecio(item.precio.toString());
-        setCategoria(item.categoria);
-        setDisponible(item.disponible);
-        setImagen(item.imagen || '');
-        setShowModal(true);
-    };
-
-    const handleSubmit = async () => {
-        if (!nombre || !precio) {
-            setError('Nombre y precio son requeridos');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const data = {
-                nombre,
-                descripcion,
-                precio: parseFloat(precio),
-                categoria,
-                disponible,
-                imagen
-            };
-
-            if (editItem) {
-                const response = await updateProducto(editItem._id, data);
-                setProductos(prev => prev.map(p => p._id === editItem._id ? response.data : p));
-                setSuccess('Producto actualizado');
-            } else {
-                const response = await createProducto(data);
-                setProductos(prev => [...prev, response.data]);
-                setSuccess('Producto creado');
-            }
-
-            setShowModal(false);
-            resetForm();
-            // cargarProductos(); // Ya actualizamos el estado localmente
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al guardar');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('¿Eliminar este producto?')) return;
-
-        setLoading(true);
-        try {
-            await deleteProducto(id);
-            setSuccess('Producto eliminado');
-            cargarProductos();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al eliminar');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleToggleDisponible = async (id: string) => {
-        try {
-            await toggleDisponibilidad(id);
-            cargarProductos();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Error al cambiar disponibilidad');
-        }
-    };
-
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagen(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const getEmoji = (cat: string) => {
-        switch (cat) {
-            case 'comida': return '🍔';
-            case 'bebida': return '🥤';
-            case 'postre': return '🍰';
-            default: return '📦';
-        }
-    };
-
-    const productosFiltrados = productos.filter(p =>
-        p.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
+    const {
+        loading,
+        showModal,
+        setShowModal,
+        editItem,
+        error,
+        clearError,
+        success,
+        clearSuccess,
+        busqueda,
+        setBusqueda,
+        nombre,
+        setNombre,
+        descripcion,
+        setDescripcion,
+        precio,
+        setPrecio,
+        categoria,
+        setCategoria,
+        disponible,
+        setDisponible,
+        imagen,
+        setImagen,
+        handleRefresh,
+        resetForm,
+        openEditModal,
+        handleSubmit,
+        handleDelete,
+        handleToggleDisponible,
+        handleImageUpload,
+        getEmoji,
+        productosFiltrados
+    } = useProductos();
 
     return (
         <IonPage>
@@ -370,8 +249,8 @@ const Productos: React.FC = () => {
                 </IonFab>
 
                 <IonLoading isOpen={loading} message="Cargando..." />
-                <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={() => setError('')} />
-                <IonToast isOpen={!!success} message={success} duration={2000} color="success" onDidDismiss={() => setSuccess('')} />
+                <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={clearError} />
+                <IonToast isOpen={!!success} message={success} duration={2000} color="success" onDidDismiss={clearSuccess} />
             </IonContent>
         </IonPage>
     );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
     IonPage,
     IonHeader,
@@ -22,9 +22,7 @@ import {
     IonList,
     IonItem,
     IonLabel,
-    IonBadge,
-    useIonViewWillEnter,
-    useIonViewDidLeave
+    IonBadge
 } from '@ionic/react';
 import {
     cashOutline,
@@ -36,74 +34,11 @@ import {
 } from 'ionicons/icons';
 import { getDashboard } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-
-interface DashboardData {
-    ventas: {
-        hoy: { total: number; cantidad: number };
-        semana: { total: number; cantidad: number };
-        mes: { total: number; cantidad: number };
-    };
-    inventario: {
-        valorTotal: string;
-        itemsStockBajo: number;
-        totalItems: number;
-    };
-    finanzas: {
-        ingresosMes: string;
-        costosMes: string;
-        gananciaMes: string;
-    };
-    historico?: {
-        ventasTotal: string;
-        cantidadTotal: number;
-        gananciaTotal: string;
-    };
-    productosMasVendidos: { nombre: string; cantidad: number; total: number }[];
-    ventasUltimos7Dias: { fecha: string; total: number; cantidad: number }[];
-}
+import { useDashboard } from '../hooks/useDashboard';
 
 const Dashboard: React.FC = () => {
-    const [data, setData] = useState<DashboardData | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const { data, loading, error, handleRefresh, clearError } = useDashboard();
     const { user } = useAuth();
-
-    // Use ionic lifecycle to handle updates when page is active
-    useIonViewWillEnter(() => {
-        cargarDashboard();
-        const interval = setInterval(() => cargarDashboard(true), 5000);
-        // Store interval id in a ref or state if needed, but since we are using a closure here 
-        // effectively we might need a ref to clear it on leave, 
-        // OR better yet, use a useEffect that depends on the component mounting if we want simple behavior,
-        // BUT for Ionic navigation standard is to start/stop on enter/leave.
-        // Let's use a ref for the interval.
-        (window as any).dashboardInterval = interval;
-    });
-
-    useIonViewDidLeave(() => {
-        if ((window as any).dashboardInterval) {
-            clearInterval((window as any).dashboardInterval);
-        }
-    });
-
-    const cargarDashboard = async (background = false) => {
-        if (!background) setLoading(true);
-        try {
-            const response = await getDashboard();
-            setData(response.data);
-            if (!background) setError('');
-        } catch (err) {
-            console.error(err);
-            if (!background) setError('Error al cargar dashboard');
-        } finally {
-            if (!background) setLoading(false);
-        }
-    };
-
-    const handleRefresh = async (event: CustomEvent) => {
-        await cargarDashboard();
-        event.detail.complete();
-    };
 
     return (
         <IonPage>
@@ -271,7 +206,7 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <IonLoading isOpen={loading} message="Cargando..." />
-                <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={() => setError('')} />
+                <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={clearError} />
             </IonContent>
         </IonPage>
     );
