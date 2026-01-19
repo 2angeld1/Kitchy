@@ -200,6 +200,89 @@ export const useInventario = () => {
     const clearError = () => setError('');
     const clearSuccess = () => setSuccess('');
 
+    // Smart Input
+    const [smartText, setSmartText] = useState('');
+
+    const parseSmartInput = (text: string) => {
+        // Regex to match: Quantity + (Optional Unit) + (de) + Name
+        // Examples: "5 kg arroz", "10 cajas de leche", "3 tomates"
+        const regex = /^(\d+(?:\.\d+)?)\s*([a-zA-ZñÑ]+)?\s+(?:de\s+)?(.+)$/i;
+        const match = text.trim().match(regex);
+
+        if (match) {
+            return {
+                cantidad: match[1],
+                unidad: match[2],
+                nombre: match[3]
+            };
+        }
+        return null;
+    };
+
+    const normalizeUnit = (u: string = '') => {
+        const unit = u.toLowerCase();
+        if (['kg', 'kilo', 'kilos', 'kilogramo', 'kilogramos'].includes(unit)) return 'kg';
+        if (['lb', 'libra', 'libras'].includes(unit)) return 'lb';
+        if (['l', 'litro', 'litros'].includes(unit)) return 'litros';
+        if (['ml', 'mililitro', 'mililitros'].includes(unit)) return 'ml';
+        if (['g', 'gramo', 'gramos'].includes(unit)) return 'gramos';
+        return 'unidades'; // Default
+    };
+
+    const findSmartMatch = (searchName: string) => {
+        const cleanName = searchName.toLowerCase().trim();
+        // Remove trailing 's' or 'es' for comparison
+        const baseName = cleanName.replace(/es$|s$/, '');
+
+        return items.find(item => {
+            const itemName = item.nombre.toLowerCase();
+            const itemBase = itemName.replace(/es$|s$/, '');
+
+            // Check exact, or check if they share the same base (singular) root
+            return itemName === cleanName || itemBase === baseName;
+        });
+    };
+
+    const handleSmartAction = () => {
+        if (!smartText) return;
+
+        const parsed = parseSmartInput(smartText);
+
+        if (!parsed) {
+            // Fallback: If no quantity detected, just search or setup creation with name
+            const existing = findSmartMatch(smartText);
+
+            if (existing) {
+                openMovModal(existing, 'entrada');
+            } else {
+                resetForm();
+                setNombre(smartText);
+                setShowModal(true);
+            }
+            setSmartText('');
+            return;
+        }
+
+        const { cantidad, unidad, nombre: rawNombre } = parsed;
+        const itemName = rawNombre.trim();
+        const existing = findSmartMatch(itemName);
+
+        if (existing) {
+            // Update existing stock
+            openMovModal(existing, 'entrada');
+            setMovCantidad(cantidad);
+            setMovMotivo('Entrada Rápida');
+        } else {
+            // Create new item
+            resetForm();
+            setNombre(itemName.charAt(0).toUpperCase() + itemName.slice(1));
+            setCantidad(cantidad);
+            setUnidad(normalizeUnit(unidad));
+            setShowModal(true);
+        }
+        setSmartText('');
+    };
+
     return {
         // Data
         items,
@@ -226,6 +309,11 @@ export const useInventario = () => {
         filtro,
         setFiltro,
         
+        // Smart Input
+        smartText,
+        setSmartText,
+        handleSmartAction,
+
         // Movement Form State
         movTipo,
         movCantidad,

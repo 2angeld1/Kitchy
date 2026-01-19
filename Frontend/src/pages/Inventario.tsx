@@ -32,7 +32,7 @@ import {
     IonCard,
     IonCardContent
 } from '@ionic/react';
-import { add, cube, arrowDown, arrowUp, trash, create } from 'ionicons/icons';
+import { add, cube, arrowDown, arrowUp, trash, create, mic, flash, send } from 'ionicons/icons';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
 
@@ -83,10 +83,27 @@ const Inventario: React.FC = () => {
         handleSubmit,
         handleDelete,
         openMovModal,
-        handleMovimiento
+        handleMovimiento,
+        smartText,
+        setSmartText,
+        handleSmartAction
     } = useInventario();
 
     const { isAdmin } = useAuth();
+
+    const startListening = () => {
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new (window as any).webkitSpeechRecognition();
+            recognition.lang = 'es-ES';
+            recognition.start();
+            recognition.onresult = (event: any) => {
+                const transcript = event.results[0][0].transcript;
+                setSmartText(transcript);
+            };
+        } else {
+            alert('Tu navegador no soporta reconocimiento de voz.');
+        }
+    };
 
     return (
         <IonPage>
@@ -105,6 +122,32 @@ const Inventario: React.FC = () => {
                 </IonRefresher>
 
                 <div className="inventario-container">
+
+                    {/* Smart Input Section */}
+                    <div className="smart-input-container ion-padding-horizontal ion-margin-top">
+                        <div className="smart-input-box">
+                            <IonIcon icon={flash} className="smart-icon" color="warning" />
+                            <input
+                                type="text"
+                                placeholder="Ej: 5 kg Tomates..."
+                                value={smartText}
+                                onChange={(e) => setSmartText(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSmartAction()}
+                            />
+                            <div className="smart-actions">
+                                <IonButton fill="clear" size="small" onClick={startListening}>
+                                    <IonIcon icon={mic} slot="icon-only" />
+                                </IonButton>
+                                <IonButton fill="clear" size="small" color="primary" onClick={handleSmartAction}>
+                                    <IonIcon icon={send} slot="icon-only" />
+                                </IonButton>
+                            </div>
+                        </div>
+                        <p className="smart-hint">
+                            <small>💡 Comandos rápidos: "10 Cajas Leche", "2 lbs Carne"</small>
+                        </p>
+                    </div>
+
                     <IonSearchbar
                         value={busqueda}
                         onIonInput={(e) => setBusqueda(e.detail.value || '')}
