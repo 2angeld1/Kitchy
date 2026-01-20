@@ -62,6 +62,10 @@ $shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
   justify-content: center;
 }
 
+@mixin flex-row {
+  display: flex;
+  flex-direction: row;
+}
 @mixin flex-column {
   display: flex;
   flex-direction: column;
