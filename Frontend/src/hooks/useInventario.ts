@@ -202,20 +202,46 @@ export const useInventario = () => {
 
     // Smart Input
     const [smartText, setSmartText] = useState('');
+    const [isListening, setIsListening] = useState(false);
 
     const parseSmartInput = (text: string) => {
-        // Regex to match: Quantity + (Optional Unit) + (de) + Name
-        // Examples: "5 kg arroz", "10 cajas de leche", "3 tomates"
-        const regex = /^(\d+(?:\.\d+)?)\s*([a-zA-ZñÑ]+)?\s+(?:de\s+)?(.+)$/i;
-        const match = text.trim().match(regex);
+        let cleanText = text.trim();
+        let precio = null;
+
+        // 1. Try to extract price from end (e.g. "1 dolar", "1.50", "a 5")
+        // Matches: number at end, optionally followed by currency words
+        const priceRegex = /\s+(\d+(?:[\.,]\d{1,2})?)\s*(?:dolar|dolares|usd|peso|pesos|\$)?$/i;
+        const priceMatch = cleanText.match(priceRegex);
+
+        if (priceMatch) {
+            precio = parseFloat(priceMatch[1].replace(',', '.'));
+            cleanText = cleanText.replace(priceRegex, '').trim();
+        }
+
+        // 2. Parse Quantity + Unit + Name from the remaining text
+        // Regex: Start with Number -> Space -> Optional Unit -> Space -> Optional "de" -> Name
+        const structureRegex = /^(\d+(?:[\.,]\d+)?)\s*([a-zA-ZñÑ]+)?\s+(?:de\s+)?(.+)$/i;
+        const match = cleanText.match(structureRegex);
 
         if (match) {
             return {
-                cantidad: match[1],
+                cantidad: match[1].replace(',', '.'),
                 unidad: match[2],
-                nombre: match[3]
+                nombre: match[3],
+                precio
             };
         }
+
+        // If structure doesn't match perfectly but we found a price, try to treating the rest as name or name + qty
+        if (precio !== null && cleanText) {
+            return {
+                cantidad: "1", // Default to 1 if not specified
+                unidad: "unidades",
+                nombre: cleanText,
+                precio
+            };
+        }
+
         return null;
     };
 
@@ -226,34 +252,43 @@ export const useInventario = () => {
         if (['l', 'litro', 'litros'].includes(unit)) return 'litros';
         if (['ml', 'mililitro', 'mililitros'].includes(unit)) return 'ml';
         if (['g', 'gramo', 'gramos'].includes(unit)) return 'gramos';
+        if (['caja', 'cajas'].includes(unit)) return 'unidades'; // Map boxes to units or handle differently if needed
         return 'unidades'; // Default
     };
 
     const findSmartMatch = (searchName: string) => {
         const cleanName = searchName.toLowerCase().trim();
-        // Remove trailing 's' or 'es' for comparison
+        // Remove trailing 's' or 'es' for comparison to handle pluralization roughly
         const baseName = cleanName.replace(/es$|s$/, '');
 
         return items.find(item => {
             const itemName = item.nombre.toLowerCase();
             const itemBase = itemName.replace(/es$|s$/, '');
 
-            // Check exact, or check if they share the same base (singular) root
-            return itemName === cleanName || itemBase === baseName;
+            // Check exact match, singular base match, or if one includes the other
+            // Example: "tomate" matches "tomates", "caja de leche" matches "leche"
+            return itemName === cleanName ||
+                itemBase === baseName ||
+                itemName.includes(baseName) ||
+                baseName.includes(itemBase);
         });
     };
 
-    const handleSmartAction = () => {
+    const handleSmartAction = async () => {
         if (!smartText) return;
 
         const parsed = parseSmartInput(smartText);
 
+        // Fallback for simple searches or unparsed text
         if (!parsed) {
-            // Fallback: If no quantity detected, just search or setup creation with name
             const existing = findSmartMatch(smartText);
-
             if (existing) {
-                openMovModal(existing, 'entrada');
+                setSelectedItem(existing);
+                setMovTipo('entrada');
+                setMovCantidad('');
+                setMovMotivo('');
+                setMovCosto('');
+                setShowMovModal(true);
             } else {
                 resetForm();
                 setNombre(smartText);
@@ -263,23 +298,51 @@ export const useInventario = () => {
             return;
         }
 
-        const { cantidad, unidad, nombre: rawNombre } = parsed;
+        const { cantidad, unidad, nombre: rawNombre, precio } = parsed;
         const itemName = rawNombre.trim();
         const existing = findSmartMatch(itemName);
 
+        const qty = parseFloat(cantidad);
+
         if (existing) {
-            // Update existing stock
-            openMovModal(existing, 'entrada');
-            setMovCantidad(cantidad);
-            setMovMotivo('Entrada Rápida');
+            // EXISTING ITEM: Pre-fill Movement Modal
+            let costoTotal = 0;
+
+            if (precio) {
+                // If price is provided, assume it is Unit Price unless we decide otherwise. 
+                // Calculation: Unit Price * Quantity = Total Cost
+                costoTotal = precio * qty;
+            } else {
+                // Default to current Unit Cost * Quantity
+                costoTotal = existing.costoUnitario * qty;
+            }
+
+            setSelectedItem(existing);
+            setMovTipo('entrada');
+            setMovCantidad(qty.toString());
+            // Show total cost if calculated, otherwise leave empty or show calculated default?
+            // User can edit it in the modal.
+            setMovCosto(costoTotal > 0 ? costoTotal.toString() : '');
+            setMovMotivo('Voz: ' + smartText);
+            setShowMovModal(true);
+
         } else {
-            // Create new item
+            // NEW ITEM: Pre-fill Create Modal
             resetForm();
             setNombre(itemName.charAt(0).toUpperCase() + itemName.slice(1));
-            setCantidad(cantidad);
+            setDescripcion('Ingreso por voz');
+            setCantidad(qty.toString());
             setUnidad(normalizeUnit(unidad));
+            setCantidadMinima('1');
+
+            if (precio) {
+                // For new item, price is per unit
+                setCostoUnitario(precio.toString());
+            }
+
             setShowModal(true);
         }
+
         setSmartText('');
     };
 
@@ -313,6 +376,8 @@ export const useInventario = () => {
         smartText,
         setSmartText,
         handleSmartAction,
+        isListening,
+        setIsListening,
 
         // Movement Form State
         movTipo,

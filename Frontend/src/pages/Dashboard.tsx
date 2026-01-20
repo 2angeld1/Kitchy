@@ -201,6 +201,43 @@ const Dashboard: React.FC = () => {
                                     </div>
                                 </IonCardContent>
                             </IonCard>
+
+                            {/* Métodos de Pago (Nuevo) */}
+                            <IonCard className="section-card">
+                                <IonCardHeader>
+                                    <IonCardTitle>
+                                        <IonIcon icon={cashOutline} /> Métodos de Pago (Mes)
+                                    </IonCardTitle>
+                                </IonCardHeader>
+                                <IonCardContent>
+                                    {data.metodosPago && data.metodosPago.length > 0 ? (
+                                        <div className="payment-methods-grid">
+                                            {data.metodosPago.map((metodo, index) => (
+                                                <div key={index} className={`payment-method-item ${metodo.metodo.toLowerCase()}`}>
+                                                    <div className="method-info">
+                                                        <span className="method-name">
+                                                            {metodo.metodo === 'yappy' ? 'Yappy 💸' : 'Efectivo 💵'}
+                                                        </span>
+                                                        <span className="method-total">${metodo.total.toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="method-bar-bg">
+                                                        <div
+                                                            className="method-bar-fill"
+                                                            style={{ width: `${metodo.porcentaje}%`, backgroundColor: metodo.metodo === 'yappy' ? 'var(--ion-color-secondary)' : 'var(--ion-color-success)' }}
+                                                        ></div>
+                                                    </div>
+                                                    <div className="method-stats">
+                                                        <small>{metodo.cantidad} ventas</small>
+                                                        <small>{metodo.porcentaje.toFixed(1)}%</small>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="no-data">No hay datos de pagos aún</p>
+                                    )}
+                                </IonCardContent>
+                            </IonCard>
                         </>
                     )}
                 </div>

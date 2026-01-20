@@ -38,8 +38,8 @@ const Menu: React.FC = () => {
         { title: 'Usuarios', path: '/usuarios', icon: peopleOutline, description: 'Gestión de acceso' },
     ];
 
-    const navigateTo = async (path: string) => {
-        await menuController.close();
+    const navigateTo = (path: string) => {
+        menuController.close();
         history.push(path);
     };
 

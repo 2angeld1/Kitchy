@@ -32,6 +32,7 @@ import {
     IonCard,
     IonCardContent
 } from '@ionic/react';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { add, cube, arrowDown, arrowUp, trash, create, mic, flash, send } from 'ionicons/icons';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
@@ -86,20 +87,47 @@ const Inventario: React.FC = () => {
         handleMovimiento,
         smartText,
         setSmartText,
-        handleSmartAction
+        handleSmartAction,
+        isListening,
+        setIsListening
     } = useInventario();
 
     const { isAdmin } = useAuth();
 
+    const triggerHaptic = async () => {
+        try {
+            await Haptics.impact({ style: ImpactStyle.Light });
+        } catch (e) {
+            // Ignore if not supported
+        }
+    };
+
     const startListening = () => {
+        triggerHaptic();
         if ('webkitSpeechRecognition' in window) {
             const recognition = new (window as any).webkitSpeechRecognition();
             recognition.lang = 'es-ES';
-            recognition.start();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                setIsListening(true);
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognition.onerror = () => {
+                setIsListening(false);
+            };
+
             recognition.onresult = (event: any) => {
                 const transcript = event.results[0][0].transcript;
                 setSmartText(transcript);
             };
+
+            recognition.start();
         } else {
             alert('Tu navegador no soporta reconocimiento de voz.');
         }
@@ -135,8 +163,8 @@ const Inventario: React.FC = () => {
                                 onKeyDown={(e) => e.key === 'Enter' && handleSmartAction()}
                             />
                             <div className="smart-actions">
-                                <IonButton fill="clear" size="small" onClick={startListening}>
-                                    <IonIcon icon={mic} slot="icon-only" />
+                                <IonButton fill="clear" size="small" onClick={startListening} color={isListening ? "danger" : "primary"}>
+                                    <IonIcon icon={mic} slot="icon-only" className={isListening ? "pulsing-icon" : ""} />
                                 </IonButton>
                                 <IonButton fill="clear" size="small" color="primary" onClick={handleSmartAction}>
                                     <IonIcon icon={send} slot="icon-only" />
@@ -144,7 +172,13 @@ const Inventario: React.FC = () => {
                             </div>
                         </div>
                         <p className="smart-hint">
-                            <small>💡 Comandos rápidos: "10 Cajas Leche", "2 lbs Carne"</small>
+                            <small>
+                                {isListening ? (
+                                    <span className="listening-text">🎙️ Escuchando...</span>
+                                ) : (
+                                    <>💡 Comandos: "10 Cajas Leche", "2 lb Tomate 1.50"</>
+                                )}
+                            </small>
                         </p>
                     </div>
 
@@ -171,12 +205,29 @@ const Inventario: React.FC = () => {
                                         <p>{item.categoria} • {item.proveedor || 'Sin proveedor'}</p>
                                     </IonLabel>
                                     <div className="item-stock" slot="end">
-                                        <span className={`cantidad ${item.cantidad <= item.cantidadMinima ? 'bajo' : ''}`}>
-                                            {item.cantidad} {item.unidad}
-                                        </span>
-                                        {item.cantidad <= item.cantidadMinima && (
-                                            <IonBadge color="warning">Bajo</IonBadge>
-                                        )}
+                                        <IonButton
+                                            fill="clear"
+                                            size="small"
+                                            color="success"
+                                            className="quick-add-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                triggerHaptic();
+                                                openMovModal(item, 'entrada');
+                                                // Pre-fill with defaults for quick add
+                                                setMovCantidad('1');
+                                            }}
+                                        >
+                                            <IonIcon icon={add} />
+                                        </IonButton>
+                                        <div className="stock-info">
+                                            <span className={`cantidad ${item.cantidad <= item.cantidadMinima ? 'bajo' : ''}`}>
+                                                {item.cantidad} {item.unidad}
+                                            </span>
+                                            {item.cantidad <= item.cantidadMinima && (
+                                                <IonBadge color="warning">Bajo</IonBadge>
+                                            )}
+                                        </div>
                                     </div>
                                 </IonItem>
                                 <IonItemOptions side="end">

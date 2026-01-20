@@ -98,7 +98,7 @@ const Productos: React.FC = () => {
                                 <IonItem>
                                     <div className="producto-emoji" slot="start">
                                         {producto.imagen ? (
-                                            <img src={producto.imagen} alt={producto.nombre} className="producto-imagen-list" />
+                                            <img src={producto.imagen} alt={producto.nombre} className="producto-imagen-list" loading="lazy" />
                                         ) : (
                                             getEmoji(producto.categoria)
                                         )}

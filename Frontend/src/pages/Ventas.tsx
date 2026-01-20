@@ -129,7 +129,7 @@ const Ventas: React.FC = () => {
                                     <IonCardContent>
                                         <div className="producto-image-container">
                                             {producto.imagen ? (
-                                                <img src={producto.imagen} alt={producto.nombre} className="producto-imagen-card" />
+                                                <img src={producto.imagen} alt={producto.nombre} className="producto-imagen-card" loading="lazy" />
                                             ) : (
                                                 <div className="producto-emoji">
                                                     {producto.categoria === 'comida' ? '🍔' :

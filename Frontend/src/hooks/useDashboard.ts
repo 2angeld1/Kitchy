@@ -25,6 +25,7 @@ export interface DashboardData {
     };
     productosMasVendidos: { nombre: string; cantidad: number; total: number }[];
     ventasUltimos7Dias: { fecha: string; total: number; cantidad: number }[];
+    metodosPago: { metodo: string; total: number; cantidad: number; porcentaje: number }[];
 }
 
 export const useDashboard = () => {

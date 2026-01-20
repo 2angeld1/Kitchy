@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { resizeImage } from '../utils/imageUtils';
 import { getProductos, createProducto, updateProducto, deleteProducto, toggleDisponibilidad } from '../services/api';
 
 export interface Producto {
@@ -138,14 +139,22 @@ export const useProductos = () => {
         }
     };
     
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagen(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            try {
+                // Resize and compress image purely on client side before setting state
+                const resizedImage = await resizeImage(file, 800, 800);
+                setImagen(resizedImage);
+            } catch (error) {
+                console.error('Error resizing image:', error);
+            // Fallback to original if resize fails
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImagen(reader.result as string);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
     

@@ -146,6 +146,66 @@
   font-size: 0.7rem;
   color: var(--ion-color-medium);
   margin-top: $spacing-sm;
-  text-transform: capitalize;
-  font-weight: 500;
+  font-family: inherit;
+  }
+  
+  // Payment Methods
+  .payment-methods-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+  }
+  
+  .payment-method-item {
+    background: var(--ion-background-color);
+    padding: $spacing-md;
+    border-radius: $radius-md;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  
+    .method-info {
+      @include flex-between;
+      margin-bottom: $spacing-sm;
+  
+      .method-name {
+        font-weight: 500;
+      font-size: 0.95rem;
+      }
+      
+      .method-total {
+        font-weight: 700;
+        color: var(--ion-text-color);
+      }
+      }
+      
+      .method-bar-bg {
+        height: 8px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: $radius-round;
+        margin-bottom: $spacing-xs;
+        overflow: hidden;
+      
+        .method-bar-fill {
+          height: 100%;
+          border-radius: $radius-round;
+          transition: width 1s ease-out;
+        }
+      }
+      
+      .method-stats {
+        @include flex-between;
+      
+        small {
+          font-size: 0.75rem;
+          color: var(--ion-color-medium);
+        }
+      }
+      
+      // Method specific colors (if not styling inline)
+      &.yappy .method-name {
+        color: var(--ion-color-secondary);
+      }
+      
+      &.efectivo .method-name {
+        color: var(--ion-color-success);
+      }
 }
