@@ -118,6 +118,27 @@ export const getReporteVentas = (params?: { fechaInicio?: string; fechaFin?: str
 export const getReporteGanancias = (params?: { fechaInicio?: string; fechaFin?: string }) =>
     api.get('/dashboard/ganancias', { params });
 
+// Menu Config
+export const getMenuConfig = () =>
+    api.get('/menu-config');
+
+export const updateMenuConfig = (data: {
+    nombreRestaurante?: string;
+    subtitulo?: string;
+    tema?: 'paper' | 'modern' | 'minimal';
+    colorPrimario?: string;
+    colorSecundario?: string;
+    imagenHero?: string;
+    telefono?: string;
+    direccion?: string;
+    horario?: string;
+    redesSociales?: {
+        instagram?: string;
+        facebook?: string;
+        whatsapp?: string;
+    };
+}) => api.put('/menu-config', data);
+
 // Users
 export const getUsers = () =>
     api.get('/users');

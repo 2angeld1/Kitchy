@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Merriweather:wght@300;400;700;900&display=swap');
+
+.menu-theme-paper {
+  --paper-bg: #f3e5d0;
+  --paper-texture: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+  --ink-color: #2c2420;
+  --accent-red: #c92c2c;
+  --accent-gold: #d4af37;
+  
+  --ion-background-color: #333 !important;
+  --ion-text-color: var(--ink-color) !important;
+  --background: #333 !important;
+  
+  font-family: 'Merriweather', serif;
+
+  ion-content {
+    --background: var(--paper-bg) !important;
+    --ion-background-color: var(--paper-bg) !important;
+    --padding-top: 0px !important;
+    --padding-start: 0px !important;
+    --padding-end: 0px !important;
+  }
+
+  .paper-sheet {
+    background-color: var(--paper-bg);
+    background-image: var(--paper-texture);
+    width: 100%;
+    min-height: 100vh;
+    padding: 0;
+    position: relative;
+    overflow-x: hidden;
+    
+    /* Decoration - Red Triangles behind content */
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0; right: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 0 150px 150px 0;
+      border-color: transparent var(--accent-red) transparent transparent;
+      z-index: 1;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    &::after {
+      content: '';
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 150px 0 0 150px;
+      border-color: transparent transparent transparent var(--accent-red);
+      z-index: 1;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+  }
+
+  .sheet-content {
+    position: relative;
+    z-index: 10;
+    padding: 40px 30px;
+  }
+
+  .menu-header {
+    text-align: center;
+    margin-bottom: 40px;
+    
+    .brand-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 4rem;
+      color: var(--ink-color);
+      margin: 0;
+      transform: rotate(-3deg);
+    }
+    
+    .brand-subtitle {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--accent-red);
+      font-weight: 900;
+      border-top: 2px solid var(--accent-red);
+      border-bottom: 2px solid var(--accent-red);
+      display: inline-block;
+      padding: 5px 20px;
+      margin-top: 10px;
+    }
+
+    .main-dish-circle {
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      border: 5px solid white;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      overflow: hidden;
+      margin: 20px auto 0;
+      position: relative;
+      background: #ddd;
+      
+      img { width: 100%; height: 100%; object-fit: cover; }
+    }
+  }
+
+  /* Paper Tabs */
+  .paper-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+
+    .paper-tab {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.5rem;
+      color: var(--ink-color);
+      cursor: pointer;
+      
+      &.active {
+        color: var(--accent-red);
+        transform: scale(1.1);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  /* List Items */
+  .menu-list {
+    display: flex; flex-direction: column; gap: 25px;
+  }
+
+  .menu-item-row {
+    display: flex; align-items: center; gap: 15px;
+    cursor: pointer;
+
+    .item-thumb {
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      border: 3px solid white;
+      object-fit: cover;
+    }
+
+    .item-details {
+      flex: 1;
+      .item-header {
+        display: flex; justify-content: space-between; align-items: baseline;
+        border-bottom: 2px dotted rgba(44, 36, 32, 0.3);
+        margin-bottom: 5px;
+        
+        h3 { margin: 0; font-size: 1.1rem; font-weight: 900; background: var(--paper-bg); padding-right: 10px; }
+        .price { font-weight: 700; color: var(--accent-red); background: var(--paper-bg); padding-left: 10px; }
+      }
+      .item-desc {
+        color: #5d534e; font-size: 0.85rem; font-style: italic;
+        display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      }
+    }
+  }
+}

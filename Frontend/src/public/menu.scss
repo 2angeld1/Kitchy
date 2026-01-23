@@ -1,0 +1,26 @@
+/* Main Menu Styles Orchestrator */
+@import './themes/theme-paper';
+@import './themes/theme-modern';
+@import './themes/theme-minimal';
+@import './themes/theme-tasty';
+@import './themes/theme-gourmet';
+
+/* Shared Utilities (Loader, etc) */
+.icon-spin {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* Force Isolation Scope */
+/* Main Menu Styles Orchestrator */
+@import './themes/theme-paper';
+@import './themes/theme-modern';
+@import './themes/theme-minimal';
+
+/* Shared Utilities (Loader, etc) */
+.icon-spin {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}

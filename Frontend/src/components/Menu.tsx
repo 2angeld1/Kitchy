@@ -14,7 +14,8 @@ import {
     logOutOutline,
     sunnyOutline,
     moonOutline,
-    chevronForward
+    chevronForward,
+    colorPaletteOutline
 } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +37,7 @@ const Menu: React.FC = () => {
     const adminItems = [
         { title: 'Productos', path: '/productos', icon: restaurantOutline, description: 'Catálogo' },
         { title: 'Usuarios', path: '/usuarios', icon: peopleOutline, description: 'Gestión de acceso' },
+        { title: 'Configurar Menú', path: '/configuracion-menu', icon: colorPaletteOutline, description: 'Personalizar menú público' },
     ];
 
     const navigateTo = (path: string) => {

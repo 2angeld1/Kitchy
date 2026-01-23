@@ -1,0 +1,393 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.menu-theme-minimal {
+  --bg-color: #FDFDFD;
+  --card-bg: #FFFFFF;
+  --text-main: #1A1A1A;
+  --text-muted: #9CA3AF;
+  --accent: #E91E63; /* Pink from image */
+  --accent-light: #FCE7F3;
+  
+  --ion-background-color: var(--bg-color) !important;
+  --ion-text-color: var(--text-main) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+
+  ion-content {
+    --background: var(--bg-color) !important;
+  }
+
+  .paper-sheet {
+    background: transparent;
+    padding: 0;
+    &::before, &::after { display: none; }
+  }
+
+  .sheet-content { padding: 0; }
+
+  /* --- HEADER (Find and Order Layout) --- */
+  .menu-header {
+    margin-bottom: 25px;
+    padding: 30px 20px 10px;
+    text-align: left; /* Aligned left like the image */
+
+    .user-welcome {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #FFE4E6;
+            img { width: 100%; height: 100%; object-fit: cover; }
+        }
+        
+        .user-info {
+            flex: 1;
+            p {
+                margin: 0;
+                font-weight: 700;
+                color: var(--text-main);
+                font-size: 1.1rem;
+            }
+        }
+        
+        .settings-icon {
+            font-size: 1.4rem;
+            color: #D1D5DB;
+        }
+    }
+    
+    .brand-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 10px 0 0;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    
+    .brand-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      border: none;
+      padding: 0;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+
+    .search-bar {
+        margin-top: 30px;
+        background: #FFFFFF;
+        border-radius: 20px;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.02);
+
+        ion-icon {
+            color: #9CA3AF;
+            font-size: 1.4rem;
+        }
+
+        input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            outline: none;
+        }
+    }
+
+    .main-dish-circle {
+      display: none !important; /* Image doesn't show circular hero in this theme */
+    }
+  }
+
+  /* --- CATEGORY PILLS --- */
+  .paper-tabs {
+    padding: 0 20px 30px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    gap: 12px;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    
+    &::-webkit-scrollbar { display: none; }
+    
+    .paper-tab {
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 12px 24px;
+      background: #FFFFFF;
+      border-radius: 50px; /* Pill shape */
+      color: #4B5563;
+      white-space: nowrap;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      
+      &.active {
+        color: #FFFFFF;
+        background: var(--accent);
+        box-shadow: 0 10px 15px -3px rgba(233, 30, 99, 0.3);
+        border-color: var(--accent);
+        transform: none;
+        text-decoration: none;
+      }
+    }
+  }
+
+  /* --- LIST / GRID --- */
+  .menu-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 0 20px 120px;
+    
+    &::before {
+        content: 'Most Popular';
+        grid-column: 1 / -1;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-top: 20px;
+        margin-bottom: 5px;
+        display: block;
+    }
+  }
+
+  .menu-item-row {
+    flex-direction: column;
+    background: var(--card-bg);
+    border-radius: 24px;
+    overflow: hidden;
+    padding: 10px;
+    border: none;
+    align-items: stretch;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    position: relative;
+    transition: transform 0.2s ease;
+
+    &:active { transform: scale(0.96); }
+
+    /* Favorite Icon overlay */
+    &::after {
+        content: '♥';
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        color: var(--accent);
+        background: rgba(255,255,255,0.8);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        z-index: 5;
+    }
+
+    .item-thumb {
+      width: 100%;
+      height: 120px;
+      border-radius: 20px;
+      border: none;
+      object-fit: contain; /* Like the illustrations in image */
+      background: #F9FAFB;
+      margin-bottom: 15px;
+    }
+
+    .item-details {
+      padding: 5px 8px 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      
+      .item-header {
+        flex-direction: column;
+        border: none;
+        margin-bottom: 5px;
+        align-items: flex-start;
+        
+        h3 { 
+            font-size: 1.05rem; 
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 5px;
+            background: transparent;
+            line-height: 1.2;
+        }
+        
+        .price {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            font-weight: 800;
+            background: transparent;
+            padding: 0;
+            margin-top: 5px;
+            display: flex;
+            align-items: baseline;
+            
+            &::before { content: '$'; font-size: 0.9rem; margin-right: 2px; }
+            &::after {
+                /* Add button in price row like image */
+                content: '+';
+                position: absolute;
+                bottom: 12px;
+                right: 12px;
+                background: #E91E63;
+                color: white;
+                width: 34px;
+                height: 34px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.4rem;
+                box-shadow: 0 8px 15px rgba(233, 30, 99, 0.3);
+            }
+        }
+      }
+      
+      .item-desc {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+  }
+
+  /* --- FOOTER (Call for Delivery) --- */
+  .paper-footer {
+    padding: 60px 20px 140px; /* Space for bottom nav */
+    text-align: center;
+    background: transparent;
+    
+    .phone-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      margin-top: 10px;
+      letter-spacing: -1px;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin: 0;
+    }
+  }
+
+  /* --- BOTTOM NAV (Mockup) --- */
+  .minimal-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: 20px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+    z-index: 1000;
+    border-radius: 35px 35px 0 0;
+
+    ion-icon {
+        font-size: 1.6rem;
+        color: #D1D5DB;
+        transition: all 0.2s;
+        
+        &.active { color: var(--accent); }
+    }
+
+    .center-btn {
+        width: 65px;
+        height: 65px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: -50px;
+        box-shadow: 0 10px 25px rgba(233, 30, 99, 0.4);
+        border: 5px solid white;
+
+        ion-icon {
+            color: white;
+            font-size: 1.8rem;
+        }
+    }
+  }
+}
+
+/* --- MINIMAL MODAL OVERRIDES (Global Scope for IonModal) --- */
+.product-detail-modal {
+    --background: #FFFFFF;
+    
+    .detail-content {
+        padding: 30px 24px;
+        background: white;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+
+        h2 { 
+            font-weight: 800 !important; 
+            font-size: 2.2rem !important; 
+            color: #1A1A1A !important;
+            letter-spacing: -1px;
+        }
+        
+        /* Price override labels */
+        span[style*="font-size: 1.5rem"] {
+            color: #E91E63 !important; /* Pink Accent */
+            font-size: 2rem !important;
+            font-weight: 800 !important;
+            display: block;
+            margin: 10px 0 20px;
+        }
+
+        p {
+            color: #6B7280 !important;
+            font-size: 1rem !important;
+            line-height: 1.6 !important;
+        }
+
+        ion-button {
+            --background: #E91E63 !important;
+            --border-radius: 20px !important;
+            --box-shadow: 0 10px 25px rgba(233, 30, 99, 0.3) !important;
+            height: 65px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 30px;
+        }
+    }
+    
+    .close-button {
+        background: white !important;
+        color: #1A1A1A !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+}

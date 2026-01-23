@@ -1,4 +1,4 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -11,6 +11,8 @@ import Ventas from './pages/Ventas';
 import Inventario from './pages/Inventario';
 import Productos from './pages/Productos';
 import Usuarios from './pages/Usuarios';
+import ConfiguracionMenu from './pages/ConfiguracionMenu';
+import MenuApp from './public/MenuApp';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -79,12 +81,21 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-const AppRoutes: React.FC = () => {
+const MainRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  // Public override: Menu is always accessible and standalone
+  if (location.pathname === '/menu') {
+    return (
+      <IonRouterOutlet>
+        <Route exact path="/menu" component={MenuApp} />
+      </IonRouterOutlet>
+    );
+  }
 
   return (
-    <IonReactRouter>
-      {isAuthenticated ? (
+    isAuthenticated ? (
         <IonSplitPane contentId="main-content">
           <Menu />
           <IonRouterOutlet id="main-content">
@@ -113,6 +124,11 @@ const AppRoutes: React.FC = () => {
                 <Usuarios />
               </AdminRoute>
             </Route>
+          <Route exact path="/configuracion-menu">
+            <AdminRoute>
+              <ConfiguracionMenu />
+            </AdminRoute>
+          </Route>
             <Route exact path="/">
               <Redirect to="/ventas" />
             </Route>
@@ -123,6 +139,7 @@ const AppRoutes: React.FC = () => {
         </IonSplitPane>
       ) : (
         <IonRouterOutlet>
+          {/* Login/Register/etc */}
           <Route exact path="/login">
             <Login />
           </Route>
@@ -133,8 +150,7 @@ const AppRoutes: React.FC = () => {
             <Redirect to="/login" />
           </Route>
         </IonRouterOutlet>
-      )}
-    </IonReactRouter>
+      )
   );
 };
 
@@ -142,7 +158,9 @@ const App: React.FC = () => (
   <IonApp>
     <ThemeProvider>
       <AuthProvider>
-        <AppRoutes />
+        <IonReactRouter>
+          <MainRoutes />
+        </IonReactRouter>
       </AuthProvider>
     </ThemeProvider>
   </IonApp>

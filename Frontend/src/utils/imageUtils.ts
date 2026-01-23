@@ -35,3 +35,13 @@ export const resizeImage = (file: File, maxWidth: number = 800, maxHeight: numbe
         reader.onerror = (err) => reject(err);
     });
 };
+
+export const optimizeUnsplashUrl = (url: string, width: number = 400, height: number = 400): string => {
+    if (!url) return '';
+    if (url.includes('images.unsplash.com')) {
+        // Check if it already has params
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}w=${width}&h=${height}&fit=crop&q=80`;
+    }
+    return url;
+};

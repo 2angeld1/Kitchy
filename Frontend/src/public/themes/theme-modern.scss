@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+.menu-theme-modern {
+  --primary: #FF4B3A;
+  --bg-color: #F8F9FA;
+  --card-bg: #FFFFFF;
+  --text-main: #333333;
+  --text-light: #999999;
+  
+  --ion-background-color: var(--bg-color) !important;
+  --ion-text-color: var(--text-main) !important;
+  font-family: 'Outfit', sans-serif;
+
+  ion-content {
+    --background: var(--bg-color) !important;
+  }
+
+  .paper-sheet { /* Wrapper reset */
+    background: transparent;
+    padding: 20px;
+    &::before, &::after { display: none; } /* No triangles */
+  }
+
+  .sheet-content { padding: 0; }
+
+  /* Header Moderno */
+  .menu-header {
+    text-align: left;
+    margin-bottom: 30px;
+    padding: 0 10px;
+
+    .brand-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 5px;
+      line-height: 1.1;
+    }
+    
+    .brand-subtitle {
+      color: var(--text-light);
+      font-weight: 500;
+      text-transform: none;
+      border: none;
+      padding: 0;
+    }
+
+    .main-dish-circle {
+      display: none; /* Hide circle in modern view */
+    }
+  }
+
+  /* Grid Layout for Modern Theme */
+  .menu-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+  }
+
+  .menu-item-row {
+    flex-direction: column; /* Vertical card */
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    align-items: stretch;
+    transition: transform 0.2s;
+    
+    &:active { transform: scale(0.98); }
+
+    .item-thumb {
+      width: 120px; 
+      height: 120px;
+      border-radius: 50%;
+      margin: -40px auto 10px; /* Floating effect */
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      border: none;
+    }
+
+    .item-details {
+      text-align: center;
+      .item-header {
+        flex-direction: column;
+        border: none;
+        margin-bottom: 10px;
+        
+        h3 { 
+            font-size: 1.1rem; 
+            margin-bottom: 5px;
+            background: transparent;
+        }
+        .price {
+            color: var(--primary);
+            font-size: 1.2rem;
+            background: transparent;
+        }
+      }
+      .item-desc { display: none; /* Cleaner look */ }
+    }
+  }
+
+  /* Pills navigation */
+  .paper-tabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 10px 20px 20px; /* More breathing room */
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+    
+    &::-webkit-scrollbar { display: none; } /* Hide Chrome */
+    
+    .paper-tab {
+      font-family: 'Outfit', sans-serif;
+      background: white;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-light);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      white-space: nowrap;
+
+      &.active {
+        background: var(--primary);
+        color: white;
+        text-decoration: none;
+        transform: none;
+        box-shadow: 0 8px 20px rgba(255, 75, 58, 0.25);
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ import productoRoutes from './routes/productos';
 import ventaRoutes from './routes/ventas';
 import inventarioRoutes from './routes/inventario';
 import dashboardRoutes from './routes/dashboard';
+import menuConfigRoutes from './routes/menuConfig';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use('/api/productos', productoRoutes);
 app.use('/api/ventas', ventaRoutes);
 app.use('/api/inventario', inventarioRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/menu-config', menuConfigRoutes);
 
 
 // Ruta de prueba
