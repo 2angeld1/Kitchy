@@ -124,12 +124,28 @@ const Ventas: React.FC = () => {
                         </div>
                     ) : (
                         <div className="productos-grid">
-                            {productosFiltrados.map(producto => (
+                                {productosFiltrados.map(producto => {
+                                    const optimizeImage = (url: string) => {
+                                        if (!url) return '';
+                                        if (url.includes('images.unsplash.com')) {
+                                            // Check if it already has params
+                                            const separator = url.includes('?') ? '&' : '?';
+                                            return `${url}${separator}w=400&h=400&fit=crop&q=80`;
+                                        }
+                                        return url;
+                                    };
+
+                                    return (
                                 <IonCard className="producto-card" key={producto._id} onClick={() => agregarAlCarrito(producto)}>
                                     <IonCardContent>
                                         <div className="producto-image-container">
                                             {producto.imagen ? (
-                                                <img src={producto.imagen} alt={producto.nombre} className="producto-imagen-card" loading="lazy" />
+                                                    <img
+                                                        src={optimizeImage(producto.imagen)}
+                                                        alt={producto.nombre}
+                                                        className="producto-imagen-card"
+                                                        loading="lazy"
+                                                    />
                                             ) : (
                                                 <div className="producto-emoji">
                                                     {producto.categoria === 'comida' ? '🍔' :
@@ -146,7 +162,8 @@ const Ventas: React.FC = () => {
                                         </IonButton>
                                     </IonCardContent>
                                 </IonCard>
-                            ))}
+                                )
+                            })}
                         </div>
                     )}
                 </div>
