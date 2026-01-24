@@ -29,6 +29,7 @@ import {
     IonRefresherContent
 } from '@ionic/react';
 import { add, cart, remove, checkmark, trash, receiptOutline, timeOutline } from 'ionicons/icons';
+import { optimizeImageUrl } from '../utils/imageUtils';
 import { useVentas } from '../hooks/useVentas';
 
 const Ventas: React.FC = () => {
@@ -125,23 +126,13 @@ const Ventas: React.FC = () => {
                     ) : (
                         <div className="productos-grid">
                                 {productosFiltrados.map(producto => {
-                                    const optimizeImage = (url: string) => {
-                                        if (!url) return '';
-                                        if (url.includes('images.unsplash.com')) {
-                                            // Check if it already has params
-                                            const separator = url.includes('?') ? '&' : '?';
-                                            return `${url}${separator}w=400&h=400&fit=crop&q=80`;
-                                        }
-                                        return url;
-                                    };
-
                                     return (
                                 <IonCard className="producto-card" key={producto._id} onClick={() => agregarAlCarrito(producto)}>
                                     <IonCardContent>
                                         <div className="producto-image-container">
                                             {producto.imagen ? (
                                                     <img
-                                                        src={optimizeImage(producto.imagen)}
+                                                            src={optimizeImageUrl(producto.imagen)}
                                                         alt={producto.nombre}
                                                         className="producto-imagen-card"
                                                         loading="lazy"

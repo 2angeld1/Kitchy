@@ -12,7 +12,7 @@ import {
 import { closeOutline, add, heart, call, searchOutline, settingsOutline } from 'ionicons/icons';
 import { getProductos, getMenuConfig } from '../services/api';
 import { Producto } from '../hooks/useProductos';
-import { optimizeUnsplashUrl } from '../utils/imageUtils';
+import { optimizeImageUrl } from '../utils/imageUtils';
 import './menu.scss';
 
 interface MenuConfigData {
@@ -124,7 +124,7 @@ const MenuApp: React.FC = () => {
                                     <>
                                         <div className="dish-img-wrapper">
                                             <img 
-                                                src={config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=500&q=80"} 
+                                                src={optimizeImageUrl(config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", 600, 400)} 
                                                 alt="Special" 
                                             />
                                         </div>
@@ -144,7 +144,7 @@ const MenuApp: React.FC = () => {
                                     </>
                                 ) : (
                                     <img 
-                                        src={config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=500&q=80"} 
+                                            src={optimizeImageUrl(config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", 600, 400)} 
                                         alt="Special" 
                                     />
                                 )}
@@ -192,7 +192,7 @@ const MenuApp: React.FC = () => {
                                     {item.imagen && (
                                         <img 
                                             className="item-thumb"
-                                            src={optimizeUnsplashUrl(item.imagen, 150, 150)} 
+                                            src={optimizeImageUrl(item.imagen, 150, 150)} 
                                             alt={item.nombre} 
                                             loading="lazy"
                                         />
@@ -238,7 +238,7 @@ const MenuApp: React.FC = () => {
                                 </div>
                                 {selectedProduct.imagen && (
                                     <img 
-                                        src={optimizeUnsplashUrl(selectedProduct.imagen, 800, 800)} 
+                                        src={optimizeImageUrl(selectedProduct.imagen, 800, 800)} 
                                         className="detail-image" 
                                         style={{ width: '100%', height: '40vh', objectFit: 'cover' }}
                                         alt={selectedProduct.nombre} 

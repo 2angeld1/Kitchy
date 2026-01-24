@@ -36,12 +36,22 @@ export const resizeImage = (file: File, maxWidth: number = 800, maxHeight: numbe
     });
 };
 
-export const optimizeUnsplashUrl = (url: string, width: number = 400, height: number = 400): string => {
+export const optimizeImageUrl = (url: string, width: number = 400, height: number = 400): string => {
     if (!url) return '';
+
+    // Optimización para Unsplash
     if (url.includes('images.unsplash.com')) {
-        // Check if it already has params
         const separator = url.includes('?') ? '&' : '?';
-        return `${url}${separator}w=${width}&h=${height}&fit=crop&q=80`;
+        return `${url}${separator}w=${width}&h=${height}&fit=crop&auto=format,compress&q=60`;
     }
+
+    // Optimización para Cloudinary
+    if (url.includes('res.cloudinary.com')) {
+        // Inyectar transformaciones después de /upload/
+        // q_auto: calidad automática, f_auto: formato automático (webp/avif)
+        const transformation = `w_${width},h_${height},c_fill,q_auto,f_auto`;
+        return url.replace('/upload/', `/upload/${transformation}/`);
+    }
+
     return url;
 };

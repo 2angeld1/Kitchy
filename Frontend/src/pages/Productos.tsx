@@ -33,6 +33,7 @@ import {
 } from '@ionic/react';
 import { add, restaurant, trash, create, eye, eyeOff, camera, image } from 'ionicons/icons';
 import { useProductos } from '../hooks/useProductos';
+import { optimizeImageUrl } from '../utils/imageUtils';
 
 const Productos: React.FC = () => {
     const {
@@ -98,7 +99,7 @@ const Productos: React.FC = () => {
                                 <IonItem>
                                     <div className="producto-emoji" slot="start">
                                         {producto.imagen ? (
-                                            <img src={producto.imagen} alt={producto.nombre} className="producto-imagen-list" loading="lazy" />
+                                            <img src={optimizeImageUrl(producto.imagen)} alt={producto.nombre} className="producto-imagen-list" loading="lazy" />
                                         ) : (
                                             getEmoji(producto.categoria)
                                         )}
