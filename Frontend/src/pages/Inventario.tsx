@@ -33,7 +33,7 @@ import {
     IonCardContent
 } from '@ionic/react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { add, cube, arrowDown, arrowUp, trash, create, mic, flash, send } from 'ionicons/icons';
+import { add, remove, cube, arrowDown, arrowUp, trash, create, mic, flash, send } from 'ionicons/icons';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
 
@@ -176,7 +176,7 @@ const Inventario: React.FC = () => {
                                 {isListening ? (
                                     <span className="listening-text">🎙️ Escuchando...</span>
                                 ) : (
-                                    <>💡 Comandos: "10 Cajas Leche", "2 lb Tomate 1.50"</>
+                                        <>💡 Comandos: "10 Cajas Leche", "Gaste 2 Huevos", "2 lb Tomate 1.50"</>
                                 )}
                             </small>
                         </p>
@@ -205,20 +205,21 @@ const Inventario: React.FC = () => {
                                         <p>{item.categoria} • {item.proveedor || 'Sin proveedor'}</p>
                                     </IonLabel>
                                     <div className="item-stock" slot="end">
+
                                         <IonButton
                                             fill="clear"
                                             size="small"
-                                            color="success"
-                                            className="quick-add-btn"
+                                            color="warning"
+                                            className="quick-remove-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 triggerHaptic();
-                                                openMovModal(item, 'entrada');
-                                                // Pre-fill with defaults for quick add
+                                                openMovModal(item, 'salida');
+                                                // Pre-fill with defaults for quick remove
                                                 setMovCantidad('1');
                                             }}
                                         >
-                                            <IonIcon icon={add} />
+                                            <IonIcon icon={remove} />
                                         </IonButton>
                                         <div className="stock-info">
                                             <span className={`cantidad ${item.cantidad <= item.cantidadMinima ? 'bajo' : ''}`}>

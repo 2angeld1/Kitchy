@@ -207,6 +207,14 @@ export const useInventario = () => {
     const parseSmartInput = (text: string) => {
         let cleanText = text.trim();
         let precio = null;
+        let isSalida = false;
+
+        // 0. Detect "Salida" keywords (consumption)
+        const salidaRegex = /^(gaste|gasté|use|usé|consumi|consumí|sacar|saqué|baja|menos|vendi|vendí)\s+/i;
+        if (salidaRegex.test(cleanText)) {
+            isSalida = true;
+            cleanText = cleanText.replace(salidaRegex, '').trim();
+        }
 
         // 1. Try to extract price from end (e.g. "1 dolar", "1.50", "a 5")
         // Matches: number at end, optionally followed by currency words
@@ -228,7 +236,8 @@ export const useInventario = () => {
                 cantidad: match[1].replace(',', '.'),
                 unidad: match[2],
                 nombre: match[3],
-                precio
+                precio,
+                isSalida
             };
         }
 
@@ -238,7 +247,19 @@ export const useInventario = () => {
                 cantidad: "1", // Default to 1 if not specified
                 unidad: "unidades",
                 nombre: cleanText,
-                precio
+                precio,
+                isSalida
+            };
+        }
+
+        // Fallback: Check if it's just a name with a detected exit command (e.g. "Gaste leche" -> 1 unit)
+        if (isSalida && cleanText) {
+            return {
+                cantidad: "1",
+                unidad: "unidades",
+                nombre: cleanText,
+                precio: null,
+                isSalida
             };
         }
 
@@ -298,7 +319,7 @@ export const useInventario = () => {
             return;
         }
 
-        const { cantidad, unidad, nombre: rawNombre, precio } = parsed;
+        const { cantidad, unidad, nombre: rawNombre, precio, isSalida } = parsed;
         const itemName = rawNombre.trim();
         const existing = findSmartMatch(itemName);
 
@@ -318,7 +339,7 @@ export const useInventario = () => {
             }
 
             setSelectedItem(existing);
-            setMovTipo('entrada');
+            setMovTipo(isSalida ? 'salida' : 'entrada');
             setMovCantidad(qty.toString());
             // Show total cost if calculated, otherwise leave empty or show calculated default?
             // User can edit it in the modal.

@@ -29,13 +29,13 @@ ion-item-sliding {
     align-items: center;
     gap: $spacing-sm;
   
-    .quick-add-btn {
+    .quick-remove-btn {
       --padding-start: 4px;
       --padding-end: 4px;
       height: 32px;
       margin: 0;
-      border: 1px solid var(--ion-color-success-tint);
       border-radius: $radius-round;
+      border: 1px solid var(--ion-color-warning);
     }
   
     .stock-info {
