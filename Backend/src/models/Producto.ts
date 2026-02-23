@@ -1,5 +1,10 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IIngredienteProducto {
+    inventario: mongoose.Types.ObjectId;
+    cantidad: number;
+}
+
 export interface IProducto extends Document {
     nombre: string;
     descripcion?: string;
@@ -7,9 +12,23 @@ export interface IProducto extends Document {
     categoria: 'comida' | 'bebida' | 'postre' | 'otro';
     disponible: boolean;
     imagen?: string;
+    ingredientes?: IIngredienteProducto[];
     createdAt?: Date;
     updatedAt?: Date;
 }
+
+const IngredienteProductoSchema: Schema = new Schema({
+    inventario: {
+        type: Schema.Types.ObjectId,
+        ref: 'Inventario',
+        required: true
+    },
+    cantidad: {
+        type: Number,
+        required: true,
+        min: 0.01 // Permitir fracciones (por ejemplo 0.5 kg de carne)
+    }
+}, { _id: false });
 
 const ProductoSchema: Schema = new Schema({
     nombre: {
@@ -38,6 +57,10 @@ const ProductoSchema: Schema = new Schema({
     imagen: {
         type: String,
         trim: true
+    },
+    ingredientes: {
+        type: [IngredienteProductoSchema],
+        default: []
     }
 }, {
     timestamps: true

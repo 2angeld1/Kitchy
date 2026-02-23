@@ -68,22 +68,22 @@ const Dashboard: React.FC = () => {
                                     <IonGrid style={{ padding: 0 }}>
                                         <IonRow>
                                             <IonCol size="6">
-                                                <IonCard className="stat-card" style={{ '--background': 'var(--ion-color-secondary)', margin: '0 0 16px 0' }}>
+                                                <IonCard className="stat-card historico-total">
                                                     <IonCardContent>
-                                                        <IonIcon icon={cashOutline} style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }} />
-                                                        <p className="stat-label" style={{ color: 'rgba(255,255,255,0.9)' }}>Ventas Totales</p>
-                                                        <h3 style={{ color: 'white' }}>${parseFloat(data.historico.ventasTotal).toFixed(2)}</h3>
-                                                        <span className="stat-sub" style={{ color: 'rgba(255,255,255,0.8)' }}>{data.historico.cantidadTotal} ventas</span>
+                                                        <IonIcon icon={cashOutline} />
+                                                        <p className="stat-label">Ventas Totales</p>
+                                                        <h3>${parseFloat(data.historico.ventasTotal).toFixed(2)}</h3>
+                                                        <span className="stat-sub">{data.historico.cantidadTotal} ventas</span>
                                                     </IonCardContent>
                                                 </IonCard>
                                             </IonCol>
                                             <IonCol size="6">
-                                                <IonCard className="stat-card" style={{ '--background': 'var(--ion-color-success)', margin: '0 0 16px 0' }}>
+                                                <IonCard className="stat-card historico-ganancia">
                                                     <IonCardContent>
-                                                        <IonIcon icon={trendingUpOutline} style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }} />
-                                                        <p className="stat-label" style={{ color: 'rgba(255,255,255,0.9)' }}>Ganancia Total</p>
-                                                        <h3 style={{ color: 'white' }}>${parseFloat(data.historico.gananciaTotal).toFixed(2)}</h3>
-                                                        <span className="stat-sub" style={{ color: 'rgba(255,255,255,0.8)' }}>Neto</span>
+                                                        <IonIcon icon={trendingUpOutline} />
+                                                        <p className="stat-label">Ganancia Total</p>
+                                                        <h3>${parseFloat(data.historico.gananciaTotal).toFixed(2)}</h3>
+                                                        <span className="stat-sub">Neto</span>
                                                     </IonCardContent>
                                                 </IonCard>
                                             </IonCol>

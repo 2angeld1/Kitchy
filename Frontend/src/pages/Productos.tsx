@@ -31,8 +31,9 @@ import {
     IonTextarea,
     IonThumbnail
 } from '@ionic/react';
-import { add, restaurant, trash, create, eye, eyeOff, camera, image } from 'ionicons/icons';
+import { add, restaurant, trash, create, eye, eyeOff, camera, image, listCircleOutline, cloudUpload } from 'ionicons/icons';
 import { useProductos } from '../hooks/useProductos';
+import { useInventario } from '../hooks/useInventario';
 import { optimizeImageUrl } from '../utils/imageUtils';
 
 const Productos: React.FC = () => {
@@ -59,6 +60,8 @@ const Productos: React.FC = () => {
         setDisponible,
         imagen,
         setImagen,
+        ingredientes,
+        setIngredientes,
         handleRefresh,
         resetForm,
         openEditModal,
@@ -67,8 +70,38 @@ const Productos: React.FC = () => {
         handleToggleDisponible,
         handleImageUpload,
         getEmoji,
-        productosFiltrados
+        productosFiltrados,
+        handleImportCsv
     } = useProductos();
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleImportCsv(e.target.files[0]);
+            e.target.value = ''; // Reset
+        }
+    };
+
+    // Traer el inventario para poder agregarlo a la receta
+    const { itemsFiltrados: itemsInventario } = useInventario();
+
+    // Función para manejar agregar/quitar ingredientes en el form
+    const handleChangeIngrediente = (index: number, field: string, value: any) => {
+        const nuevos = [...ingredientes];
+        nuevos[index] = { ...nuevos[index], [field]: value };
+        setIngredientes(nuevos);
+    };
+
+    const handleAddIngrediente = () => {
+        setIngredientes([...ingredientes, { inventario: '', cantidad: 1 }]);
+    };
+
+    const handleRemoveIngrediente = (index: number) => {
+        const nuevos = [...ingredientes];
+        nuevos.splice(index, 1);
+        setIngredientes(nuevos);
+    };
 
     return (
         <IonPage>
@@ -87,11 +120,24 @@ const Productos: React.FC = () => {
                 </IonRefresher>
 
                 <div className="productos-container">
-                    <IonSearchbar
-                        value={busqueda}
-                        onIonInput={(e) => setBusqueda(e.detail.value || '')}
-                        placeholder="Buscar producto..."
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '0 10px', marginBottom: '10px' }}>
+                        <IonSearchbar
+                            value={busqueda}
+                            onIonInput={(e) => setBusqueda(e.detail.value || '')}
+                            placeholder="Buscar producto..."
+                            style={{ padding: 0, margin: 0, flex: 1 }}
+                        />
+                        <input
+                            type="file"
+                            accept=".csv"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={onFileChange}
+                        />
+                        <IonButton fill="clear" color="secondary" onClick={() => fileInputRef.current?.click()} style={{ marginLeft: '5px' }}>
+                            <IonIcon icon={cloudUpload} slot="icon-only" />
+                        </IonButton>
+                    </div>
 
                     <IonList>
                         {productosFiltrados.map(producto => (
@@ -158,8 +204,8 @@ const Productos: React.FC = () => {
                         <IonList>
                             <IonItem>
                                 <div className="image-upload-container">
-                                    <div 
-                                        className="image-preview" 
+                                    <div
+                                        className="image-preview"
                                         onClick={() => document.getElementById('file-upload')?.click()}
                                         style={{ backgroundImage: imagen ? `url(${imagen})` : 'none' }}
                                     >
@@ -178,10 +224,10 @@ const Productos: React.FC = () => {
                                         style={{ display: 'none' }}
                                     />
                                     {imagen && (
-                                        <IonButton 
-                                            fill="clear" 
-                                            color="danger" 
-                                            size="small" 
+                                        <IonButton
+                                            fill="clear"
+                                            color="danger"
+                                            size="small"
                                             onClick={() => setImagen('')}
                                         >
                                             <IonIcon icon={trash} slot="start" />
@@ -235,6 +281,66 @@ const Productos: React.FC = () => {
                                     onIonChange={(e) => setDisponible(e.detail.checked)}
                                 />
                             </IonItem>
+
+                            {/* Sección de Receta / Ingredientes */}
+                            <div className="ion-padding-top">
+                                <IonItem lines="none">
+                                    <IonIcon icon={listCircleOutline} slot="start" />
+                                    <IonLabel>
+                                        <h2>Receta / Insumos</h2>
+                                        <p>¿Qué usa este producto del inventario?</p>
+                                    </IonLabel>
+                                    <IonButton slot="end" onClick={handleAddIngrediente} color="primary" fill="outline" size="small">
+                                        <IonIcon icon={add} slot="start" /> Add
+                                    </IonButton>
+                                </IonItem>
+
+                                {ingredientes.map((ingrediente: any, index: number) => (
+                                    <IonItem key={index} className="ingrediente-item">
+                                        <IonSelect
+                                            label="Insumo"
+                                            labelPlacement="floating"
+                                            value={ingrediente.inventario}
+                                            onIonChange={(e) => handleChangeIngrediente(index, 'inventario', e.detail.value)}
+                                            placeholder="Elegir..."
+                                            style={{ flex: 2, marginRight: '10px' }}
+                                        >
+                                            {itemsInventario.map(invItem => (
+                                                <IonSelectOption key={invItem._id} value={invItem._id}>
+                                                    {invItem.nombre} ({invItem.unidad})
+                                                </IonSelectOption>
+                                            ))}
+                                            {/* Prevenir un caso donde se editó un ingrediente que ya no esta en el stock pero sí en la base (safeguard) */}
+                                            {ingrediente.nombreDisplay && !itemsInventario.find(i => i._id === ingrediente.inventario) && (
+                                                <IonSelectOption value={ingrediente.inventario}>
+                                                    {ingrediente.nombreDisplay} (No disp.)
+                                                </IonSelectOption>
+                                            )}
+                                        </IonSelect>
+
+                                        <IonInput
+                                            label="Cant."
+                                            labelPlacement="floating"
+                                            type="number"
+                                            value={ingrediente.cantidad}
+                                            onIonInput={(e) => handleChangeIngrediente(index, 'cantidad', e.detail.value)}
+                                            style={{ flex: 1 }}
+                                            min="0.01"
+                                            step="0.01"
+                                        />
+
+                                        <IonButton slot="end" color="danger" fill="clear" onClick={() => handleRemoveIngrediente(index)}>
+                                            <IonIcon icon={trash} slot="icon-only" />
+                                        </IonButton>
+                                    </IonItem>
+                                ))}
+
+                                {ingredientes.length === 0 && (
+                                    <div className="ion-padding" style={{ textAlign: 'center', color: 'var(--ion-color-medium)', fontSize: '0.9em' }}>
+                                        No se han definido insumos para este producto.
+                                    </div>
+                                )}
+                            </div>
                         </IonList>
                         <IonButton expand="block" onClick={handleSubmit} className="ion-margin-top">
                             {editItem ? 'Actualizar' : 'Crear'} Producto

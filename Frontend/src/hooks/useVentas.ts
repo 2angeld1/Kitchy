@@ -30,19 +30,19 @@ export const useVentas = () => {
     const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
     const [ventas, setVentas] = useState<Venta[]>([]);
     const [loading, setLoading] = useState(false);
-    
+
     // UI State
     const [showModal, setShowModal] = useState(false);
     const [showHistorial, setShowHistorial] = useState(false);
-    
+
     // Form State
     const [metodoPago, setMetodoPago] = useState('efectivo');
     const [cliente, setCliente] = useState('');
-    
+
     // Feedback
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    
+
     // Filters
     const [busqueda, setBusqueda] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState('');
@@ -124,12 +124,15 @@ export const useVentas = () => {
                 cantidad: item.cantidad
             }));
 
-            await createVenta({ items, metodoPago, cliente });
-            setSuccess('¡Venta registrada exitosamente!');
+            const response = await createVenta({ items, metodoPago, cliente });
+            setSuccess(response.data.message || '¡Venta registrada exitosamente!');
             setCarrito([]);
             setCliente('');
             setMetodoPago('efectivo');
             setShowModal(false);
+
+            // Avisarle a la página de inventario que los stock cambiaron
+            window.dispatchEvent(new Event('refreshInventario'));
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al procesar venta');
         } finally {
@@ -155,7 +158,7 @@ export const useVentas = () => {
         const matchCategoria = !categoriaFiltro || p.categoria === categoriaFiltro;
         return matchBusqueda && matchCategoria;
     });
-    
+
     const clearError = () => setError('');
     const clearSuccess = () => setSuccess('');
 
@@ -172,7 +175,7 @@ export const useVentas = () => {
         success, clearSuccess,
         busqueda, setBusqueda,
         categoriaFiltro, setCategoriaFiltro,
-        
+
         cargarProductos,
         cargarVentas,
         handleRefresh,

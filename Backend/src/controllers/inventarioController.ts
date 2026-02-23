@@ -2,6 +2,8 @@ import { Response } from 'express';
 import Inventario, { IInventario } from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
 import { AuthRequest } from '../middleware/auth';
+import csvParser from 'csv-parser';
+import fs from 'fs';
 
 // ==================== INVENTARIO ====================
 
@@ -100,15 +102,15 @@ export const actualizarInventario = async (req: AuthRequest, res: Response) => {
 
         const inventario = await Inventario.findByIdAndUpdate(
             id,
-            { 
-                nombre, 
-                descripcion, 
-                unidad, 
-                cantidadMinima, 
-                costoUnitario, 
-                categoria, 
+            {
+                nombre,
+                descripcion,
+                unidad,
+                cantidadMinima,
+                costoUnitario,
+                categoria,
                 proveedor,
-                usuario: userId 
+                usuario: userId
             },
             { new: true, runValidators: true }
         );
@@ -329,5 +331,131 @@ export const obtenerResumenInventario = async (req: AuthRequest, res: Response) 
     } catch (error: any) {
         console.error('Error al obtener resumen:', error);
         res.status(500).json({ message: 'Error al obtener resumen', error: error.message });
+    }
+};
+
+// Importar inventario desde CSV
+export const importarInventarioCsv = async (req: AuthRequest, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No se subió ningún archivo CSV.' });
+        }
+
+        const userId = req.userId;
+        const results: any[] = [];
+        const errores: string[] = [];
+        let creados = 0;
+        let actualizados = 0;
+
+        fs.createReadStream(req.file.path)
+            .pipe(csvParser())
+            .on('data', (data) => results.push(data))
+            .on('end', async () => {
+                try {
+                    for (const row of results) {
+                        const { nombre, descripcion, cantidad, unidad, cantidadMinima, costoUnitario, categoria, proveedor } = row;
+
+                        if (!nombre || costoUnitario === undefined) {
+                            errores.push(`Fila ignorada: Faltan campos requeridos (nombre o costoUnitario) en la fila: ${JSON.stringify(row)}`);
+                            continue;
+                        }
+
+                        const parsedCantidad = parseFloat(cantidad) || 0;
+                        const parsedCantidadMinima = parseFloat(cantidadMinima) || 0;
+                        const parsedCostoUnitario = parseFloat(costoUnitario) || 0;
+
+                        // Buscar si el item ya existe
+                        const itemExistente = await Inventario.findOne({ nombre: { $regex: new RegExp(`^${nombre}$`, 'i') } });
+
+                        if (itemExistente) {
+                            // Actualizar
+                            const cantidadAnterior = itemExistente.cantidad;
+                            itemExistente.cantidad += parsedCantidad;
+                            itemExistente.descripcion = descripcion || itemExistente.descripcion;
+                            itemExistente.unidad = unidad || itemExistente.unidad;
+                            itemExistente.cantidadMinima = parsedCantidadMinima || itemExistente.cantidadMinima;
+
+                            // Si el costo viene distinto a 0 en el CSV y mayor que cero, actualiza el promedio o reemplázalo
+                            if (parsedCostoUnitario > 0 && parsedCantidad > 0) {
+                                // Promedio ponderado básico
+                                const valorActual = cantidadAnterior * itemExistente.costoUnitario;
+                                const valorNuevo = parsedCantidad * parsedCostoUnitario;
+                                itemExistente.costoUnitario = (valorActual + valorNuevo) / itemExistente.cantidad;
+                            }
+
+                            itemExistente.categoria = categoria || itemExistente.categoria;
+                            itemExistente.proveedor = proveedor || itemExistente.proveedor;
+                            itemExistente.usuario = userId as any;
+
+                            await itemExistente.save();
+
+                            if (parsedCantidad > 0) {
+                                const movimiento = new MovimientoInventario({
+                                    inventario: itemExistente._id,
+                                    tipo: 'entrada',
+                                    cantidad: parsedCantidad,
+                                    costoTotal: parsedCantidad * parsedCostoUnitario,
+                                    motivo: 'Importación CSV (Suma al stock)',
+                                    usuario: userId
+                                });
+                                await movimiento.save();
+                            }
+                            actualizados++;
+                        } else {
+                            // Crear nuevo
+                            const nuevoItem = new Inventario({
+                                nombre,
+                                descripcion,
+                                cantidad: parsedCantidad,
+                                unidad: unidad || 'unidades',
+                                cantidadMinima: parsedCantidadMinima,
+                                costoUnitario: parsedCostoUnitario,
+                                categoria: categoria || 'ingrediente',
+                                proveedor,
+                                usuario: userId
+                            });
+
+                            await nuevoItem.save();
+
+                            if (parsedCantidad > 0) {
+                                const movimiento = new MovimientoInventario({
+                                    inventario: nuevoItem._id,
+                                    tipo: 'entrada',
+                                    cantidad: parsedCantidad,
+                                    costoTotal: parsedCantidad * parsedCostoUnitario,
+                                    motivo: 'Importación CSV (Creación inicial)',
+                                    usuario: userId
+                                });
+                                await movimiento.save();
+                            }
+                            creados++;
+                        }
+                    }
+
+                    // Eliminar el archivo temporal
+                    fs.unlinkSync(req.file!.path);
+
+                    res.status(200).json({
+                        message: 'Importación finalizada',
+                        detalles: {
+                            creados,
+                            actualizados,
+                            errores
+                        }
+                    });
+
+                } catch (error: any) {
+                    // En caso de error dentro del stream, intentar limpiar archivo
+                    if (fs.existsSync(req.file!.path)) {
+                        fs.unlinkSync(req.file!.path);
+                    }
+                    console.error('Error procesando CSV:', error);
+                    res.status(500).json({ message: 'Error procesando los datos del CSV', error: error.message });
+                }
+            });
+
+    } catch (error: any) {
+        console.error('Error al importar CSV:', error);
+        res.status(500).json({ message: 'Error general en la importación', error: error.message });
     }
 };

@@ -4,6 +4,7 @@ import User from '../models/User';
 
 export interface AuthRequest extends Request {
     userId?: string;
+    file?: any;
     userRole?: string;
 }
 

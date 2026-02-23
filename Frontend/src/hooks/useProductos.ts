@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { resizeImage } from '../utils/imageUtils';
-import { getProductos, createProducto, updateProducto, deleteProducto, toggleDisponibilidad } from '../services/api';
+import { getProductos, createProducto, updateProducto, deleteProducto, toggleDisponibilidad, importarProductos } from '../services/api';
+
+export interface IIngrediente {
+    inventario: any; // Ideally we can populate this or only send the ID
+    cantidad: number;
+}
 
 export interface Producto {
     _id: string;
@@ -10,23 +15,24 @@ export interface Producto {
     categoria: string;
     disponible: boolean;
     imagen?: string;
+    ingredientes?: IIngrediente[];
 }
 
 export const useProductos = () => {
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState(false);
-    
+
     // UI State
     const [showModal, setShowModal] = useState(false);
     const [editItem, setEditItem] = useState<Producto | null>(null);
-    
+
     // Feedback
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    
+
     // Search
     const [busqueda, setBusqueda] = useState('');
-    
+
     // Form state
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
@@ -34,6 +40,7 @@ export const useProductos = () => {
     const [categoria, setCategoria] = useState('comida');
     const [disponible, setDisponible] = useState(true);
     const [imagen, setImagen] = useState('');
+    const [ingredientes, setIngredientes] = useState<IIngrediente[]>([]);
 
     useEffect(() => {
         cargarProductos();
@@ -63,6 +70,7 @@ export const useProductos = () => {
         setCategoria('comida');
         setDisponible(true);
         setImagen('');
+        setIngredientes([]);
         setEditItem(null);
     };
 
@@ -74,6 +82,18 @@ export const useProductos = () => {
         setCategoria(item.categoria);
         setDisponible(item.disponible);
         setImagen(item.imagen || '');
+
+        // Cargar ingredientes
+        if (item.ingredientes && item.ingredientes.length > 0) {
+            setIngredientes(item.ingredientes.map((ing: any) => ({
+                inventario: ing.inventario?._id || ing.inventario, // Handle populated vs unpopulated
+                cantidad: ing.cantidad,
+                nombreDisplay: ing.inventario?.nombre // Guardar nombre si viene populateado para mostrarlo
+            })));
+        } else {
+            setIngredientes([]);
+        }
+
         setShowModal(true);
     };
 
@@ -91,7 +111,11 @@ export const useProductos = () => {
                 precio: parseFloat(precio),
                 categoria,
                 disponible,
-                imagen
+                imagen,
+                ingredientes: ingredientes.map(ing => ({
+                    inventario: ing.inventario,
+                    cantidad: Number(ing.cantidad)
+                }))
             };
 
             if (editItem) {
@@ -131,14 +155,34 @@ export const useProductos = () => {
     const handleToggleDisponible = async (id: string) => {
         try {
             await toggleDisponibilidad(id);
-            setProductos(prev => prev.map(p => 
+            setProductos(prev => prev.map(p =>
                 p._id === id ? { ...p, disponible: !p.disponible } : p
             ));
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al cambiar disponibilidad');
         }
     };
-    
+
+    const handleImportCsv = async (file: File) => {
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('archivo', file);
+
+            const response = await importarProductos(formData);
+            const data = response.data;
+            setSuccess(`Importación lista. Nuevos: ${data.detalles.creados}, Actualizados: ${data.detalles.actualizados}`);
+            if (data.detalles.errores && data.detalles.errores.length > 0) {
+                console.warn('Errores de importación:', data.detalles.errores);
+            }
+            cargarProductos();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al importar CSV de productos');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -148,7 +192,7 @@ export const useProductos = () => {
                 setImagen(resizedImage);
             } catch (error) {
                 console.error('Error resizing image:', error);
-            // Fallback to original if resize fails
+                // Fallback to original if resize fails
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     setImagen(reader.result as string);
@@ -157,7 +201,7 @@ export const useProductos = () => {
             }
         }
     };
-    
+
     const getEmoji = (cat: string) => {
         switch (cat) {
             case 'comida': return '🍔';
@@ -182,14 +226,15 @@ export const useProductos = () => {
         error, clearError,
         success, clearSuccess,
         busqueda, setBusqueda,
-        
+
         nombre, setNombre,
         descripcion, setDescripcion,
         precio, setPrecio,
         categoria, setCategoria,
         disponible, setDisponible,
         imagen, setImagen,
-        
+        ingredientes, setIngredientes,
+
         handleRefresh,
         resetForm,
         openEditModal,
@@ -198,6 +243,7 @@ export const useProductos = () => {
         handleToggleDisponible,
         handleImageUpload,
         getEmoji,
-        productosFiltrados
+        productosFiltrados,
+        handleImportCsv
     };
 };

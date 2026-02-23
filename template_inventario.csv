@@ -1,0 +1,33 @@
+nombre,descripcion,cantidad,unidad,cantidadMinima,costoUnitario,categoria,proveedor
+Botella de Agua,Agua embotellada,50,unidades,10,0.50,insumo,Proveedor
+Leche Litro,Caja de leche entera,20,litros,5,1.20,ingrediente,Supermercado
+Cornflakes g,Cereal al por mayor,5000,gramos,1000,0.005,ingrediente,Supermercado
+Hielo,Cubos de hielo,100,unidades,20,0.10,insumo,Proveedor Hielo
+Azucar g,Azúcar blanca,5000,gramos,1000,0.001,ingrediente,Supermercado
+Fresa g,Fresas frescas,2000,gramos,500,0.003,ingrediente,Mercado
+Mango g,Mango fresco,2000,gramos,500,0.002,ingrediente,Mercado
+Melocoton g,Melocotón fresco,2000,gramos,500,0.004,ingrediente,Mercado
+Papaya g,Papaya fresca,3000,gramos,1000,0.001,ingrediente,Mercado
+Malta Vigor,Malta embotellada,30,unidades,10,0.60,insumo,Proveedor Bebidas
+Soda Lata,Soda en lata surtida,50,unidades,15,0.50,insumo,Proveedor Bebidas
+Soda Pequeña,Soda en botella de vidrio,40,unidades,10,0.30,insumo,Proveedor Bebidas
+Alitas de pollo,Alitas crudas limpias,100,unidades,20,0.20,ingrediente,Avícola
+Salsa BBQ ml,Salsa BBQ,2000,ml,500,0.003,ingrediente,Supermercado
+Aceite Litro,Aceite amarillo para freir,10,litros,2,1.50,ingrediente,Supermercado
+Papas picadas,Porción de papas listas,50,unidades,10,0.50,ingrediente,Mercado
+Pan de hamburguesa,Panes clásicos,40,unidades,10,0.25,insumo,Panadería
+Carne de hamburguesa,Tortas de carne,40,unidades,10,0.80,ingrediente,Carnicería
+Queso rebanada,Láminas de queso amarillo,100,unidades,20,0.10,ingrediente,Lácteos
+Lechuga g,Lechuga fresca,1000,gramos,200,0.002,ingrediente,Mercado
+Tomate rebanada,Tomates rebanados,200,unidades,50,0.05,ingrediente,Mercado
+Pan de hotdog,Pan largo clásico,40,unidades,10,0.20,insumo,Panadería
+Salchicha frankfurt,Salchichas al por mayor,50,unidades,10,0.40,ingrediente,Supermercado
+Ketchup ml,Salsa de tomate dulce,2000,ml,500,0.002,ingrediente,Supermercado
+Mayonesa ml,Mayonesa clásica,2000,ml,500,0.003,ingrediente,Supermercado
+Platano verde,Plátanos para patacones,50,unidades,15,0.30,ingrediente,Mercado
+Filete de pescado,Filetes congelados tilapia,30,unidades,10,1.20,ingrediente,Pescadería
+Limon,Limones ácidos,50,unidades,15,0.10,ingrediente,Mercado
+Pieza de pollo,Presas como encuentro y muslo,40,unidades,10,0.80,ingrediente,Avícola
+Salchicha picada,Porción base de salchichas,60,unidades,15,0.40,ingrediente,Supermercado
+Pollo picado,Restos y cortes de pollo,30,unidades,5,0.80,ingrediente,Avícola
+Carne picada,Picadillo y fajitas preparadas,30,unidades,5,1.00,ingrediente,Carnicería

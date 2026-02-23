@@ -61,6 +61,13 @@ export const deleteProducto = (id: string) =>
 export const toggleDisponibilidad = (id: string) =>
     api.patch(`/productos/${id}/disponibilidad`);
 
+export const importarProductos = (formData: FormData) =>
+    api.post('/productos/importar', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
 // Ventas
 export const getVentas = (params?: { fechaInicio?: string; fechaFin?: string; limit?: number }) =>
     api.get('/ventas', { params });
@@ -107,6 +114,13 @@ export const getStockBajo = () =>
 
 export const getResumenInventario = () =>
     api.get('/inventario/resumen');
+
+export const importarInventario = (formData: FormData) =>
+    api.post('/inventario/importar', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
 
 // Dashboard
 export const getDashboard = () =>

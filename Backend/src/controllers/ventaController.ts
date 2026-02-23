@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import Venta, { IVenta } from '../models/Venta';
 import Producto from '../models/Producto';
+import Inventario from '../models/Inventario';
 import { AuthRequest } from '../middleware/auth';
 
 // Crear una nueva venta
@@ -17,6 +18,9 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
         const itemsProcesados = [];
         let total = 0;
 
+        // Array para guardar las deducciones necesarias del inventario
+        const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
+
         for (const item of items) {
             const producto = await Producto.findById(item.productoId);
             if (!producto) {
@@ -24,6 +28,16 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
             }
             if (!producto.disponible) {
                 return res.status(400).json({ message: `Producto no disponible: ${producto.nombre}` });
+            }
+
+            // Si el producto tiene receta (ingredientes), los preparamos para descontar
+            if (producto.ingredientes && producto.ingredientes.length > 0) {
+                for (const ingrediente of producto.ingredientes) {
+                    deduccionesInventario.push({
+                        inventarioId: ingrediente.inventario,
+                        cantidadADescontar: ingrediente.cantidad * item.cantidad
+                    });
+                }
             }
 
             const subtotal = producto.precio * item.cantidad;
@@ -47,11 +61,25 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
         });
 
         await venta.save();
-        
+
+        // Aplicar todas las deducciones del inventario
+        for (const deduccion of deduccionesInventario) {
+            await Inventario.findByIdAndUpdate(
+                deduccion.inventarioId,
+                { $inc: { cantidad: -deduccion.cantidadADescontar } }
+            );
+        }
+
         // Populate para devolver datos completos
         await venta.populate('usuario', 'nombre email');
-        
-        res.status(201).json(venta);
+
+        res.status(201).json({
+            venta,
+            inventarioActualizado: true,
+            message: deduccionesInventario.length > 0
+                ? 'Venta registrada y los insumos han sido descontados del inventario.'
+                : 'Venta registrada.'
+        });
     } catch (error: any) {
         console.error('Error al crear venta:', error);
         res.status(500).json({ message: 'Error al crear la venta', error: error.message });

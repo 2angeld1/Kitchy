@@ -33,7 +33,7 @@ import {
     IonCardContent
 } from '@ionic/react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
-import { add, remove, cube, arrowDown, arrowUp, trash, create, mic, flash, send } from 'ionicons/icons';
+import { add, remove, cube, arrowDown, arrowUp, trash, create, mic, flash, send, cloudUpload } from 'ionicons/icons';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
 
@@ -58,8 +58,6 @@ const Inventario: React.FC = () => {
         setMovMotivo,
         movCosto,
         setMovCosto,
-        busqueda,
-        setBusqueda,
         filtro,
         setFiltro,
         nombre,
@@ -89,8 +87,18 @@ const Inventario: React.FC = () => {
         setSmartText,
         handleSmartAction,
         isListening,
-        setIsListening
+        setIsListening,
+        handleImportCsv
     } = useInventario();
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleImportCsv(e.target.files[0]);
+            e.target.value = ''; // Reset for future uploads
+        }
+    };
 
     const { isAdmin } = useAuth();
 
@@ -157,12 +165,22 @@ const Inventario: React.FC = () => {
                             <IonIcon icon={flash} className="smart-icon" color="warning" />
                             <input
                                 type="text"
-                                placeholder="Ej: 5 kg Tomates..."
+                                placeholder="Buscar o dictar (Ej: Tomates o 5kg Leche)"
                                 value={smartText}
                                 onChange={(e) => setSmartText(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSmartAction()}
                             />
                             <div className="smart-actions">
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={onFileChange}
+                                />
+                                <IonButton fill="clear" size="small" color="secondary" onClick={() => fileInputRef.current?.click()}>
+                                    <IonIcon icon={cloudUpload} slot="icon-only" />
+                                </IonButton>
                                 <IonButton fill="clear" size="small" onClick={startListening} color={isListening ? "danger" : "primary"}>
                                     <IonIcon icon={mic} slot="icon-only" className={isListening ? "pulsing-icon" : ""} />
                                 </IonButton>
@@ -176,18 +194,11 @@ const Inventario: React.FC = () => {
                                 {isListening ? (
                                     <span className="listening-text">🎙️ Escuchando...</span>
                                 ) : (
-                                        <>💡 Comandos: "10 Cajas Leche", "Gaste 2 Huevos", "2 lb Tomate 1.50"</>
+                                    <>💡 Comandos: "10 Cajas Leche", "Gaste 2 Huevos", "2 lb Tomate 1.50"</>
                                 )}
                             </small>
                         </p>
                     </div>
-
-                    <IonSearchbar
-                        value={busqueda}
-                        onIonInput={(e) => setBusqueda(e.detail.value || '')}
-                        placeholder="Buscar..."
-                        className="search-bar"
-                    />
 
                     <IonSegment value={filtro} onIonChange={(e) => setFiltro(e.detail.value as string)}>
                         <IonSegmentButton value="todos">Todos</IonSegmentButton>
@@ -206,38 +217,37 @@ const Inventario: React.FC = () => {
                                     </IonLabel>
                                     <div className="item-stock" slot="end">
 
-                                        <IonButton
-                                            fill="clear"
-                                            size="small"
-                                            color="warning"
-                                            className="quick-remove-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                triggerHaptic();
-                                                openMovModal(item, 'salida');
-                                                // Pre-fill with defaults for quick remove
-                                                setMovCantidad('1');
-                                            }}
-                                        >
-                                            <IonIcon icon={remove} />
-                                        </IonButton>
                                         <div className="stock-info">
-                                            <span className={`cantidad ${item.cantidad <= item.cantidadMinima ? 'bajo' : ''}`}>
-                                                {item.cantidad} {item.unidad}
-                                            </span>
-                                            {item.cantidad <= item.cantidadMinima && (
-                                                <IonBadge color="warning">Bajo</IonBadge>
-                                            )}
+                                            {(() => {
+                                                let stateClass = '';
+                                                let badgeColor = '';
+                                                let badgeText = '';
+
+                                                if (item.cantidad <= item.cantidadMinima) {
+                                                    stateClass = 'bajo'; // warning/danger depending on the css
+                                                    badgeColor = 'danger';
+                                                    badgeText = 'Bajo';
+                                                } else if (item.cantidadMinima > 0 && item.cantidad <= item.cantidadMinima * 1.5) {
+                                                    stateClass = 'medio'; // blue
+                                                    badgeColor = 'secondary';
+                                                    badgeText = 'Usando';
+                                                }
+
+                                                return (
+                                                    <>
+                                                        <span className={`cantidad ${stateClass}`}>
+                                                            {item.cantidad.toFixed(2)} {item.unidad}
+                                                        </span>
+                                                        {badgeText && (
+                                                            <IonBadge color={badgeColor}>{badgeText}</IonBadge>
+                                                        )}
+                                                    </>
+                                                )
+                                            })()}
                                         </div>
                                     </div>
                                 </IonItem>
                                 <IonItemOptions side="end">
-                                    <IonItemOption color="success" onClick={() => openMovModal(item, 'entrada')}>
-                                        <IonIcon icon={arrowDown} slot="icon-only" />
-                                    </IonItemOption>
-                                    <IonItemOption color="warning" onClick={() => openMovModal(item, 'salida')}>
-                                        <IonIcon icon={arrowUp} slot="icon-only" />
-                                    </IonItemOption>
                                     <IonItemOption color="primary" onClick={() => openEditModal(item)}>
                                         <IonIcon icon={create} slot="icon-only" />
                                     </IonItemOption>
@@ -261,58 +271,58 @@ const Inventario: React.FC = () => {
 
                 {/* Modal Crear/Editar */}
                 <IonModal isOpen={showModal} onDidDismiss={() => { setShowModal(false); resetForm(); }}>
-                        <IonHeader>
-                            <IonToolbar>
-                                <IonTitle>{editItem ? 'Editar' : 'Nuevo'} Item</IonTitle>
-                                <IonButtons slot="end">
-                                    <IonButton onClick={() => { setShowModal(false); resetForm(); }}>Cerrar</IonButton>
-                                </IonButtons>
-                            </IonToolbar>
-                        </IonHeader>
-                        <IonContent className="ion-padding">
-                            <IonList>
-                                <IonItem>
-                                    <IonInput label="Nombre *" value={nombre} onIonInput={(e) => setNombre(e.detail.value || '')} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonInput label="Descripción" value={descripcion} onIonInput={(e) => setDescripcion(e.detail.value || '')} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonInput label="Cantidad" type="number" value={cantidad} onIonInput={(e) => setCantidad(e.detail.value || '')} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonSelect label="Unidad" value={unidad} onIonChange={(e) => setUnidad(e.detail.value)}>
-                                        <IonSelectOption value="unidades">Unidades</IonSelectOption>
-                                        <IonSelectOption value="kg">Kilogramos</IonSelectOption>
-                                        <IonSelectOption value="lb">Libras</IonSelectOption>
-                                        <IonSelectOption value="litros">Litros</IonSelectOption>
-                                        <IonSelectOption value="gramos">Gramos</IonSelectOption>
-                                        <IonSelectOption value="ml">Mililitros</IonSelectOption>
-                                    </IonSelect>
-                                </IonItem>
-                                <IonItem>
-                                    <IonInput label="Stock Mínimo" type="number" value={cantidadMinima} onIonInput={(e) => setCantidadMinima(e.detail.value || '')} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonInput label="Costo Unitario *" type="number" value={costoUnitario} onIonInput={(e) => setCostoUnitario(e.detail.value || '')} />
-                                </IonItem>
-                                <IonItem>
-                                    <IonSelect label="Categoría" value={categoria} onIonChange={(e) => setCategoria(e.detail.value)}>
-                                        <IonSelectOption value="ingrediente">Ingrediente</IonSelectOption>
-                                        <IonSelectOption value="insumo">Insumo</IonSelectOption>
-                                        <IonSelectOption value="empaque">Empaque</IonSelectOption>
-                                        <IonSelectOption value="otro">Otro</IonSelectOption>
-                                    </IonSelect>
-                                </IonItem>
-                                <IonItem>
-                                    <IonInput label="Proveedor" value={proveedor} onIonInput={(e) => setProveedor(e.detail.value || '')} />
-                                </IonItem>
-                            </IonList>
-                            <IonButton expand="block" onClick={handleSubmit} className="ion-margin-top">
-                                {editItem ? 'Actualizar' : 'Crear'}
-                            </IonButton>
-                        </IonContent>
-                    </IonModal>
+                    <IonHeader>
+                        <IonToolbar>
+                            <IonTitle>{editItem ? 'Editar' : 'Nuevo'} Item</IonTitle>
+                            <IonButtons slot="end">
+                                <IonButton onClick={() => { setShowModal(false); resetForm(); }}>Cerrar</IonButton>
+                            </IonButtons>
+                        </IonToolbar>
+                    </IonHeader>
+                    <IonContent className="ion-padding">
+                        <IonList>
+                            <IonItem>
+                                <IonInput label="Nombre *" value={nombre} onIonInput={(e) => setNombre(e.detail.value || '')} />
+                            </IonItem>
+                            <IonItem>
+                                <IonInput label="Descripción" value={descripcion} onIonInput={(e) => setDescripcion(e.detail.value || '')} />
+                            </IonItem>
+                            <IonItem>
+                                <IonInput label="Cantidad" type="number" value={cantidad} onIonInput={(e) => setCantidad(e.detail.value || '')} />
+                            </IonItem>
+                            <IonItem>
+                                <IonSelect label="Unidad" value={unidad} onIonChange={(e) => setUnidad(e.detail.value)}>
+                                    <IonSelectOption value="unidades">Unidades</IonSelectOption>
+                                    <IonSelectOption value="kg">Kilogramos</IonSelectOption>
+                                    <IonSelectOption value="lb">Libras</IonSelectOption>
+                                    <IonSelectOption value="litros">Litros</IonSelectOption>
+                                    <IonSelectOption value="gramos">Gramos</IonSelectOption>
+                                    <IonSelectOption value="ml">Mililitros</IonSelectOption>
+                                </IonSelect>
+                            </IonItem>
+                            <IonItem>
+                                <IonInput label="Stock Mínimo" type="number" value={cantidadMinima} onIonInput={(e) => setCantidadMinima(e.detail.value || '')} />
+                            </IonItem>
+                            <IonItem>
+                                <IonInput label="Costo Unitario *" type="number" value={costoUnitario} onIonInput={(e) => setCostoUnitario(e.detail.value || '')} />
+                            </IonItem>
+                            <IonItem>
+                                <IonSelect label="Categoría" value={categoria} onIonChange={(e) => setCategoria(e.detail.value)}>
+                                    <IonSelectOption value="ingrediente">Ingrediente</IonSelectOption>
+                                    <IonSelectOption value="insumo">Insumo</IonSelectOption>
+                                    <IonSelectOption value="empaque">Empaque</IonSelectOption>
+                                    <IonSelectOption value="otro">Otro</IonSelectOption>
+                                </IonSelect>
+                            </IonItem>
+                            <IonItem>
+                                <IonInput label="Proveedor" value={proveedor} onIonInput={(e) => setProveedor(e.detail.value || '')} />
+                            </IonItem>
+                        </IonList>
+                        <IonButton expand="block" onClick={handleSubmit} className="ion-margin-top">
+                            {editItem ? 'Actualizar' : 'Crear'}
+                        </IonButton>
+                    </IonContent>
+                </IonModal>
 
 
                 {/* Modal Movimiento */}

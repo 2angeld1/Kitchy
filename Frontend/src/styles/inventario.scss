@@ -15,6 +15,7 @@
   padding: $spacing-sm $spacing-md !important;
   border: none !important;
 }
+
 .inventario-segment {
   margin-bottom: $spacing-md;
 }
@@ -26,23 +27,23 @@ ion-item-sliding {
 
 .item-stock {
   @include flex-row; // Changed to row to align button and text
-    align-items: center;
-    gap: $spacing-sm;
-  
-    .quick-remove-btn {
-      --padding-start: 4px;
-      --padding-end: 4px;
-      height: 32px;
-      margin: 0;
-      border-radius: $radius-round;
-      border: 1px solid var(--ion-color-warning);
-    }
-  
-    .stock-info {
+  align-items: center;
+  gap: $spacing-sm;
+
+  .quick-remove-btn {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    height: 32px;
+    margin: 0;
+    border-radius: $radius-round;
+    border: 1px solid var(--ion-color-warning);
+  }
+
+  .stock-info {
     @include flex-column;
-      align-items: flex-end;
+    align-items: flex-end;
     gap: 2px;
-    }
+  }
 
   .cantidad {
     font-weight: 700;
@@ -52,12 +53,16 @@ ion-item-sliding {
     &.bajo {
       color: var(--ion-color-warning);
     }
-    
+
+    &.medio {
+      color: var(--ion-color-secondary); // Azul
+    }
+
     &.critico {
       color: var(--ion-color-danger);
     }
   }
-  
+
   .unidad {
     font-size: 0.8rem;
     color: var(--ion-color-medium);
@@ -84,24 +89,24 @@ ion-item-sliding {
 .movimiento-card {
   @include card-minimal;
   margin: $spacing-sm 0;
-  
+
   ion-card-content {
     padding: $spacing-md;
   }
-  
+
   .movimiento-header {
     @include flex-between;
     margin-bottom: $spacing-sm;
   }
-  
+
   .movimiento-cantidad {
     font-size: 1.2rem;
     font-weight: 700;
-    
+
     &.entrada {
       color: var(--ion-color-success);
     }
-    
+
     &.salida {
       color: var(--ion-color-danger);
     }
@@ -110,7 +115,11 @@ ion-item-sliding {
 
 // Smart Input
 .smart-input-container {
-  margin-bottom: $spacing-md;
+  margin-bottom: $spacing-sm;
+}
+
+ion-segment {
+  margin-bottom: $spacing-xs;
 }
 
 .smart-input-box {
@@ -184,6 +193,7 @@ ion-item-sliding {
   align-items: center;
   gap: 4px;
 }
+
 @keyframes pulse {
   0% {
     transform: scale(1);

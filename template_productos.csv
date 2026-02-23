@@ -1,0 +1,22 @@
+nombre,descripcion,precio,categoria,disponible,receta
+Agua,Botella de agua natural,1.00,bebida,true,Botella de Agua:1
+Batido de Cornflakes,Batido refrescante de cereal,1.75,bebida,true,Leche Litro:0.2|Cornflakes g:50|Hielo:0.1|Azucar g:20
+Batido de Fresa,Batido natural de fresa,2.00,bebida,true,Leche Litro:0.2|Fresa g:100|Hielo:0.1|Azucar g:20
+Batido de Mango,Batido natural de mango,2.00,bebida,true,Leche Litro:0.2|Mango g:100|Hielo:0.1|Azucar g:20
+Batido de Melocotón,Batido natural de melocotón,2.00,bebida,true,Leche Litro:0.2|Melocoton g:100|Hielo:0.1|Azucar g:20
+Batido de Papaya,Batido natural de papaya,1.50,bebida,true,Leche Litro:0.2|Papaya g:100|Hielo:0.1|Azucar g:20
+Malta Vigor,Malta embotellada,1.00,bebida,true,Malta Vigor:1
+Soda de Lata,Variedad de sabores lata,1.00,bebida,true,Soda Lata:1
+Soda Uni,Soda pequeña,0.50,bebida,true,Soda Pequeña:1
+Alitas BBQ,Porción de alitas con salsa BBQ,4.50,comida,true,Alitas de pollo:8|Salsa BBQ ml:30|Aceite Litro:0.05
+Alitas con Papitas,Porción de alitas más papas,3.50,comida,true,Alitas de pollo:5|Papas picadas:1|Aceite Litro:0.1
+Hamburguesa Sencilla,Carne con vegetales,3.50,comida,true,Pan de hamburguesa:1|Carne de hamburguesa:1|Queso rebanada:1|Lechuga g:20|Tomate rebanada:2
+Hamburguesa en Combo + Soda,Acompañada de papas y soda,5.50,comida,true,Pan de hamburguesa:1|Carne de hamburguesa:1|Queso rebanada:1|Lechuga g:20|Tomate rebanada:2|Papas picadas:1|Aceite Litro:0.05|Soda Lata:1
+Hotdog,Pan con salchicha y salsas,3.25,comida,true,Pan de hotdog:1|Salchicha frankfurt:1|Ketchup ml:25|Mayonesa ml:25
+Patacón Adicional,Porción extra de patacones,1.00,otro,true,Platano verde:1|Aceite Litro:0.05
+Pescado con Patacón o Papitas,Filete de pescado con acompañamiento,6.50,comida,true,Filete de pescado:1|Platano verde:1|Aceite Litro:0.1|Limon:1
+Pollo con Papas,Pieza de pollo y papas fritas,3.50,comida,true,Pieza de pollo:1|Papas picadas:1|Aceite Litro:0.1
+Pollo con Patacón,Pieza de pollo y patacones,4.50,comida,true,Pieza de pollo:1|Platano verde:1|Aceite Litro:0.1
+Salchipapa Combo más Soda,Salchipapa con bebida,5.50,comida,true,Salchicha picada:2|Papas picadas:1.5|Aceite Litro:0.1|Ketchup ml:30|Mayonesa ml:30|Soda Lata:1
+Salchipapa Sencilla,Porción tradicional,3.00,comida,true,Salchicha picada:1|Papas picadas:1|Aceite Litro:0.05|Ketchup ml:15|Mayonesa ml:15
+Salchipapa Mixta,Con pollo y carne adicional,6.50,comida,true,Salchicha picada:1|Pollo picado:0.5|Carne picada:0.5|Papas picadas:1.5|Aceite Litro:0.1|Ketchup ml:30|Mayonesa ml:30

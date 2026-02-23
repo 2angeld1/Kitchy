@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
+import multer from 'multer';
 import {
     crearInventario,
     obtenerInventario,
@@ -11,10 +12,12 @@ import {
     ajustarInventario,
     obtenerMovimientos,
     obtenerStockBajo,
-    obtenerResumenInventario
+    obtenerResumenInventario,
+    importarInventarioCsv
 } from '../controllers/inventarioController';
 
 const router = Router();
+const upload = multer({ dest: 'uploads/' });
 
 // Todas las rutas requieren autenticación
 router.use(auth);
@@ -22,6 +25,7 @@ router.use(auth);
 // Rutas de inventario
 router.get('/resumen', obtenerResumenInventario);
 router.get('/stock-bajo', obtenerStockBajo);
+router.post('/importar', upload.single('archivo'), importarInventarioCsv);
 router.post('/', crearInventario);
 router.get('/', obtenerInventario);
 router.get('/:id', obtenerInventarioPorId);

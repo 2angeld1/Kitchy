@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida } from '../services/api';
+import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, importarInventario } from '../services/api';
 
 export interface InventarioItem {
     _id: string;
@@ -16,29 +16,28 @@ export interface InventarioItem {
 export const useInventario = () => {
     const [items, setItems] = useState<InventarioItem[]>([]);
     const [loading, setLoading] = useState(false);
-    
+
     // Modals
     const [showModal, setShowModal] = useState(false);
     const [showMovModal, setShowMovModal] = useState(false);
-    
+
     // Selection
     const [editItem, setEditItem] = useState<InventarioItem | null>(null);
     const [selectedItem, setSelectedItem] = useState<InventarioItem | null>(null);
-    
+
     // Movement Form
     const [movTipo, setMovTipo] = useState<'entrada' | 'salida'>('entrada');
     const [movCantidad, setMovCantidad] = useState('');
     const [movMotivo, setMovMotivo] = useState('');
     const [movCosto, setMovCosto] = useState('');
-    
+
     // Feedback
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    
+
     // Filters & Search
-    const [busqueda, setBusqueda] = useState('');
     const [filtro, setFiltro] = useState('todos');
-    
+
     // Form State (Main Item)
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
@@ -52,6 +51,15 @@ export const useInventario = () => {
     useEffect(() => {
         cargarInventario();
     }, [filtro]);
+
+    useEffect(() => {
+        const handleRefreshEvent = () => {
+            cargarInventario();
+        };
+
+        window.addEventListener('refreshInventario', handleRefreshEvent);
+        return () => window.removeEventListener('refreshInventario', handleRefreshEvent);
+    }, []);
 
     const cargarInventario = async () => {
         setLoading(true);
@@ -193,10 +201,26 @@ export const useInventario = () => {
         }
     };
 
-    const itemsFiltrados = items.filter(item =>
-        item.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
-    
+    const handleImportCsv = async (file: File) => {
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            formData.append('archivo', file);
+
+            const response = await importarInventario(formData);
+            const data = response.data;
+            setSuccess(`Importación lista. Nuevos: ${data.detalles.creados}, Actualizados: ${data.detalles.actualizados}`);
+            if (data.detalles.errores && data.detalles.errores.length > 0) {
+                console.warn('Errores de importación:', data.detalles.errores);
+            }
+            cargarInventario();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al importar CSV');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const clearError = () => setError('');
     const clearSuccess = () => setSuccess('');
 
@@ -367,6 +391,17 @@ export const useInventario = () => {
         setSmartText('');
     };
 
+    const itemsFiltrados = items.filter(item => {
+        if (!smartText) return true;
+
+        // Use smart parsing to filter by real name if user is typing a command,
+        // otherwise default to a direct string match
+        const parsed = parseSmartInput(smartText);
+        const searchTerm = parsed && parsed.nombre ? parsed.nombre.toLowerCase().trim() : smartText.toLowerCase().trim();
+
+        return item.nombre.toLowerCase().includes(searchTerm);
+    });
+
     return {
         // Data
         items,
@@ -376,23 +411,21 @@ export const useInventario = () => {
         clearError,
         clearSuccess,
         itemsFiltrados,
-        
+
         // Modal Visibility
         showModal,
         setShowModal,
         showMovModal,
         setShowMovModal,
-        
+
         // Selection
         editItem,
         selectedItem,
-        
+
         // Filters
-        busqueda,
-        setBusqueda,
         filtro,
         setFiltro,
-        
+
         // Smart Input
         smartText,
         setSmartText,
@@ -408,7 +441,7 @@ export const useInventario = () => {
         setMovMotivo,
         movCosto,
         setMovCosto,
-        
+
         // Item Form State
         nombre, setNombre,
         descripcion, setDescripcion,
@@ -418,7 +451,7 @@ export const useInventario = () => {
         costoUnitario, setCostoUnitario,
         categoria, setCategoria,
         proveedor, setProveedor,
-        
+
         // Actions
         handleRefresh,
         resetForm,
@@ -426,6 +459,7 @@ export const useInventario = () => {
         handleSubmit,
         handleDelete,
         openMovModal,
-        handleMovimiento
+        handleMovimiento,
+        handleImportCsv
     };
 };
