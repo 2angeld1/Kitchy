@@ -78,15 +78,15 @@
   --ion-background-color-rgb: 250, 250, 250;
   --ion-text-color: #18181b;
   --ion-text-color-rgb: 24, 24, 27;
-  
+
   --ion-toolbar-background: #ffffff;
   --ion-toolbar-color: #18181b;
   --ion-border-color: #e4e4e7;
-  
+
   --ion-card-background: #ffffff;
   --ion-item-background: #ffffff;
-  
-  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --ion-font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Dark Mode - ONLY via toggle (body.dark class), NOT system preference */
@@ -110,14 +110,14 @@ body.dark {
   --ion-background-color-rgb: 9, 9, 11;
   --ion-text-color: #fafafa;
   --ion-text-color-rgb: 250, 250, 250;
-  
+
   --ion-toolbar-background: #18181b;
   --ion-toolbar-color: #fafafa;
   --ion-border-color: #27272a;
-  
+
   --ion-card-background: #18181b;
   --ion-item-background: #18181b;
-  
+
   --ion-color-step-50: #1a1a1a;
   --ion-color-step-100: #27272a;
   --ion-color-step-150: #333;
@@ -207,11 +207,13 @@ ion-card {
 }
 
 /* Inputs con floating label */
-ion-input, ion-textarea, ion-select {
+ion-input,
+ion-textarea,
+ion-select {
   --padding-start: 16px;
   --padding-end: 16px;
   --border-radius: 12px;
-  
+
   &.input-fill-outline {
     --border-color: var(--ion-border-color);
     --border-width: 1px;
@@ -231,8 +233,9 @@ ion-button {
   --border-radius: 12px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  
-  &[fill="clear"], &[fill="outline"] {
+
+  &[fill="clear"],
+  &[fill="outline"] {
     --padding-start: 16px;
     --padding-end: 16px;
   }

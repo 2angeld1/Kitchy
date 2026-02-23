@@ -43,6 +43,7 @@ import '@ionic/react/css/display.css';
 /* import '@ionic/react/css/palettes/dark.system.css'; */
 
 /* All styles centralized in SCSS */
+import './styles/tailwind.css';
 import './styles/main.scss';
 
 setupIonicReact();
@@ -50,34 +51,34 @@ setupIonicReact();
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  
+
   if (loading) {
     return null;
   }
-  
+
   if (!isAuthenticated) {
     return <Redirect to="/login" />;
   }
-  
+
   return <>{children}</>;
 };
 
 // Admin Route Component
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  
+
   if (loading) {
     return null;
   }
-  
+
   if (!isAuthenticated) {
     return <Redirect to="/login" />;
   }
-  
+
   if (!isAdmin) {
     return <Redirect to="/ventas" />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -96,61 +97,61 @@ const MainRoutes: React.FC = () => {
 
   return (
     isAuthenticated ? (
-        <IonSplitPane contentId="main-content">
-          <Menu />
-          <IonRouterOutlet id="main-content">
-            <Route exact path="/dashboard">
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            </Route>
-            <Route exact path="/ventas">
-              <ProtectedRoute>
-                <Ventas />
-              </ProtectedRoute>
-            </Route>
-            <Route exact path="/inventario">
-              <ProtectedRoute>
-                <Inventario />
-              </ProtectedRoute>
-            </Route>
-            <Route exact path="/productos">
-              <AdminRoute>
-                <Productos />
-              </AdminRoute>
-            </Route>
-            <Route exact path="/usuarios">
-              <AdminRoute>
-                <Usuarios />
-              </AdminRoute>
-            </Route>
+      <IonSplitPane contentId="main-content">
+        <Menu />
+        <IonRouterOutlet id="main-content">
+          <Route exact path="/dashboard">
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/ventas">
+            <ProtectedRoute>
+              <Ventas />
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/inventario">
+            <ProtectedRoute>
+              <Inventario />
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/productos">
+            <AdminRoute>
+              <Productos />
+            </AdminRoute>
+          </Route>
+          <Route exact path="/usuarios">
+            <AdminRoute>
+              <Usuarios />
+            </AdminRoute>
+          </Route>
           <Route exact path="/configuracion-menu">
             <AdminRoute>
               <ConfiguracionMenu />
             </AdminRoute>
           </Route>
-            <Route exact path="/">
-              <Redirect to="/ventas" />
-            </Route>
-            <Route exact path="/login">
-              <Redirect to="/ventas" />
-            </Route>
-          </IonRouterOutlet>
-        </IonSplitPane>
-      ) : (
-        <IonRouterOutlet>
-          {/* Login/Register/etc */}
+          <Route exact path="/">
+            <Redirect to="/ventas" />
+          </Route>
           <Route exact path="/login">
-            <Login />
-          </Route>
-          <Route exact path="/register">
-            <Register />
-          </Route>
-          <Route>
-            <Redirect to="/login" />
+            <Redirect to="/ventas" />
           </Route>
         </IonRouterOutlet>
-      )
+      </IonSplitPane>
+    ) : (
+      <IonRouterOutlet>
+        {/* Login/Register/etc */}
+        <Route exact path="/login">
+          <Login />
+        </Route>
+        <Route exact path="/register">
+          <Register />
+        </Route>
+        <Route>
+          <Redirect to="/login" />
+        </Route>
+      </IonRouterOutlet>
+    )
   );
 };
 

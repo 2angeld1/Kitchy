@@ -1,13 +1,3 @@
 // Main SCSS entry point for Kitchy
 // Load Ionic CSS variables first
 @use 'ionic-variables';
-
-// Load component styles
-@use 'login';
-@use 'dashboard';
-@use 'ventas';
-@use 'inventario';
-@use 'productos';
-@use 'usuarios';
-@use 'menu';
-
