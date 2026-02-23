@@ -19,29 +19,28 @@ import {
 } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { menuController } from '@ionic/core/components';
+import { motion } from 'framer-motion';
 
 const Menu: React.FC = () => {
     const { user, logout, isAdmin } = useAuth();
-    const { isDark, setTheme } = useTheme();
     const history = useHistory();
     const location = useLocation();
 
     const menuItems = [
-        { title: 'Dashboard', path: '/dashboard', icon: homeOutline, description: 'Resumen general' },
-        { title: 'Ventas', path: '/ventas', icon: cartOutline, description: 'Punto de venta' },
-        { title: 'Inventario', path: '/inventario', icon: cubeOutline, description: 'Control de stock' },
+        { title: 'Dashboard', path: '/dashboard', icon: homeOutline, description: 'Resumen general', color: 'text-primary' },
+        { title: 'Ventas', path: '/ventas', icon: cartOutline, description: 'Punto de venta', color: 'text-success' },
+        { title: 'Inventario', path: '/inventario', icon: cubeOutline, description: 'Control de stock', color: 'text-warning' },
     ];
 
     const adminItems = [
-        { title: 'Productos', path: '/productos', icon: restaurantOutline, description: 'Catálogo' },
-        { title: 'Usuarios', path: '/usuarios', icon: peopleOutline, description: 'Gestión de acceso' },
-        { title: 'Configurar Menú', path: '/configuracion-menu', icon: colorPaletteOutline, description: 'Personalizar menú público' },
+        { title: 'Productos', path: '/productos', icon: restaurantOutline, description: 'Catálogo', color: 'text-secondary' },
+        { title: 'Usuarios', path: '/usuarios', icon: peopleOutline, description: 'Gestión de acceso', color: 'text-indigo-500' },
+        { title: 'Menú Público', path: '/configuracion-menu', icon: colorPaletteOutline, description: 'Personalizar página', color: 'text-pink-500' },
     ];
 
-    const navigateTo = (path: string) => {
-        menuController.close();
+    const navigateTo = async (path: string) => {
+        await menuController.close();
         history.push(path);
     };
 
@@ -53,86 +52,126 @@ const Menu: React.FC = () => {
     const isActive = (path: string) => location.pathname === path;
 
     return (
-        <IonMenu contentId="main-content" type="overlay" className="custom-menu">
-            <IonContent className="menu-content">
-                {/* User Card */}
-                <div className="menu-user-card">
-                    <div className="user-avatar">
-                        {user?.nombre?.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="user-details">
-                        <span className="user-name">{user?.nombre}</span>
-                        <span className="user-role">{user?.rol}</span>
-                    </div>
-                </div>
+        <IonMenu contentId="main-content" type="overlay" style={{ '--background': 'transparent' }}>
+            <IonContent className="ion-padding" style={{ '--background': 'var(--ion-background-color)' }}>
+                <div className="flex flex-col h-full bg-[#fafafa]">
 
-                {/* Navigation */}
-                <nav className="menu-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">Menú Principal</span>
-                        {menuItems.map((item, index) => (
-                            <button
-                                key={index}
-                                className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-                                onClick={() => navigateTo(item.path)}
-                            >
-                                <div className="nav-item-icon">
-                                    <IonIcon icon={item.icon} />
-                                </div>
-                                <div className="nav-item-content">
-                                    <span className="nav-item-title">{item.title}</span>
-                                    <span className="nav-item-desc">{item.description}</span>
-                                </div>
-                                <IonIcon icon={chevronForward} className="nav-item-arrow" />
-                            </button>
-                        ))}
-                    </div>
+                    {/* Header / User Profile */}
+                    <div className="shrink-0 p-4 flex flex-col items-center justify-center border-b border-zinc-200 relative overflow-hidden">
+                        {/* Decorative background glow */}
+                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
 
-                    {isAdmin && (
-                        <div className="nav-section">
-                            <span className="nav-section-title">Administración</span>
-                            {adminItems.map((item, index) => (
-                                <button
-                                    key={index}
-                                    className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-                                    onClick={() => navigateTo(item.path)}
-                                >
-                                    <div className="nav-item-icon">
-                                        <IonIcon icon={item.icon} />
-                                    </div>
-                                    <div className="nav-item-content">
-                                        <span className="nav-item-title">{item.title}</span>
-                                        <span className="nav-item-desc">{item.description}</span>
-                                    </div>
-                                    <IonIcon icon={chevronForward} className="nav-item-arrow" />
-                                </button>
-                            ))}
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-shade shadow-xl shadow-primary/20 flex items-center justify-center text-2xl font-black text-white mb-3 z-10"
+                        >
+                            {user?.nombre?.charAt(0).toUpperCase()}
+                        </motion.div>
+
+                        <div className="text-center z-10">
+                            <h2 className="text-lg font-black text-zinc-900 tracking-tight leading-none mb-1">
+                                {user?.nombre || 'Usuario Kitchy'}
+                            </h2>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-black uppercase tracking-widest bg-zinc-100 text-zinc-600">
+                                {user?.rol || 'Staff'}
+                            </span>
                         </div>
-                    )}
-                </nav>
 
-                {/* Footer */}
-                <div className="menu-bottom">
-                    {/* Theme Toggle */}
-                    <div className="theme-toggle-container">
-                        <div className="theme-toggle-info">
-                            <IonIcon icon={isDark ? moonOutline : sunnyOutline} />
-                            <span>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</span>
-                        </div>
-                        <IonToggle
-                            checked={isDark}
-                            onIonChange={(e) => setTheme(e.detail.checked)}
-                        />
+                        {/* Logout Button (Moved up for priority) */}
+                        <button
+                            onClick={handleLogout}
+                            className="!mt-4 !w-full !flex !items-center !justify-center !gap-2 !p-2.5 !rounded-xl !text-danger hover:!bg-danger/10 !border !border-transparent hover:!border-danger/20 active:!scale-95 !transition-all !duration-200 !font-bold !text-xs !z-10"
+                        >
+                            <IonIcon icon={logOutOutline} className="text-base" />
+                            <span>Cerrar Sesión</span>
+                        </button>
                     </div>
 
-                    {/* Logout */}
-                    <button className="logout-button" onClick={handleLogout}>
-                        <IonIcon icon={logOutOutline} />
-                        <span>Cerrar Sesión</span>
-                    </button>
+                    {/* Scrollable Navigation */}
+                    <div className="flex-1 overflow-y-auto w-full px-4 py-6 space-y-8 no-scrollbar">
+
+                        {/* Main Menu */}
+                        <div className="space-y-2">
+                            <span className="px-3 text-[0.65rem] font-bold tracking-widest uppercase text-zinc-400">
+                                Menú Principal
+                            </span>
+                            <div className="space-y-3">
+                                {menuItems.map((item, index) => {
+                                    const active = isActive(item.path);
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => navigateTo(item.path)}
+                                            className={`w-full group flex items-center gap-4 p-3 !rounded-2xl transition-all duration-300 ease-out active:scale-95 ${active
+                                                ? '!bg-white shadow-sm border border-zinc-200/50 !rounded-2xl'
+                                                : 'hover:!bg-zinc-100 border border-transparent !rounded-2xl'
+                                                }`}
+                                        >
+                                            <div className={`w-10 h-10 !rounded-xl flex items-center justify-center transition-colors ${active ? `bg-primary/20 ${item.color}` : 'bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200'
+                                                }`}>
+                                                <IonIcon icon={item.icon} className="text-xl" />
+                                            </div>
+                                            <div className="flex-1 text-left min-w-0">
+                                                <div className={`text-sm font-bold truncate transition-colors ${active ? 'text-zinc-900' : 'text-zinc-600 group-hover:text-zinc-900'}`}>
+                                                    {item.title}
+                                                </div>
+                                                <div className="text-[0.65rem] font-semibold text-zinc-400 truncate">
+                                                    {item.description}
+                                                </div>
+                                            </div>
+                                            {active && (
+                                                <motion.div layoutId="activeMenuIndicator" className="w-1.5 h-6 rounded-full bg-primary" />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Admin Menu */}
+                        {isAdmin && (
+                            <div className="space-y-2">
+                                <span className="px-3 text-[0.65rem] font-bold tracking-widest uppercase text-primary/70">
+                                    Administración
+                                </span>
+                                <div className="space-y-3">
+                                    {adminItems.map((item, index) => {
+                                        const active = isActive(item.path);
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={() => navigateTo(item.path)}
+                                                className={`w-full group flex items-center gap-4 p-3 !rounded-2xl transition-all duration-300 ease-out active:scale-95 ${active
+                                                    ? '!bg-white shadow-sm border border-zinc-200/50 !rounded-2xl'
+                                                    : 'hover:!bg-zinc-100 border border-transparent !rounded-2xl'
+                                                    }`}
+                                            >
+                                                <div className={`w-10 h-10 !rounded-xl flex items-center justify-center transition-colors ${active ? `bg-primary/20 ${item.color}` : 'bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200'
+                                                    }`}>
+                                                    <IonIcon icon={item.icon} className="text-xl" />
+                                                </div>
+                                                <div className="flex-1 text-left min-w-0">
+                                                    <div className={`text-sm font-bold truncate transition-colors ${active ? 'text-zinc-900' : 'text-zinc-600 group-hover:text-zinc-900'}`}>
+                                                        {item.title}
+                                                    </div>
+                                                    <div className="text-[0.65rem] font-semibold text-zinc-400 truncate">
+                                                        {item.description}
+                                                    </div>
+                                                </div>
+                                                {active && (
+                                                    <motion.div layoutId="activeMenuIndicator" className="w-1.5 h-6 rounded-full bg-primary" />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                 </div>
             </IonContent>
-        </IonMenu>
+        </IonMenu >
     );
 };
 

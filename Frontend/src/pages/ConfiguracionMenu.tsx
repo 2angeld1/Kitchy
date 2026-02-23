@@ -1,41 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import {
     IonPage,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonItem,
-    IonLabel,
-    IonInput,
-    IonSelect,
-    IonSelectOption,
-    IonButton,
-    IonButtons,
-    IonMenuButton,
     IonLoading,
     IonToast,
     IonIcon,
-    IonSegment,
-    IonSegmentButton,
     IonRefresher,
     IonRefresherContent
 } from '@ionic/react';
-import { 
-    colorPaletteOutline, 
-    restaurantOutline, 
-    callOutline, 
+import {
+    colorPaletteOutline,
+    restaurantOutline,
+    callOutline,
     qrCodeOutline,
     eyeOutline,
     saveOutline,
     camera,
     trash,
-    image as imageIcon
+    image as imageIcon,
+    logoInstagram,
+    logoWhatsapp,
+    copyOutline
 } from 'ionicons/icons';
+import { motion, AnimatePresence } from 'framer-motion';
+import KitchyToolbar from '../components/KitchyToolbar';
 import { getMenuConfig, updateMenuConfig } from '../services/api';
 import { resizeImage } from '../utils/imageUtils';
 
@@ -62,22 +50,17 @@ const ConfiguracionMenu: React.FC = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Form State
     const [config, setConfig] = useState<MenuConfigData>({
         nombreRestaurante: '',
         subtitulo: '',
-        tema: 'paper',
-        colorPrimario: '#c92c2c',
-        colorSecundario: '#d4af37',
+        tema: 'modern',
+        colorPrimario: '#18181b', // zinc-900
+        colorSecundario: '#f4f4f5',
         imagenHero: '',
         telefono: '',
         direccion: '',
         horario: '',
-        redesSociales: {
-            instagram: '',
-            facebook: '',
-            whatsapp: ''
-        }
+        redesSociales: { instagram: '', facebook: '', whatsapp: '' }
     });
 
     useEffect(() => {
@@ -88,7 +71,9 @@ const ConfiguracionMenu: React.FC = () => {
         setLoading(true);
         try {
             const response = await getMenuConfig();
-            setConfig(response.data);
+            if (response.data) {
+                setConfig(response.data);
+            }
         } catch (err) {
             console.error('Error cargando config:', err);
             setError('Error al cargar la configuración');
@@ -106,7 +91,7 @@ const ConfiguracionMenu: React.FC = () => {
         setSaving(true);
         try {
             await updateMenuConfig(config);
-            setSuccess('Configuración guardada correctamente');
+            setSuccess('Menú actualizado exitosamente');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al guardar');
         } finally {
@@ -140,295 +125,275 @@ const ConfiguracionMenu: React.FC = () => {
 
     const menuUrl = `${window.location.origin}/menu`;
 
-    return (
-        <IonPage>
-            <IonHeader>
-                <IonToolbar>
-                    <IonButtons slot="start">
-                        <IonMenuButton />
-                    </IonButtons>
-                    <IonTitle>Configurar Menú</IonTitle>
-                    <IonButtons slot="end">
-                        <IonButton onClick={handleSave} disabled={saving}>
-                            <IonIcon icon={saveOutline} slot="start" />
-                            Guardar
-                        </IonButton>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
+    const inputClasses = "w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-400 focus:ring-4 ring-primary/10 transition-all outline-none";
+    const labelClasses = "block text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-2 ml-1";
 
-            <IonContent>
+    return (
+        <IonPage className="bg-[#fafafa]">
+            <KitchyToolbar
+                title="Menú Digital"
+                extraButtons={
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="!flex !items-center !gap-2 !px-4 !py-2.5 !rounded-2xl !bg-zinc-900 !text-white !font-black !text-xs disabled:!opacity-50 !shadow-md !shadow-zinc-900/20"
+                    >
+                        <IonIcon icon={saveOutline} className="!text-base" />
+                        <span className="hidden sm:inline">Guardar Cambios</span>
+                    </motion.button>
+                }
+            />
+
+            <IonContent style={{ '--background': 'transparent' }}>
                 <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
                     <IonRefresherContent />
                 </IonRefresher>
 
-                <div style={{ maxWidth: 800, margin: '0 auto', padding: 16 }}>
-                    {/* Quick Actions */}
-                    <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-                        <IonButton expand="block" fill="outline" routerLink="/menu" target="_blank" style={{ flex: 1 }}>
-                            <IonIcon icon={eyeOutline} slot="start" />
-                            Ver Menú
-                        </IonButton>
-                        <IonButton expand="block" fill="outline" style={{ flex: 1 }} onClick={() => {
-                            navigator.clipboard.writeText(menuUrl);
-                            setSuccess('URL copiada al portapapeles');
-                        }}>
-                            <IonIcon icon={qrCodeOutline} slot="start" />
-                            Copiar URL
-                        </IonButton>
+                <div className="max-w-3xl mx-auto px-4 pt-6 pb-24 space-y-6">
+
+                    {/* Quick Access Strip */}
+                    <div className="flex gap-3">
+                        <a
+                            href="/menu"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 bg-primary/10 border border-primary/20 text-primary font-black py-4 rounded-3xl flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors active:scale-95"
+                        >
+                            <IonIcon icon={eyeOutline} className="text-xl" />
+                            Ver Menú Público
+                        </a>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(menuUrl);
+                                setSuccess('¡Enlace copiado al portapapeles!');
+                            }}
+                            className="!flex-1 !bg-white !border !border-zinc-200 !text-zinc-700 !font-black !py-4 !rounded-3xl !flex !items-center !justify-center !gap-2 hover:!bg-zinc-50 !transition-colors active:!scale-95 !shadow-sm"
+                        >
+                            <IonIcon icon={copyOutline} className="text-xl" />
+                            Copiar Enlace
+                        </button>
                     </div>
 
                     {/* Identidad del Restaurante */}
-                    <IonCard>
-                        <IonCardHeader>
-                            <IonCardTitle>
-                                <IonIcon icon={restaurantOutline} style={{ marginRight: 10 }} />
-                                Identidad
-                            </IonCardTitle>
-                        </IonCardHeader>
-                        <IonCardContent>
-                            <IonItem>
-                                <IonInput
-                                    label="Nombre del Restaurante"
-                                    labelPlacement="floating"
+                    <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                                <IonIcon icon={restaurantOutline} className="text-xl" />
+                            </div>
+                            <h2 className="text-xl font-black text-zinc-900 tracking-tight">Identidad Visual</h2>
+                        </div>
+
+                        <div className="space-y-5">
+                            <div>
+                                <label className={labelClasses}>Nombre de tu Local</label>
+                                <input
+                                    type="text"
                                     value={config.nombreRestaurante}
-                                    onIonInput={(e) => updateField('nombreRestaurante', e.detail.value)}
+                                    onChange={(e) => updateField('nombreRestaurante', e.target.value)}
+                                    placeholder="Ej. Kitchy Burger"
+                                    className={inputClasses}
                                 />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Subtítulo / Eslogan"
-                                    labelPlacement="floating"
+                            </div>
+
+                            <div>
+                                <label className={labelClasses}>Subtítulo / Eslogan</label>
+                                <input
+                                    type="text"
                                     value={config.subtitulo}
-                                    onIonInput={(e) => updateField('subtitulo', e.detail.value)}
+                                    onChange={(e) => updateField('subtitulo', e.target.value)}
+                                    placeholder="Las mejores hamburguesas de la ciudad"
+                                    className={inputClasses}
                                 />
-                            </IonItem>
-                            <IonItem>
-                                <div style={{ width: '100%', paddingTop: 10, paddingBottom: 10 }}>
-                                    <IonLabel position="stacked" style={{ marginBottom: 10 }}>Imagen Principal / Logo</IonLabel>
-                                    
-                                    <div 
-                                        className="image-upload-container"
-                                        style={{
-                                            width: '100%',
-                                            height: '200px',
-                                            borderRadius: '12px',
-                                            border: '2px dashed #ccc',
-                                            overflow: 'hidden',
-                                            position: 'relative',
-                                            cursor: 'pointer',
-                                            backgroundColor: '#f9f9f9',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            backgroundImage: config.imagenHero ? `url(${config.imagenHero})` : 'none',
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center'
-                                        }}
+                            </div>
+
+                            <div>
+                                <label className={labelClasses}>Portada / Header del Menú</label>
+                                <div className="flex justify-center mt-2">
+                                    <div
+                                        className="relative group cursor-pointer w-full h-48 rounded-[2rem] flex flex-col items-center justify-center overflow-hidden transition-all duration-300 border-2 border-dashed border-zinc-300 text-zinc-400 bg-zinc-50 hover:bg-zinc-100 hover:border-primary/50"
                                         onClick={() => document.getElementById('hero-image-upload')?.click()}
                                     >
-                                        {!config.imagenHero && (
-                                            <div style={{ textAlign: 'center', color: '#666' }}>
-                                                <IonIcon icon={camera} style={{ fontSize: '48px', marginBottom: '8px' }} />
-                                                <div>Toca para subir imagen</div>
-                                            </div>
+                                        {config.imagenHero ? (
+                                            <>
+                                                <img src={config.imagenHero} className="w-full h-full object-cover" alt="Hero" />
+                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <IonIcon icon={camera} className="text-white text-4xl" />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <IonIcon icon={imageIcon} className="text-4xl mb-2 transition-transform group-hover:scale-110" />
+                                                <span className="text-xs uppercase font-black tracking-widest text-center mt-2">Sube una foto<br />atractiva</span>
+                                            </>
                                         )}
                                     </div>
-                                    
-                                    <input
-                                        id="hero-image-upload"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        style={{ display: 'none' }}
-                                    />
-                                    
-                                    {config.imagenHero && (
-                                        <IonButton 
-                                            fill="clear" 
-                                            color="danger" 
-                                            size="small" 
+                                    <input id="hero-image-upload" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                </div>
+                                {config.imagenHero && (
+                                    <div className="flex justify-end mt-3">
+                                        <button
                                             onClick={() => updateField('imagenHero', '')}
-                                            style={{ marginTop: 5 }}
+                                            className="text-[11px] font-black uppercase tracking-widest text-danger bg-danger/10 px-4 py-2 rounded-xl flex items-center gap-1 active:scale-95 transition-transform"
                                         >
-                                            <IonIcon icon={trash} slot="start" />
-                                            Eliminar Imagen
-                                        </IonButton>
-                                    )}
-                                </div>
-                            </IonItem>
-                        </IonCardContent>
-                    </IonCard>
-
-                    {/* Tema Visual */}
-                    <IonCard>
-                        <IonCardHeader>
-                            <IonCardTitle>
-                                <IonIcon icon={colorPaletteOutline} style={{ marginRight: 10 }} />
-                                Apariencia
-                            </IonCardTitle>
-                        </IonCardHeader>
-                        <IonCardContent>
-                            <IonItem lines="none" style={{ '--padding-start': '0', marginBottom: '15px' }}>
-                                <IonSelect 
-                                    label="Estilo del Menú"
-                                    labelPlacement="stacked"
-                                    value={config.tema} 
-                                    onIonChange={(e) => updateField('tema', e.detail.value)}
-                                    interface="action-sheet"
-                                    placeholder="Selecciona un tema"
-                                    style={{ width: '100%' }}
-                                >
-                                    <IonSelectOption value="paper">📜 Papel (Clásico)</IonSelectOption>
-                                    <IonSelectOption value="tasty">🍔 Tasty (Vibrante)</IonSelectOption>
-                                    <IonSelectOption value="modern">✨ Moderno (Limpio)</IonSelectOption>
-                                    <IonSelectOption value="minimal">💖 Minimal (Find & Order)</IonSelectOption>
-                                    <IonSelectOption value="gourmet">🌑 Gourmet Dark (Elegante)</IonSelectOption>
-                                </IonSelect>
-                            </IonItem>
-
-                            <IonLabel style={{ display: 'block', marginBottom: '15px', marginTop: '10px', fontSize: '0.9em', color: 'var(--ion-color-medium)' }}>Paleta de Colores</IonLabel>
-                            
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                {/* Color Primario */}
-                                <div style={{ 
-                                    border: '1px solid var(--ion-color-light-shade)', 
-                                    borderRadius: '12px', 
-                                    padding: '12px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '8px',
-                                    backgroundColor: 'var(--ion-card-background)'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Primario</span>
-                                        <div style={{ 
-                                            width: '24px', 
-                                            height: '24px', 
-                                            borderRadius: '50%', 
-                                            backgroundColor: config.colorPrimario,
-                                            border: '1px solid rgba(0,0,0,0.1)'
-                                        }} />
+                                            <IonIcon icon={trash} /> Quitar Foto
+                                        </button>
                                     </div>
-                                    <input 
-                                        type="color" 
-                                        value={config.colorPrimario}
-                                        onChange={(e) => updateField('colorPrimario', e.target.value)}
-                                        style={{ width: '100%', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-                                    />
-                                </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
 
-                                {/* Color Secundario */}
-                                <div style={{ 
-                                    border: '1px solid var(--ion-color-light-shade)', 
-                                    borderRadius: '12px', 
-                                    padding: '12px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '8px',
-                                    backgroundColor: 'var(--ion-card-background)'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>Secundario</span>
-                                        <div style={{ 
-                                            width: '24px', 
-                                            height: '24px', 
-                                            borderRadius: '50%', 
-                                            backgroundColor: config.colorSecundario,
-                                            border: '1px solid rgba(0,0,0,0.1)'
-                                        }} />
+                    {/* Apariencia / Tema */}
+                    <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                                <IonIcon icon={colorPaletteOutline} className="text-xl" />
+                            </div>
+                            <h2 className="text-xl font-black text-zinc-900 tracking-tight">Estilo & Colores</h2>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div>
+                                <label className={labelClasses}>Tema de la app</label>
+                                <div className="relative">
+                                    <select
+                                        value={config.tema}
+                                        onChange={(e) => updateField('tema', e.target.value)}
+                                        className={`${inputClasses} appearance-none pr-10`}
+                                    >
+                                        <option value="modern">✨ Moderno (Recomendado)</option>
+                                        <option value="minimal">💖 Minimalista</option>
+                                        <option value="paper">📜 Papel Clásico</option>
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                        <IonIcon icon={colorPaletteOutline} className="text-zinc-400" />
                                     </div>
-                                    <input 
-                                        type="color" 
-                                        value={config.colorSecundario}
-                                        onChange={(e) => updateField('colorSecundario', e.target.value)}
-                                        style={{ width: '100%', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', padding: 0 }}
-                                    />
                                 </div>
                             </div>
-                        </IonCardContent>
-                    </IonCard>
 
-                    {/* Contacto */}
-                    <IonCard>
-                        <IonCardHeader>
-                            <IonCardTitle>
-                                <IonIcon icon={callOutline} style={{ marginRight: 10 }} />
-                                Contacto
-                            </IonCardTitle>
-                        </IonCardHeader>
-                        <IonCardContent>
-                            <IonItem>
-                                <IonInput
-                                    label="Teléfono"
-                                    labelPlacement="floating"
-                                    value={config.telefono}
-                                    onIonInput={(e) => updateField('telefono', e.detail.value)}
-                                />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Dirección"
-                                    labelPlacement="floating"
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex flex-col relative overflow-hidden group">
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-zinc-500 mb-3">Color Primario</span>
+                                    <div className="flex items-center justify-between">
+                                        <input
+                                            type="color"
+                                            value={config.colorPrimario}
+                                            onChange={(e) => updateField('colorPrimario', e.target.value)}
+                                            className="w-10 h-10 rounded-xl cursor-pointer border-0 p-0 bg-transparent"
+                                        />
+                                        <span className="text-xs font-bold text-zinc-400 uppercase">{config.colorPrimario}</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 flex flex-col relative overflow-hidden group">
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-zinc-500 mb-3">Color Sec.{' (Opcional)'}</span>
+                                    <div className="flex items-center justify-between">
+                                        <input
+                                            type="color"
+                                            value={config.colorSecundario}
+                                            onChange={(e) => updateField('colorSecundario', e.target.value)}
+                                            className="w-10 h-10 rounded-xl cursor-pointer border-0 p-0 bg-transparent"
+                                        />
+                                        <span className="text-xs font-bold text-zinc-400 uppercase">{config.colorSecundario}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Contacto & Redes */}
+                    <div className="bg-white border border-zinc-200 rounded-[2.5rem] p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <IonIcon icon={callOutline} className="text-xl" />
+                            </div>
+                            <h2 className="text-xl font-black text-zinc-900 tracking-tight">Contacto Público</h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className={labelClasses}>Teléfono</label>
+                                <div className="relative">
+                                    <input
+                                        type="tel"
+                                        value={config.telefono}
+                                        onChange={(e) => updateField('telefono', e.target.value)}
+                                        placeholder="Ej. +507 6000-0000"
+                                        className={inputClasses}
+                                    />
+                                    <IonIcon icon={callOutline} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className={labelClasses}>WhatsApp de Pedidos</label>
+                                <div className="relative">
+                                    <input
+                                        type="tel"
+                                        value={config.redesSociales.whatsapp}
+                                        onChange={(e) => updateSocialField('whatsapp', e.target.value)}
+                                        placeholder="Ej. 6000-0000"
+                                        className={inputClasses}
+                                    />
+                                    <IonIcon icon={logoWhatsapp} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className={labelClasses}>Instagram</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={config.redesSociales.instagram}
+                                        onChange={(e) => updateSocialField('instagram', e.target.value)}
+                                        placeholder="@mi_restaurante"
+                                        className={inputClasses}
+                                    />
+                                    <IonIcon icon={logoInstagram} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                </div>
+                            </div>
+
+                            <div className="pt-2">
+                                <label className={labelClasses}>Dirección Física</label>
+                                <input
+                                    type="text"
                                     value={config.direccion}
-                                    onIonInput={(e) => updateField('direccion', e.detail.value)}
+                                    onChange={(e) => updateField('direccion', e.target.value)}
+                                    placeholder="Plaza Kitchy, Local 1"
+                                    className={inputClasses}
                                 />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="Horario"
-                                    labelPlacement="floating"
+                            </div>
+
+                            <div>
+                                <label className={labelClasses}>Horario de Atención</label>
+                                <input
+                                    type="text"
                                     value={config.horario}
-                                    onIonInput={(e) => updateField('horario', e.detail.value)}
-                                    placeholder="Lun-Vie 10:00-22:00"
+                                    onChange={(e) => updateField('horario', e.target.value)}
+                                    placeholder="Lun-Dom 12:00 PM a 10:00 PM"
+                                    className={inputClasses}
                                 />
-                            </IonItem>
-                        </IonCardContent>
-                    </IonCard>
+                            </div>
+                        </div>
+                    </div>
 
-                    {/* Redes Sociales */}
-                    <IonCard>
-                        <IonCardHeader>
-                            <IonCardTitle>Redes Sociales</IonCardTitle>
-                        </IonCardHeader>
-                        <IonCardContent>
-                            <IonItem>
-                                <IonInput
-                                    label="Instagram"
-                                    labelPlacement="floating"
-                                    value={config.redesSociales?.instagram || ''}
-                                    onIonInput={(e) => updateSocialField('instagram', e.detail.value || '')}
-                                    placeholder="@tu_restaurante"
-                                />
-                            </IonItem>
-                            <IonItem>
-                                <IonInput
-                                    label="WhatsApp"
-                                    labelPlacement="floating"
-                                    value={config.redesSociales?.whatsapp || ''}
-                                    onIonInput={(e) => updateSocialField('whatsapp', e.detail.value || '')}
-                                    placeholder="+507-0000-0000"
-                                />
-                            </IonItem>
-                        </IonCardContent>
-                    </IonCard>
-
-                    {/* Save Button (Mobile) */}
-                    <IonButton 
-                        expand="block" 
-                        onClick={handleSave} 
-                        disabled={saving}
-                        style={{ marginTop: 20, marginBottom: 40 }}
-                    >
-                        <IonIcon icon={saveOutline} slot="start" />
-                        Guardar Configuración
-                    </IonButton>
+                    <div className="pt-4">
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="!w-full !bg-zinc-900 hover:!bg-zinc-800 !text-white !font-black !py-5 !rounded-[2rem] !shadow-xl !shadow-zinc-900/20 !transition-all !flex !items-center !justify-center !gap-3 active:!scale-95 disabled:!opacity-70 disabled:active:!scale-100"
+                        >
+                            <IonIcon icon={saveOutline} className="text-xl" />
+                            <span className="text-lg tracking-tight">Publicar Menú</span>
+                        </button>
+                    </div>
                 </div>
 
-                <IonLoading isOpen={loading} message="Cargando..." />
-                <IonLoading isOpen={saving} message="Guardando..." />
+                <IonLoading isOpen={loading} message="Cargando configuración..." spinner="crescent" />
+                <IonLoading isOpen={saving} message="Guardando cambios..." spinner="crescent" />
                 <IonToast isOpen={!!error} message={error} duration={3000} color="danger" onDidDismiss={() => setError('')} />
-                <IonToast isOpen={!!success} message={success} duration={3000} color="success" onDidDismiss={() => setSuccess('')} />
+                <IonToast isOpen={!!success} message={success} duration={2000} color="success" onDidDismiss={() => setSuccess('')} />
             </IonContent>
         </IonPage>
     );

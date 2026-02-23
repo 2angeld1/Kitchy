@@ -69,8 +69,8 @@ const MenuApp: React.FC = () => {
 
     const categorias = ['todos', 'comida', 'bebida', 'postre'];
 
-    const filteredProducts = activeCategory === 'todos' 
-        ? productos 
+    const filteredProducts = activeCategory === 'todos'
+        ? productos
         : productos.filter(p => p.categoria === activeCategory);
 
     // Dynamic CSS variables based on config
@@ -109,7 +109,7 @@ const MenuApp: React.FC = () => {
                                 {config.tema === 'minimal' ? 'Find and Order Food for You 🥘' : config.nombreRestaurante}
                             </h1>
                             <span className="brand-subtitle">{config.subtitulo}</span>
-                            
+
                             {config.tema === 'minimal' && (
                                 <div className="search-bar">
                                     <IonIcon icon={searchOutline} />
@@ -117,18 +117,18 @@ const MenuApp: React.FC = () => {
                                     <IonIcon icon={settingsOutline} className="filter-icon" />
                                 </div>
                             )}
-                            
+
                             {/* Featured Dish (Hero Section) */}
                             <div className="main-dish-circle">
                                 {config.tema === 'tasty' ? (
                                     <>
                                         <div className="dish-img-wrapper">
-                                            <img 
-                                                src={optimizeImageUrl(config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", 600, 400)} 
-                                                alt="Special" 
+                                            <img
+                                                src={optimizeImageUrl(config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", 600, 400)}
+                                                alt="Special"
                                             />
                                         </div>
-                                        
+
                                         <div className="courier-card">
                                             <div className="courier-avatar">
                                                 <img src="https://i.pravatar.cc/100?u=richard" alt="Courier" />
@@ -143,12 +143,12 @@ const MenuApp: React.FC = () => {
                                         </div>
                                     </>
                                 ) : (
-                                    <img 
-                                            src={optimizeImageUrl(config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", 600, 400)} 
-                                        alt="Special" 
+                                    <img
+                                        src={optimizeImageUrl(config.imagenHero || "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38", 600, 400)}
+                                        alt="Special"
                                     />
                                 )}
-                                
+
                                 <div className="price-sticker">
                                     <span>20%</span>
                                 </div>
@@ -157,14 +157,14 @@ const MenuApp: React.FC = () => {
 
                         {/* Paper Navigation Tabs */}
                         <div className="paper-tabs">
-                            <span 
+                            <span
                                 className={`paper-tab ${activeCategory === 'todos' ? 'active' : ''}`}
                                 onClick={() => setActiveCategory('todos')}
                             >
                                 Todos
                             </span>
                             {categorias.filter(c => c !== 'todos').map(cat => (
-                                <span 
+                                <span
                                     key={cat}
                                     className={`paper-tab ${activeCategory === cat ? 'active' : ''}`}
                                     onClick={() => setActiveCategory(cat)}
@@ -177,8 +177,8 @@ const MenuApp: React.FC = () => {
                         {/* Classic List Layout */}
                         <div className="menu-list">
                             {filteredProducts.map(item => (
-                                <div 
-                                    className="menu-item-row" 
+                                <div
+                                    className="menu-item-row"
                                     key={item._id}
                                     onClick={() => setSelectedProduct(item)}
                                 >
@@ -190,10 +190,10 @@ const MenuApp: React.FC = () => {
                                         <p className="item-desc">{item.descripcion}</p>
                                     </div>
                                     {item.imagen && (
-                                        <img 
+                                        <img
                                             className="item-thumb"
-                                            src={optimizeImageUrl(item.imagen, 150, 150)} 
-                                            alt={item.nombre} 
+                                            src={optimizeImageUrl(item.imagen, 150, 150)}
+                                            alt={item.nombre}
                                             loading="lazy"
                                         />
                                     )}
@@ -223,8 +223,8 @@ const MenuApp: React.FC = () => {
                 )}
 
                 {/* Product Detail Modal */}
-                <IonModal 
-                    isOpen={!!selectedProduct} 
+                <IonModal
+                    isOpen={!!selectedProduct}
                     onDidDismiss={() => setSelectedProduct(null)}
                     className="product-detail-modal"
                     initialBreakpoint={0.85}
@@ -237,11 +237,11 @@ const MenuApp: React.FC = () => {
                                     <IonIcon icon={closeOutline} color="dark" />
                                 </div>
                                 {selectedProduct.imagen && (
-                                    <img 
-                                        src={optimizeImageUrl(selectedProduct.imagen, 800, 800)} 
-                                        className="detail-image" 
+                                    <img
+                                        src={optimizeImageUrl(selectedProduct.imagen, 800, 800)}
+                                        className="detail-image"
                                         style={{ width: '100%', height: '40vh', objectFit: 'cover' }}
-                                        alt={selectedProduct.nombre} 
+                                        alt={selectedProduct.nombre}
                                     />
                                 )}
                                 <div className="detail-content">
@@ -249,9 +249,9 @@ const MenuApp: React.FC = () => {
                                     <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#c92c2c', display: 'block', marginBottom: 20 }}>
                                         ${selectedProduct.precio.toFixed(2)}
                                     </span>
-                                    
+
                                     <p>{selectedProduct.descripcion}</p>
-                                    
+
                                     {/* Tags can be added later when Producto model supports them */}
 
                                     <div style={{ marginTop: '40px' }}>

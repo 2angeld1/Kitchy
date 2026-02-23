@@ -9,47 +9,27 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [isDark, setIsDark] = useState(false);
+    // Force isDark to be always false
+    const [isDark] = useState(false);
 
     useEffect(() => {
-        // Clear any existing dark classes first
-        document.body.classList.remove('dark');
-        document.documentElement.classList.remove('ion-palette-dark');
-        
-        // Check saved preference first, then system preference
-        const savedTheme = localStorage.getItem('darkMode');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const shouldBeDark = savedTheme !== null ? savedTheme === 'true' : prefersDark;
-        
-        setIsDark(shouldBeDark);
-        applyTheme(shouldBeDark);
+        // Always force light theme
+        applyTheme(false);
     }, []);
 
     const applyTheme = (dark: boolean) => {
-        // Toggle class on document.body for our custom styles
-        document.body.classList.toggle('dark', dark);
-        
-        // Also toggle on documentElement for Ionic's dark mode
-        document.documentElement.classList.toggle('ion-palette-dark', dark);
-        
-        // Set color-scheme for native elements
-        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        // Forcing light mode always
+        document.body.classList.remove('dark');
+        document.documentElement.classList.remove('ion-palette-dark');
+        document.documentElement.style.colorScheme = 'light';
     };
 
     const toggleTheme = () => {
-        const newValue = !isDark;
-        setIsDark(newValue);
-        applyTheme(newValue);
-        localStorage.setItem('darkMode', String(newValue));
+        // Do nothing, we are staying in light mode
     };
 
     const setTheme = (dark: boolean) => {
-        // Prevent duplicate calls with same value
-        if (dark === isDark) return;
-        
-        setIsDark(dark);
-        applyTheme(dark);
-        localStorage.setItem('darkMode', String(dark));
+        // Support the call but ignore the value
     };
 
     return (

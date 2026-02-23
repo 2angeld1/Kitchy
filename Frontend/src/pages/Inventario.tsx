@@ -8,9 +8,12 @@ import { add, cloudUpload } from 'ionicons/icons';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { motion, AnimatePresence } from 'framer-motion';
+import { slideUp, springTransition } from '../animations/variants';
 
 // Components
 import SmartInput from './inventario/components/SmartInput';
+import KitchyToolbar from '../components/KitchyToolbar';
 import InventarioItemCard from './inventario/components/InventarioItemCard';
 import InventarioModal from './inventario/components/InventarioModal';
 import MovimientoModal from './inventario/components/MovimientoModal';
@@ -62,17 +65,8 @@ const Inventario: React.FC = () => {
     };
 
     return (
-        <IonPage className="bg-[#fafafa] dark:bg-[#09090b]" style={{ background: 'var(--ion-background-color)' }}>
-            <IonHeader className="ion-no-border">
-                <IonToolbar style={{ '--background': 'transparent' }} className="px-2">
-                    <IonButtons slot="start">
-                        <IonMenuButton className="text-primary" />
-                    </IonButtons>
-                    <IonTitle className="font-outfit font-bold text-xl tracking-tight text-zinc-950 dark:text-white">
-                        Inventario
-                    </IonTitle>
-                </IonToolbar>
-            </IonHeader>
+        <IonPage className="bg-[#fafafa]" style={{ background: 'var(--ion-background-color)' }}>
+            <KitchyToolbar title="Inventario" />
 
             <IonContent style={{ '--background': 'transparent' }}>
                 <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
@@ -90,27 +84,35 @@ const Inventario: React.FC = () => {
                         isListening={isListening}
                     />
 
-                    <IonSegment
-                        value={filtro}
-                        onIonChange={(e) => setFiltro(e.detail.value as string)}
-                        className="bg-zinc-100 dark:bg-white/5 rounded-2xl p-1 border border-zinc-200 dark:border-none shadow-sm"
-                        style={{ '--background': 'transparent' }}
-                    >
-                        <IonSegmentButton value="todos" className="font-bold text-xs text-zinc-600 dark:text-zinc-400">Todos</IonSegmentButton>
-                        <IonSegmentButton value="stockBajo" className="font-bold text-xs text-zinc-600 dark:text-zinc-400">Bajo Stock</IonSegmentButton>
-                        <IonSegmentButton value="ingrediente" className="font-bold text-xs text-zinc-600 dark:text-zinc-400">Insumos</IonSegmentButton>
-                    </IonSegment>
+                    <motion.div variants={slideUp} initial="initial" animate="animate">
+                        <IonSegment
+                            value={filtro}
+                            onIonChange={(e) => setFiltro(e.detail.value as string)}
+                            className="bg-zinc-100 rounded-2xl p-1 border border-zinc-200 shadow-sm"
+                            style={{ '--background': 'transparent' }}
+                        >
+                            <IonSegmentButton value="todos" className="font-bold text-xs text-zinc-600">Todos</IonSegmentButton>
+                            <IonSegmentButton value="stockBajo" className="font-bold text-xs text-zinc-600">Bajo Stock</IonSegmentButton>
+                            <IonSegmentButton value="ingrediente" className="font-bold text-xs text-zinc-600">Insumos</IonSegmentButton>
+                        </IonSegment>
+                    </motion.div>
 
-                    <div className="grid gap-3">
-                        {itemsFiltrados.map(item => (
-                            <InventarioItemCard
-                                key={item._id}
-                                item={item}
-                                isAdmin={isAdmin}
-                                openEditModal={openEditModal}
-                                handleDelete={handleDelete}
-                            />
-                        ))}
+                    <div
+                        className="bg-zinc-50/50 backdrop-blur-3xl border border-zinc-200 rounded-3xl overflow-hidden shadow-sm !p-0"
+                    >
+                        <AnimatePresence mode="popLayout">
+                            {itemsFiltrados.map((item, index) => (
+                                <InventarioItemCard
+                                    key={item._id}
+                                    item={item}
+                                    isAdmin={isAdmin}
+                                    openEditModal={openEditModal}
+                                    handleDelete={handleDelete}
+                                    openMovModal={openMovModal}
+                                    isLast={index === itemsFiltrados.length - 1}
+                                />
+                            ))}
+                        </AnimatePresence>
                     </div>
 
                     <EmptyInventory loading={loading} itemCount={itemsFiltrados.length} />
@@ -142,15 +144,27 @@ const Inventario: React.FC = () => {
                 />
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed" style={{ marginBottom: '80px' }}>
-                    <IonFabButton color="secondary" onClick={() => fileInputRef.current?.click()} className="transition-all hover:scale-110 active:scale-90" style={{ '--box-shadow': 'none' }}>
-                        <IonIcon icon={cloudUpload} />
-                    </IonFabButton>
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={springTransition}
+                    >
+                        <IonFabButton color="secondary" onClick={() => fileInputRef.current?.click()} style={{ '--box-shadow': 'none' }}>
+                            <IonIcon icon={cloudUpload} />
+                        </IonFabButton>
+                    </motion.div>
                 </IonFab>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton onClick={() => { resetForm(); setShowModal(true); }} className="transition-all hover:scale-110 active:scale-95" style={{ '--box-shadow': 'none' }}>
-                        <IonIcon icon={add} />
-                    </IonFabButton>
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={springTransition}
+                    >
+                        <IonFabButton onClick={() => { resetForm(); setShowModal(true); }} style={{ '--box-shadow': 'none' }}>
+                            <IonIcon icon={add} />
+                        </IonFabButton>
+                    </motion.div>
                 </IonFab>
 
                 <IonLoading isOpen={loading} message="Cargando..." spinner="crescent" />

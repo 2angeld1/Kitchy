@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     IonPage,
     IonContent,
-    IonInput,
-    IonButton,
     IonLoading,
     IonToast,
     IonIcon
 } from '@ionic/react';
-import { personAdd } from 'ionicons/icons';
+import { personAdd, arrowForward } from 'ionicons/icons';
 import { useRegister } from '../hooks/useRegister';
+import { motion } from 'framer-motion';
 
 const Register: React.FC = () => {
     const {
@@ -28,101 +27,133 @@ const Register: React.FC = () => {
     } = useRegister();
 
     return (
-        <IonPage className="login-page">
-            <IonContent className="login-content" scrollY={false}>
-                <div className="auth-full-container">
-                    <div className="auth-wrapper">
-                        {/* Visual Panel - Visible on Desktop */}
-                        <div className="auth-visual-panel">
-                            <div className="visual-content">
-                                <img src="/logo.png" alt="Kitchy Logo" className="logo-large" />
-                                <h1>Kitchy</h1>
-                                <p>Únete a la plataforma líder en gestión de restaurantes.</p>
+        <IonPage>
+            <IonContent fullscreen className="--background: transparent">
+                <div className="min-h-screen bg-zinc-50 flex flex-col md:flex-row font-outfit">
+
+                    {/* Visual Panel - Desktop Only */}
+                    <div className="hidden md:flex flex-1 bg-zinc-900 relative overflow-hidden items-center justify-center p-12">
+                        {/* Background Abstract Shapes */}
+                        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 blur-[100px] rounded-full mix-blend-screen" />
+                        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/20 blur-[100px] rounded-full mix-blend-screen" />
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="relative z-10 max-w-lg text-center"
+                        >
+                            <div className="w-24 h-24 bg-white/10 rounded-[2rem] backdrop-blur-xl border border-white/20 flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                                <span className="text-5xl font-black text-white">K<span className="text-primary">.</span></span>
                             </div>
-                        </div>
+                            <h1 className="text-5xl font-black text-white mb-6 tracking-tight leading-tight">
+                                Transforma la gestión de tu <span className="text-primary">restaurante</span>.
+                            </h1>
+                            <p className="text-lg font-medium text-zinc-400">
+                                Únete hoy y comienza a administrar tus menús, inventarios y ventas como un profesional.
+                            </p>
+                        </motion.div>
+                    </div>
 
-                        {/* Form Panel */}
-                        <div className="auth-form-panel">
-                            <div className="auth-header">
-                                <img src="/logo.png" alt="Kitchy Logo" className="mobile-logo" />
-                                <h2>Crear cuenta</h2>
-                                <p>Comienza a gestionar tu negocio hoy mismo.</p>
+                    {/* Form Panel */}
+                    <div className="flex-[1.2] flex flex-col justify-center px-6 py-12 md:px-12 lg:px-24 relative bg-white">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="max-w-md w-full mx-auto"
+                        >
+                            {/* Mobile Logo */}
+                            <div className="md:hidden w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-8 shadow-xl shadow-zinc-900/10">
+                                <span className="text-3xl font-black text-white">K<span className="text-primary">.</span></span>
                             </div>
 
-                            <form onSubmit={handleRegister} className="login-form">
-                                <IonInput
-                                    type="text"
-                                    label="Nombre completo"
-                                    labelPlacement="floating"
-                                    value={nombre}
-                                    onIonInput={(e) => setNombre(e.detail.value || '')}
-                                    className="login-input"
-                                    fill="outline"
-                                />
+                            <div className="mb-10">
+                                <h2 className="text-3xl lg:text-4xl font-black text-zinc-900 tracking-tight mb-2">Crear tu cuenta</h2>
+                                <p className="text-zinc-500 font-medium">Comienza a gestionar tu negocio hoy mismo.</p>
+                            </div>
 
-                                <IonInput
-                                    type="email"
-                                    label="Correo electrónico"
-                                    labelPlacement="floating"
-                                    value={email}
-                                    onIonInput={(e) => setEmail(e.detail.value || '')}
-                                    className="login-input"
-                                    fill="outline"
-                                />
+                            <form onSubmit={(e) => { e.preventDefault(); handleRegister(e as any); }} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Nombre Completo</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={nombre}
+                                        onChange={(e) => setNombre(e.target.value)}
+                                        placeholder="Tu nombre aquí"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:ring-4 ring-primary/10 focus:border-primary/30 transition-all outline-none"
+                                    />
+                                </div>
 
-                                <IonInput
-                                    type="password"
-                                    label="Contraseña"
-                                    labelPlacement="floating"
-                                    value={password}
-                                    onIonInput={(e) => setPassword(e.detail.value || '')}
-                                    className="login-input"
-                                    fill="outline"
-                                />
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Correo Electrónico</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="ejemplo@restaurante.com"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:ring-4 ring-primary/10 focus:border-primary/30 transition-all outline-none"
+                                    />
+                                </div>
 
-                                <IonInput
-                                    type="password"
-                                    label="Confirmar contraseña"
-                                    labelPlacement="floating"
-                                    value={confirmPassword}
-                                    onIonInput={(e) => setConfirmPassword(e.detail.value || '')}
-                                    className="login-input"
-                                    fill="outline"
-                                />
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Contraseña</label>
+                                        <input
+                                            type="password"
+                                            required
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:ring-4 ring-primary/10 focus:border-primary/30 transition-all outline-none"
+                                        />
+                                    </div>
 
-                                <IonButton
-                                    expand="block"
+                                    <div className="space-y-2">
+                                        <label className="block text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Confirmar Contraseña</label>
+                                        <input
+                                            type="password"
+                                            required
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold text-zinc-900 placeholder:text-zinc-400 focus:bg-white focus:ring-4 ring-primary/10 focus:border-primary/30 transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <motion.button
+                                    whileTap={{ scale: 0.98 }}
                                     type="submit"
-                                    className="login-button"
+                                    disabled={loading}
+                                    className="!w-full !bg-primary hover:!bg-primary-shade !text-white !font-black !py-4 !rounded-2xl !shadow-xl !shadow-primary/20 !transition-all !flex !items-center !justify-center !gap-2 !mt-6 disabled:!opacity-70 group"
                                 >
-                                    <IonIcon icon={personAdd} slot="start" />
-                                    Registrarse
-                                </IonButton>
+                                    <span>Crear mi cuenta</span>
+                                    <IonIcon icon={arrowForward} className="text-lg group-hover:translate-x-1 transition-transform" />
+                                </motion.button>
                             </form>
 
-                            <div className="auth-footer">
-                                <p>
-                                    ¿Ya tienes cuenta?
-                                    <IonButton
-                                        fill="clear"
-                                        routerLink="/login"
-                                        className="link-button"
-                                    >
+                            <div className="mt-10 text-center">
+                                <p className="text-sm font-medium text-zinc-500">
+                                    ¿Ya tienes una cuenta?{' '}
+                                    <a href="/login" className="font-black text-zinc-900 hover:text-primary transition-colors underline decoration-2 decoration-primary/30 underline-offset-4">
                                         Inicia sesión
-                                    </IonButton>
+                                    </a>
                                 </p>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
-                <IonLoading isOpen={loading} message="Registrando..." />
+                <IonLoading isOpen={loading} message="Creando cuenta..." spinner="crescent" />
                 <IonToast
                     isOpen={!!error}
                     message={error}
-                    duration={3000}
+                    duration={4000}
                     color="danger"
                     onDidDismiss={() => setError('')}
+                    position="top"
                 />
             </IonContent>
         </IonPage>

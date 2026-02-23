@@ -10,3 +10,21 @@
     --color-warning: #f59e0b;
     --color-danger: #ef4444;
 }
+
+/* Custom Ionic Popover Overrides */
+ion-popover.kitchy-action-popover::part(content) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 1rem !important;
+}
+
+/* Sheet Modal Overrides */
+ion-modal.kitchy-sheet-modal::part(content) {
+    border-radius: 2.5rem 2.5rem 0 0 !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+ion-modal.kitchy-sheet-modal::part(handle) {
+    background: #d4d4d8 !important;
+    width: 40px !important;
+}

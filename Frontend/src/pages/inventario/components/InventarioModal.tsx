@@ -35,16 +35,16 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
             onDidDismiss={onClose}
             className="--border-radius: 32px; --height: 90%; overflow: hidden;"
         >
-            <div className="h-full flex flex-col bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl overflow-y-auto">
+            <div className="h-full flex flex-col bg-white overflow-y-auto">
                 <IonHeader className="ion-no-border">
                     <IonToolbar className="--background: transparent; pt-6 px-4">
-                        <IonTitle className="font-outfit font-black text-2xl text-zinc-800 dark:text-zinc-100 italic tracking-tighter">
+                        <IonTitle className="font-outfit font-black text-2xl text-zinc-800 italic tracking-tighter">
                             {editItem ? 'Editar' : 'Nuevo'} Item
                         </IonTitle>
                         <IonButtons slot="end">
                             <button
                                 onClick={onClose}
-                                className="bg-zinc-200/50 dark:bg-white/10 p-2.5 rounded-full hover:rotate-90 transition-transform duration-300"
+                                className="bg-zinc-200/50 p-2.5 rounded-full hover:rotate-90 transition-transform duration-300"
                             >
                                 <IonIcon icon={remove} className="text-xl" />
                             </button>
@@ -59,7 +59,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                             value={nombre}
                             onChange={(e) => setNombre(e.target.value)}
                             placeholder="Ej: Ketchup Premium"
-                            className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl px-5 py-4 text-base font-bold focus:ring-4 ring-primary/10 outline-none transition-all dark:text-white"
+                            className="w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold focus:ring-4 ring-primary/10 outline-none transition-all"
                         />
                     </div>
 
@@ -70,7 +70,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                                 type="number"
                                 value={cantidad}
                                 onChange={(e) => setCantidad(e.target.value)}
-                                className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl px-5 py-4 text-base font-bold transition-all dark:text-white"
+                                className="w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold transition-all"
                             />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
@@ -78,7 +78,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                             <select
                                 value={unidad}
                                 onChange={(e) => setUnidad(e.target.value)}
-                                className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl px-5 py-4 text-base font-bold transition-all dark:text-white appearance-none h-full"
+                                className="w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold transition-all appearance-none h-full"
                             >
                                 <option value="unidades">Unidades</option>
                                 <option value="kg">Kilogramos</option>
@@ -97,7 +97,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                                 type="number"
                                 value={cantidadMinima}
                                 onChange={(e) => setCantidadMinima(e.target.value)}
-                                className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl px-5 py-4 text-base font-bold transition-all dark:text-white"
+                                className="w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold transition-all"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -106,7 +106,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                                 type="number"
                                 value={costoUnitario}
                                 onChange={(e) => setCostoUnitario(e.target.value)}
-                                className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl px-5 py-4 text-base font-bold transition-all dark:text-white"
+                                className="w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold transition-all"
                             />
                         </div>
                     </div>
@@ -117,7 +117,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                             value={proveedor}
                             onChange={(e) => setProveedor(e.target.value)}
                             placeholder="Nombre del proveedor"
-                            className="w-full bg-zinc-100/50 dark:bg-black/20 border border-zinc-200 dark:border-white/5 rounded-2xl px-5 py-4 text-base font-bold transition-all dark:text-white"
+                            className="w-full bg-zinc-100/50 border border-zinc-200 rounded-2xl px-5 py-4 text-base font-bold transition-all"
                         />
                     </div>
 
@@ -129,7 +129,7 @@ const InventarioModal: React.FC<InventarioModalProps> = ({
                                     key={cat}
                                     type="button"
                                     onClick={() => setCategoria(cat)}
-                                    className={`!py-3.5 !rounded-xl !border !font-bold !text-xs !uppercase !tracking-tighter !transition-all ${categoria === cat ? '!bg-primary !text-white !border-primary !shadow-lg !shadow-primary/20 !scale-105 !z-10' : '!bg-transparent !border-zinc-200 !dark:border-white/10 !text-zinc-500 !hover:bg-zinc-100 !dark:hover:bg-white/5'}`}
+                                    className={`!py-3.5 !rounded-xl !border !font-bold !text-xs !uppercase !tracking-tighter !transition-all ${categoria === cat ? '!bg-primary !text-white !border-primary !shadow-lg !shadow-primary/20 !scale-105 !z-10' : '!bg-transparent !border-zinc-200 !text-zinc-500 !hover:bg-zinc-100'}`}
                                 >
                                     {cat}
                                 </button>
