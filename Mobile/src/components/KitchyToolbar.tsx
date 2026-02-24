@@ -7,6 +7,8 @@ import { styles } from '../styles/KitchyToolbar.styles';
 import { NotificationModal } from './NotificationModal';
 import Toast from 'react-native-toast-message';
 import { useTheme } from '../context/ThemeContext';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { RootStackParamList } from '../../App';
 
 interface KitchyToolbarProps {
     title: string;
@@ -25,6 +27,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     const { isDark } = useTheme();
     const [showNotif, setShowNotif] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
     // Explicit theme colors based on context
     const colors = isDark ? darkTheme : lightTheme;
@@ -112,7 +115,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                             style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10 }}
                             onPress={() => {
                                 setShowUserMenu(false);
-                                Toast.show({ type: 'info', text1: 'Configuración', text2: 'Modificando preferencias de usuario...' });
+                                navigation.navigate('Usuarios');
                             }}
                         >
                             <Ionicons name="settings-outline" size={20} color={colors.textPrimary} />

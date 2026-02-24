@@ -374,17 +374,16 @@ export const styles = StyleSheet.create({
         marginLeft: spacing.sm,
     },
     listContainer: {
-        padding: spacing.md,
-        gap: spacing.sm,
+        paddingHorizontal: spacing.md,
+        paddingBottom: spacing.md,
     },
     glassListItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.sm,
-        borderRadius: 16,
-        backgroundColor: colors.white,
-        borderWidth: 1,
-        borderColor: colors.border,
+        paddingVertical: spacing.md,
+        backgroundColor: 'transparent',
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border,
     },
     listItemRank: {
         width: 36,

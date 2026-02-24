@@ -1,0 +1,158 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    scrollContent: {
+        padding: 20,
+        paddingBottom: 100,
+    },
+    sectionCard: {
+        borderRadius: 24,
+        padding: 24,
+        marginBottom: 24,
+        borderWidth: 1,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    iconBoxWrapper: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+    },
+    inputGroup: {
+        marginBottom: 20,
+    },
+    label: {
+        fontSize: 11,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1.5,
+        marginBottom: 8,
+        marginLeft: 4,
+    },
+    input: {
+        height: 54,
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        fontSize: 15,
+        fontWeight: '600',
+        borderWidth: 1,
+    },
+    themeSelector: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+    },
+    themeOption: {
+        flex: 1,
+        paddingVertical: 14,
+        alignItems: 'center',
+        borderRadius: 16,
+        borderWidth: 2,
+    },
+    themeText: {
+        fontSize: 14,
+        fontWeight: '800',
+        marginTop: 6,
+    },
+    colorPreviewBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 54,
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        borderWidth: 1,
+    },
+    colorCircle: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: '#00000020',
+    },
+    actionButtonsRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 24,
+    },
+    actionBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    actionBtnText: {
+        fontSize: 15,
+        fontWeight: '800',
+        marginLeft: 8,
+    },
+    colorModalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    colorModalContent: {
+        width: '85%',
+        borderRadius: 32,
+        padding: 24,
+        alignItems: 'center',
+    },
+    hexInput: {
+        width: '100%',
+        height: 54,
+        borderRadius: 16,
+        textAlign: 'center',
+        fontSize: 18,
+        fontWeight: '900',
+        borderWidth: 1,
+        marginBottom: 20,
+        textTransform: 'uppercase',
+    },
+    saveColorBtn: {
+        width: '100%',
+        height: 54,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    saveColorText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '900',
+    },
+    btnHeaderBack: {
+        padding: 8,
+        marginRight: 8,
+        borderRadius: 20,
+    },
+    btnHeaderSave: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#111827',
+    },
+    btnHeaderSaveText: {
+        color: '#fff',
+        fontWeight: '800',
+        fontSize: 13,
+        marginLeft: 6,
+    }
+});

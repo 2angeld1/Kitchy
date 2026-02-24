@@ -71,4 +71,13 @@ export const importarInventario = (data: any) => api.post('/inventario/import', 
     headers: { 'Content-Type': 'multipart/form-data' }
 });
 
+// Users
+export const getUsers = () => api.get('/users');
+export const updateUserRole = (id: string, data: { rol: string }) => api.put(`/users/${id}/role`, data);
+export const deleteUser = (id: string) => api.delete(`/users/${id}`);
+
+// Configuración Pública
+export const getMenuConfig = () => api.get('/menu-config');
+export const updateMenuConfig = (data: any) => api.put('/menu-config', data);
+
 export default api;

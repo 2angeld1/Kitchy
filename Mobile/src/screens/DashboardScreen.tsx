@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/MainAppNavigator';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +11,9 @@ import { styles, cardWidth } from '../styles/DashboardScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 import Toast from 'react-native-toast-message';
+import { LineChart } from 'react-native-chart-kit';
+
+const { width } = Dimensions.get('window');
 
 type DashboardScreenProps = {
     navigation: NativeStackNavigationProp<MainTabParamList, 'Dashboard'>;
@@ -114,6 +117,76 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             </Animated.View>
                         </View>
 
+                        {/* Módulo Admin: Finanzas Históricas y Gráficos */}
+                        {(user?.rol === 'admin' || user?.rol === 'superadmin') && data.historico && (
+                            <Animated.View entering={FadeInDown.springify().damping(15).delay(500)}>
+                                <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                    <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
+                                        <View style={[styles.glassIconSmall, { backgroundColor: colors.background }]}>
+                                            <Ionicons name="pie-chart-outline" size={18} color="#8b5cf6" />
+                                        </View>
+                                        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Rendimiento Total (Histórico)</Text>
+                                    </View>
+
+                                    <View style={{ padding: 20, flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                                        <View>
+                                            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Ventas Totales</Text>
+                                            <Text style={[styles.cardValue, { fontSize: 24, color: colors.textPrimary }]}>${Number(data.historico.ventasTotal).toFixed(0)}</Text>
+                                        </View>
+                                        <View style={{ alignItems: 'flex-end' }}>
+                                            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Ganancias Totales</Text>
+                                            <Text style={[styles.cardValue, { fontSize: 24, color: '#10b981' }]}>${Number(data.historico.gananciaTotal).toFixed(0)}</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Line Chart */}
+                                    {data.ventasUltimos7Dias && data.ventasUltimos7Dias.length > 0 && (
+                                        <View style={{ paddingTop: 20, alignItems: 'center' }}>
+                                            <Text style={[styles.cardLabel, { color: colors.textSecondary, marginBottom: 12, marginLeft: 20, alignSelf: 'flex-start' }]}>Últimos 7 Días</Text>
+                                            <LineChart
+                                                data={{
+                                                    labels: data.ventasUltimos7Dias.map((v: any) => {
+                                                        const parts = v.fecha.split('-');
+                                                        return `${parts[2]}/${parts[1]}`; // DD/MM formatting
+                                                    }),
+                                                    datasets: [
+                                                        {
+                                                            data: data.ventasUltimos7Dias.map((v: any) => v.total)
+                                                        }
+                                                    ]
+                                                }}
+                                                width={width - 48} // Padding offset
+                                                height={180}
+                                                yAxisLabel="$"
+                                                yAxisInterval={1}
+                                                chartConfig={{
+                                                    backgroundColor: colors.card,
+                                                    backgroundGradientFrom: colors.card,
+                                                    backgroundGradientTo: colors.card,
+                                                    decimalPlaces: 0,
+                                                    color: (opacity = 1) => isDark ? `rgba(225, 29, 72, ${opacity})` : `rgba(225, 29, 72, ${opacity})`,
+                                                    labelColor: (opacity = 1) => colors.textMuted,
+                                                    style: {
+                                                        borderRadius: 16
+                                                    },
+                                                    propsForDots: {
+                                                        r: "4",
+                                                        strokeWidth: "2",
+                                                        stroke: colors.primary
+                                                    }
+                                                }}
+                                                bezier
+                                                style={{
+                                                    marginVertical: 8,
+                                                    borderRadius: 16
+                                                }}
+                                            />
+                                        </View>
+                                    )}
+                                </View>
+                            </Animated.View>
+                        )}
+
                         {/* 3. Módulo: Productos más vendidos */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(550)}>
                             <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -130,9 +203,9 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                             <Animated.View
                                                 key={idx}
                                                 entering={FadeInDown.duration(300).delay(600 + (idx * 100))}
-                                                style={[styles.glassListItem, { backgroundColor: colors.card, borderColor: colors.border }]}
+                                                style={[styles.glassListItem, { borderBottomColor: idx === data.productosMasVendidos.length - 1 ? 'transparent' : colors.border }]}
                                             >
-                                                <View style={[styles.listItemRank, { backgroundColor: colors.background }]}>
+                                                <View style={[styles.listItemRank, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
                                                     <Text style={[styles.listItemRankText, { color: colors.textPrimary }]}>{idx + 1}</Text>
                                                 </View>
                                                 <View style={styles.listItemInfo}>

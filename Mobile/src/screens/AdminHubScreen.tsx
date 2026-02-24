@@ -53,6 +53,14 @@ export default function AdminHubScreen() {
             navigation.navigate('Productos');
             return;
         }
+        if (id === 'usuarios') {
+            navigation.navigate('Usuarios');
+            return;
+        }
+        if (id === 'menu') {
+            navigation.navigate('ConfiguracionMenu');
+            return;
+        }
         Toast.show({
             type: 'info',
             text1: 'Módulo en desarrollo',
