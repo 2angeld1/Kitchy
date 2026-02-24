@@ -44,4 +44,13 @@ export const login = (email: string, password: string) =>
 export const register = (data: { email: string; password: string; nombre: string }) =>
     api.post('/auth/register', data);
 
+export const getDashboard = () => api.get('/dashboard');
+
+// Productos
+export const getProductos = (params?: any) => api.get('/productos', { params });
+
+// Ventas
+export const createVenta = (data: any) => api.post('/ventas', data);
+export const getVentas = (params?: any) => api.get('/ventas', { params });
+
 export default api;

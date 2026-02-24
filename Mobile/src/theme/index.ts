@@ -1,8 +1,8 @@
 export const colors = {
-    // Brand Colors
-    primary: '#10B981', // emerald-500
-    primaryLight: '#34D399', // emerald-400
-    primaryShade: '#059669', // emerald-600
+    // Brand Colors - Red Premium Palette
+    primary: '#E11D48', // rose-600 (Vibrant & Premium Red)
+    primaryLight: '#FB7185', // rose-400
+    primaryShade: '#9F1239', // rose-800
 
     // Neutral Colors (Greys for text, bg, and borders)
     background: '#fafafa', // zinc-50

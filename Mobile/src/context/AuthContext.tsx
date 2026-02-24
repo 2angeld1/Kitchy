@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { login as apiLogin, register as apiRegister } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api, { login as apiLogin, register as apiRegister } from '../services/api';
 
 interface User {
     id: string;
@@ -28,46 +28,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const loadInitialData = async () => {
-            const storedToken = await AsyncStorage.getItem('token');
-            const storedUser = await AsyncStorage.getItem('user');
+        const loadUserFromStorage = async () => {
+            try {
+                const storedToken = await AsyncStorage.getItem('kitchy_token');
+                const storedUser = await AsyncStorage.getItem('kitchy_user');
 
-            if (storedToken && storedUser) {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
+                if (storedToken && storedUser) {
+                    setToken(storedToken);
+                    setUser(JSON.parse(storedUser));
+                    api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+                }
+            } catch (error) {
+                console.error('Error loading token from AsyncStorage:', error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
-        loadInitialData();
+        loadUserFromStorage();
     }, []);
 
     const login = async (email: string, password: string) => {
         const response = await apiLogin(email, password);
         const { token: newToken, user: userData } = response.data;
 
-        await AsyncStorage.setItem('token', newToken);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        await AsyncStorage.setItem('kitchy_token', newToken);
+        await AsyncStorage.setItem('kitchy_user', JSON.stringify(userData));
 
         setToken(newToken);
         setUser(userData);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };
 
     const register = async (email: string, password: string, nombre: string) => {
         const response = await apiRegister({ email, password, nombre });
         const { token: newToken, user: userData } = response.data;
 
-        await AsyncStorage.setItem('token', newToken);
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        await AsyncStorage.setItem('kitchy_token', newToken);
+        await AsyncStorage.setItem('kitchy_user', JSON.stringify(userData));
 
         setToken(newToken);
         setUser(userData);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };
 
     const logout = async () => {
-        await AsyncStorage.removeItem('token');
-        await AsyncStorage.removeItem('user');
+        await AsyncStorage.removeItem('kitchy_token');
+        await AsyncStorage.removeItem('kitchy_user');
         setToken(null);
         setUser(null);
+        delete api.defaults.headers.common['Authorization'];
     };
 
     const isAuthenticated = !!token && !!user;

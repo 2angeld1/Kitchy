@@ -24,7 +24,8 @@ app.use(cors({
         'http://localhost:5173',
         'https://kitchy-one.vercel.app',
         'capacitor://localhost',
-        'ionic://localhost'
+        'ionic://localhost',
+        'http://localhost:8081'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
