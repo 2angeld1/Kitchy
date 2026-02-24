@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import MainAppNavigator from './src/navigation/MainAppNavigator';
+import ProductosScreen from './src/screens/ProductosScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
@@ -11,6 +12,7 @@ import { lightTheme, darkTheme } from './src/theme';
 import KitchyToast from './src/components/KitchyToast';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   useFonts,
   Inter_300Light,
@@ -19,11 +21,11 @@ import {
   Inter_700Bold,
   Inter_900Black
 } from '@expo-google-fonts/inter';
-
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Main: undefined;
+  Productos: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -46,7 +48,10 @@ function RootNavigator() {
       <StatusBar style={isDark ? 'light' : 'dark'} translucent />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="Main" component={MainAppNavigator} />
+          <>
+            <Stack.Screen name="Main" component={MainAppNavigator} />
+            <Stack.Screen name="Productos" component={ProductosScreen} />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
@@ -76,13 +81,15 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NavigationContainer>
-          <RootNavigator />
-          <KitchyToast />
-        </NavigationContainer>
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <NavigationContainer>
+            <RootNavigator />
+            <KitchyToast />
+          </NavigationContainer>
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

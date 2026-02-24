@@ -45,12 +45,13 @@ export default function VentasScreen() {
                 onPress={() => agregarAlCarrito(producto)}
                 activeOpacity={0.7}
             >
-                <View style={[styles.imagePlaceholder, { backgroundColor: colors.background }]}>
-                    <Text style={styles.imageEmoji}>
-                        {producto.categoria === 'comida' ? '🍔' :
-                            producto.categoria === 'bebida' ? '🥤' :
-                                producto.categoria === 'postre' ? '🍰' : '📦'}
-                    </Text>
+                <View style={[styles.imagePlaceholder, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+                    <Ionicons
+                        name={producto.categoria === 'comida' ? 'fast-food' : producto.categoria === 'bebida' ? 'water' : producto.categoria === 'postre' ? 'ice-cream' : 'cube'}
+                        size={48}
+                        color={colors.textMuted}
+                        style={{ opacity: 0.5 }}
+                    />
                 </View>
                 <Text style={[styles.productName, { color: colors.textPrimary }]} numberOfLines={2}>{producto.nombre}</Text>
                 <Text style={[styles.productPrice, { color: colors.primary }]}>${producto.precio.toFixed(2)}</Text>
@@ -178,8 +179,12 @@ export default function VentasScreen() {
                             ) : (
                                 carrito.map(item => (
                                     <View key={item.producto._id} style={[styles.cartItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                                        <View style={[styles.cartItemImage, { backgroundColor: colors.surface }]}>
-                                            <Text style={{ fontSize: 20 }}>🍔</Text>
+                                        <View style={[styles.cartItemImage, { backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }]}>
+                                            <Ionicons
+                                                name={item.producto.categoria === 'comida' ? 'fast-food' : item.producto.categoria === 'bebida' ? 'water' : item.producto.categoria === 'postre' ? 'ice-cream' : 'cube'}
+                                                size={20}
+                                                color={colors.primary}
+                                            />
                                         </View>
                                         <View style={styles.cartItemInfo}>
                                             <Text style={[styles.cartItemName, { color: colors.textPrimary }]} numberOfLines={1}>{item.producto.nombre}</Text>

@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/DashboardScreen';
 import AdminHubScreen from '../screens/AdminHubScreen';
 import VentasScreen from '../screens/VentasScreen';
+import InventarioScreen from '../screens/InventarioScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme, typography } from '../theme';
 import { useAuth } from '../context/AuthContext';
@@ -76,7 +77,7 @@ export default function MainAppNavigator() {
             />
             <Tab.Screen
                 name="Inventario"
-                component={DashboardScreen}
+                component={InventarioScreen}
                 options={{ tabBarLabel: 'Stock' }}
             />
 

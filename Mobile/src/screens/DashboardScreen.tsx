@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/MainAppNavigator';
 import { useAuth } from '../context/AuthContext';
@@ -10,6 +10,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { styles, cardWidth } from '../styles/DashboardScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
+import Toast from 'react-native-toast-message';
 
 type DashboardScreenProps = {
     navigation: NativeStackNavigationProp<MainTabParamList, 'Dashboard'>;
@@ -24,7 +25,13 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     React.useEffect(() => {
         if (error) {
-            Alert.alert("Error", error, [{ text: "Ok", onPress: clearError }]);
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: error,
+                position: 'top',
+                onHide: clearError
+            });
         }
     }, [error]);
 
@@ -39,7 +46,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title="Dashboard" showLogout={true} />
+            <KitchyToolbar title="Dashboard" />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}

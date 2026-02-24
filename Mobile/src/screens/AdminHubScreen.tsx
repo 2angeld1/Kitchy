@@ -1,5 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../App';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
@@ -9,6 +12,7 @@ import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 
 export default function AdminHubScreen() {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
     const menuItems = [
         {
@@ -44,11 +48,15 @@ export default function AdminHubScreen() {
     const { isDark, toggleTheme } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 
-    const handlePress = (item: string) => {
+    const handlePress = (id: string, title: string) => {
+        if (id === 'productos') {
+            navigation.navigate('Productos');
+            return;
+        }
         Toast.show({
             type: 'info',
             text1: 'Módulo en desarrollo',
-            text2: `Accediendo a: ${item}`,
+            text2: `Accediendo a: ${title}`,
             position: 'top'
         });
     };
@@ -90,7 +98,7 @@ export default function AdminHubScreen() {
                         >
                             <TouchableOpacity
                                 style={[styles.hubCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                                onPress={() => handlePress(item.title)}
+                                onPress={() => handlePress(item.id, item.title)}
                                 activeOpacity={0.7}
                             >
                                 <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
