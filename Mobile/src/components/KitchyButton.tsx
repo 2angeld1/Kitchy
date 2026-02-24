@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     buttonText: {
+        fontFamily: typography.fontFamily.black,
         color: colors.white,
         fontWeight: typography.fontWeight.black,
         fontSize: typography.fontSize.lg,

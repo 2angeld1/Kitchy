@@ -6,6 +6,8 @@ import { useLogin } from '../hooks/useLogin';
 import { KitchyInput } from '../components/KitchyInput';
 import { KitchyButton } from '../components/KitchyButton';
 import { styles } from '../styles/LoginScreen.styles';
+import { useTheme } from '../context/ThemeContext';
+import { lightTheme, darkTheme } from '../theme';
 
 type LoginScreenProps = {
     navigation: NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -13,23 +15,25 @@ type LoginScreenProps = {
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
     const { email, setEmail, password, setPassword, loading, error, handleLogin } = useLogin();
+    const { isDark } = useTheme();
+    const colors = isDark ? darkTheme : lightTheme;
 
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
+            style={[styles.container, { backgroundColor: colors.background }]}
         >
             <View style={styles.innerContainer}>
 
-                <View style={styles.blurCircle} />
+                <View style={[styles.blurCircle, isDark && { backgroundColor: 'rgba(225, 29, 72, 0.05)' }]} />
 
                 <View style={styles.headerContainer}>
-                    <View style={styles.logoContainer}>
-                        <Text style={styles.logoText}>K<Text style={styles.logoDot}>.</Text></Text>
+                    <View style={[styles.logoContainer, { backgroundColor: colors.textPrimary }]}>
+                        <Text style={[styles.logoText, { color: colors.card }]}>K<Text style={styles.logoDot}>.</Text></Text>
                     </View>
 
-                    <Text style={styles.title}>¡Bienvenido!</Text>
-                    <Text style={styles.subtitle}>Ingresa a tu cuenta para continuar en Kitchy.</Text>
+                    <Text style={[styles.title, { color: colors.textPrimary }]}>¡Bienvenido!</Text>
+                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Ingresa a tu cuenta para continuar en Kitchy.</Text>
                 </View>
 
                 {error ? <Text style={styles.globalError}>{error}</Text> : null}
@@ -57,11 +61,11 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                     title="Iniciar Sesión"
                     onPress={handleLogin}
                     loading={loading}
-                    variant="dark"
+                    variant={isDark ? "primary" : "dark"}
                 />
 
                 <View style={styles.footerContainer}>
-                    <Text style={styles.footerText}>¿No tienes cuenta? </Text>
+                    <Text style={[styles.footerText, { color: colors.textSecondary }]}>¿No tienes cuenta? </Text>
                     <TouchableOpacity onPress={() => navigation.navigate('Register')}>
                         <Text style={styles.footerLink}>Regístrate aquí</Text>
                     </TouchableOpacity>

@@ -6,9 +6,10 @@ import { useAuth } from '../context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { colors } from '../theme';
+import { lightTheme, darkTheme } from '../theme';
 import { styles, cardWidth } from '../styles/DashboardScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
+import { useTheme } from '../context/ThemeContext';
 
 type DashboardScreenProps = {
     navigation: NativeStackNavigationProp<MainTabParamList, 'Dashboard'>;
@@ -17,6 +18,9 @@ type DashboardScreenProps = {
 export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { user } = useAuth();
     const { data, loading, refreshing, error, onRefresh, clearError } = useDashboard();
+    const { isDark } = useTheme();
+
+    const colors = isDark ? darkTheme : lightTheme;
 
     React.useEffect(() => {
         if (error) {
@@ -26,15 +30,15 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     if (loading && !data) {
         return (
-            <View style={styles.loadingContainer}>
+            <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
                 <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={styles.loadingText}>Cargando panel...</Text>
+                <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Cargando panel...</Text>
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <KitchyToolbar title="Dashboard" showLogout={true} />
 
             <ScrollView
@@ -45,10 +49,10 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                 }
             >
                 {/* Saludo Animado */}
-                <Animated.Text entering={FadeInDown.duration(400).delay(100)} style={styles.greetingTitle}>
+                <Animated.Text entering={FadeInDown.duration(400).delay(100)} style={[styles.greetingTitle, { color: colors.textMuted }]}>
                     Resumen General
                 </Animated.Text>
-                <Animated.Text entering={FadeInDown.duration(400).delay(150)} style={styles.greetingSubtitle}>
+                <Animated.Text entering={FadeInDown.duration(400).delay(150)} style={[styles.greetingSubtitle, { color: colors.textPrimary }]}>
                     ¡Hola de nuevo, {user?.nombre?.split(' ')[0]}!
                 </Animated.Text>
 
@@ -57,47 +61,47 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
                         {/* 1. Métrica Principal: Ventas Hoy */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(250)}>
-                            <View style={styles.glassCardBase}>
+                            <View style={[styles.glassCardBase, { backgroundColor: colors.card, borderColor: colors.border }]}>
                                 <View style={styles.cardHeaderRow}>
-                                    <View style={styles.glassIconContainerPrimary}>
+                                    <View style={[styles.glassIconContainerPrimary, { backgroundColor: isDark ? 'rgba(225, 29, 72, 0.15)' : 'rgba(225, 29, 72, 0.1)' }]}>
                                         <Ionicons name="cash-outline" size={28} color={colors.primary} />
                                     </View>
-                                    <View style={styles.datePill}>
-                                        <Text style={styles.datePillText}>Hoy</Text>
+                                    <View style={[styles.datePill, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                                        <Text style={[styles.datePillText, { color: colors.textSecondary }]}>Hoy</Text>
                                     </View>
                                 </View>
-                                <Text style={styles.cardLabel}>Ventas Facturadas</Text>
-                                <Text style={styles.cardValue}>${data.ventas.hoy.total.toFixed(2)}</Text>
-                                <Text style={styles.cardSubtitle}>{data.ventas.hoy.cantidad} tickets emitidos</Text>
+                                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Ventas Facturadas</Text>
+                                <Text style={[styles.cardValue, { color: colors.textPrimary }]}>${data.ventas.hoy.total.toFixed(2)}</Text>
+                                <Text style={[styles.cardSubtitle, { color: colors.textMuted }]}>{data.ventas.hoy.cantidad} tickets emitidos</Text>
                             </View>
                         </Animated.View>
 
                         {/* 2. Grid de dos columnas para Mes */}
                         <View style={styles.statsGrid}>
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(350)}>
-                                <View style={[styles.glassCardGrid, { width: cardWidth }]}>
-                                    <View style={styles.glassIconContainerSecondary}>
+                                <View style={[styles.glassCardGrid, { width: cardWidth, backgroundColor: colors.card, borderColor: colors.border }]}>
+                                    <View style={[styles.glassIconContainerSecondary, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(59, 130, 246, 0.1)' }]}>
                                         <Ionicons name="stats-chart-outline" size={20} color="#3b82f6" />
                                     </View>
-                                    <Text style={styles.gridCardLabel}>Ventas Mes</Text>
-                                    <Text style={styles.gridCardValue}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
-                                    <Text style={styles.gridCardSubtitle}>{data.ventas.mes.cantidad} ventas</Text>
+                                    <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Ventas Mes</Text>
+                                    <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
+                                    <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>{data.ventas.mes.cantidad} ventas</Text>
                                 </View>
                             </Animated.View>
 
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(450)}>
-                                <View style={[styles.glassCardGrid, { width: cardWidth }]}>
-                                    <View style={styles.glassIconContainerWarning}>
+                                <View style={[styles.glassCardGrid, { width: cardWidth, backgroundColor: colors.card, borderColor: colors.border }]}>
+                                    <View style={[styles.glassIconContainerWarning, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)' }]}>
                                         <Ionicons name="cube-outline" size={20} color="#f59e0b" />
                                     </View>
-                                    <Text style={styles.gridCardLabel}>Inventario</Text>
-                                    <Text style={styles.gridCardValue}>{data.inventario.totalItems}</Text>
+                                    <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Inventario</Text>
+                                    <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>{data.inventario.totalItems}</Text>
                                     {data.inventario.itemsStockBajo > 0 ? (
                                         <View style={styles.badgeWarning}>
                                             <Text style={styles.badgeWarningText}>{data.inventario.itemsStockBajo} BAJO STOCK</Text>
                                         </View>
                                     ) : (
-                                        <Text style={styles.gridCardSubtitle}>Items totales</Text>
+                                        <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>Items totales</Text>
                                     )}
                                 </View>
                             </Animated.View>
@@ -105,12 +109,12 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
                         {/* 3. Módulo: Productos más vendidos */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(550)}>
-                            <View style={styles.glassSection}>
-                                <View style={styles.sectionHeader}>
-                                    <View style={styles.glassIconSmall}>
+                            <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
+                                    <View style={[styles.glassIconSmall, { backgroundColor: colors.background }]}>
                                         <Ionicons name="trophy-outline" size={18} color={colors.textPrimary} />
                                     </View>
-                                    <Text style={styles.sectionTitle}>Más Vendidos</Text>
+                                    <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Más Vendidos</Text>
                                 </View>
 
                                 <View style={styles.listContainer}>
@@ -119,22 +123,22 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                             <Animated.View
                                                 key={idx}
                                                 entering={FadeInDown.duration(300).delay(600 + (idx * 100))}
-                                                style={styles.glassListItem}
+                                                style={[styles.glassListItem, { backgroundColor: colors.card, borderColor: colors.border }]}
                                             >
-                                                <View style={styles.listItemRank}>
-                                                    <Text style={styles.listItemRankText}>{idx + 1}</Text>
+                                                <View style={[styles.listItemRank, { backgroundColor: colors.background }]}>
+                                                    <Text style={[styles.listItemRankText, { color: colors.textPrimary }]}>{idx + 1}</Text>
                                                 </View>
                                                 <View style={styles.listItemInfo}>
-                                                    <Text style={styles.listItemTitle} numberOfLines={1}>{prod.nombre}</Text>
-                                                    <Text style={styles.listItemSubtitle}>{prod.cantidad} unid.</Text>
+                                                    <Text style={[styles.listItemTitle, { color: colors.textPrimary }]} numberOfLines={1}>{prod.nombre}</Text>
+                                                    <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>{prod.cantidad} unid.</Text>
                                                 </View>
-                                                <View style={styles.listItemRightBadge}>
-                                                    <Text style={styles.listItemRightBadgeText}>${prod.total.toFixed(0)}</Text>
+                                                <View style={[styles.listItemRightBadge, { backgroundColor: isDark ? 'rgba(225, 29, 72, 0.15)' : 'rgba(225, 29, 72, 0.1)' }]}>
+                                                    <Text style={[styles.listItemRightBadgeText, { color: colors.primary }]}>${prod.total.toFixed(0)}</Text>
                                                 </View>
                                             </Animated.View>
                                         ))
                                     ) : (
-                                        <Text style={styles.emptyText}>Aún no hay ventas registradas.</Text>
+                                        <Text style={[styles.emptyText, { color: colors.textMuted }]}>Aún no hay ventas registradas.</Text>
                                     )}
                                 </View>
                             </View>

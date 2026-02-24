@@ -5,8 +5,9 @@ import DashboardScreen from '../screens/DashboardScreen';
 import AdminHubScreen from '../screens/AdminHubScreen';
 import VentasScreen from '../screens/VentasScreen';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, typography } from '../theme';
+import { lightTheme, darkTheme, typography } from '../theme';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export type MainTabParamList = {
     Dashboard: undefined;
@@ -19,6 +20,10 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainAppNavigator() {
     const { isAdmin } = useAuth();
+    const { isDark } = useTheme();
+
+    // Explicit theme colors based on context
+    const colors = isDark ? darkTheme : lightTheme;
 
     return (
         <Tab.Navigator
@@ -43,7 +48,7 @@ export default function MainAppNavigator() {
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textMuted,
                 tabBarStyle: {
-                    backgroundColor: colors.white,
+                    backgroundColor: colors.card,
                     borderTopWidth: 1,
                     borderTopColor: colors.border,
                     height: Platform.OS === 'ios' ? 85 : 55, // Altura general más limpia

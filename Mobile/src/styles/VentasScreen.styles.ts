@@ -17,6 +17,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerTitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xl,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -47,6 +48,7 @@ export const styles = StyleSheet.create({
         borderColor: colors.white,
     },
     cartBadgeText: {
+        fontFamily: typography.fontFamily.black,
         color: colors.white,
         fontSize: 10,
         fontWeight: typography.fontWeight.black,
@@ -66,6 +68,7 @@ export const styles = StyleSheet.create({
         borderColor: colors.border,
     },
     searchInput: {
+        fontFamily: typography.fontFamily.medium,
         flex: 1,
         marginLeft: spacing.sm,
         fontSize: typography.fontSize.sm,
@@ -90,6 +93,7 @@ export const styles = StyleSheet.create({
         borderColor: colors.primary,
     },
     categoryText: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 11,
         fontWeight: typography.fontWeight.black,
         color: colors.textSecondary,
@@ -127,14 +131,16 @@ export const styles = StyleSheet.create({
         fontSize: 32,
     },
     productName: {
+        fontFamily: typography.fontFamily.medium,
         fontSize: 13,
-        fontWeight: typography.fontWeight.black,
+        fontWeight: typography.fontWeight.normal,
         color: colors.textPrimary,
         height: 32,
     },
     productPrice: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: 16,
-        fontWeight: typography.fontWeight.black,
+        fontWeight: typography.fontWeight.medium,
         color: colors.primary,
         marginTop: 4,
     },
@@ -144,6 +150,7 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     emptyText: {
+        fontFamily: typography.fontFamily.medium,
         marginTop: 10,
         fontSize: typography.fontSize.sm,
         fontWeight: typography.fontWeight.bold,
@@ -170,11 +177,13 @@ export const styles = StyleSheet.create({
         marginBottom: spacing.lg,
     },
     modalTitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xl,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
     },
     modalSubtitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 10,
         fontWeight: typography.fontWeight.black,
         color: colors.textMuted,
@@ -207,13 +216,15 @@ export const styles = StyleSheet.create({
         flex: 1,
     },
     cartItemName: {
+        fontFamily: typography.fontFamily.medium,
         fontSize: 14,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: typography.fontWeight.normal,
         color: colors.textPrimary,
     },
     cartItemPrice: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: 12,
-        fontWeight: typography.fontWeight.black,
+        fontWeight: typography.fontWeight.medium,
         color: colors.primary,
     },
     quantityControls: {
@@ -232,6 +243,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     qtyText: {
+        fontFamily: typography.fontFamily.black,
         width: 24,
         textAlign: 'center',
         fontSize: 12,
@@ -251,6 +263,7 @@ export const styles = StyleSheet.create({
         marginBottom: 20,
     },
     inputSmall: {
+        fontFamily: typography.fontFamily.medium,
         flex: 1.5,
         backgroundColor: colors.background,
         borderRadius: 12,
@@ -272,6 +285,7 @@ export const styles = StyleSheet.create({
         borderColor: colors.border,
     },
     selectText: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: 12,
         fontWeight: 'bold',
         color: colors.textPrimary,
@@ -283,12 +297,14 @@ export const styles = StyleSheet.create({
         marginBottom: 20,
     },
     totalLabel: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 10,
         fontWeight: typography.fontWeight.black,
         color: colors.textMuted,
         textTransform: 'uppercase',
     },
     totalValue: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 32,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -309,6 +325,7 @@ export const styles = StyleSheet.create({
         elevation: 5,
     },
     confirmBtnText: {
+        fontFamily: typography.fontFamily.black,
         color: colors.white,
         fontSize: 16,
         fontWeight: typography.fontWeight.black,

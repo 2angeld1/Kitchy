@@ -7,8 +7,18 @@ import MainAppNavigator from './src/navigation/MainAppNavigator';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator } from 'react-native';
-import { colors } from './src/theme';
+import { lightTheme, darkTheme } from './src/theme';
 import KitchyToast from './src/components/KitchyToast';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
+import {
+  useFonts,
+  Inter_300Light,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_700Bold,
+  Inter_900Black
+} from '@expo-google-fonts/inter';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -20,6 +30,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
   const { isAuthenticated, loading } = useAuth();
+  const { isDark } = useTheme();
+  const colors = isDark ? darkTheme : lightTheme;
 
   if (loading) {
     return (
@@ -30,26 +42,47 @@ function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
-        <Stack.Screen name="Main" component={MainAppNavigator} />
-      ) : (
-        <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </>
-      )}
-    </Stack.Navigator>
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} translucent />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {isAuthenticated ? (
+          <Stack.Screen name="Main" component={MainAppNavigator} />
+        ) : (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </>
+        )}
+      </Stack.Navigator>
+    </>
   );
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_300Light,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_700Bold,
+    Inter_900Black,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: lightTheme.background }}>
+        <ActivityIndicator size="large" color={lightTheme.primary} />
+      </View>
+    );
+  }
+
   return (
-    <AuthProvider>
-      <NavigationContainer>
-        <RootNavigator />
-        <KitchyToast />
-      </NavigationContainer>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <RootNavigator />
+          <KitchyToast />
+        </NavigationContainer>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

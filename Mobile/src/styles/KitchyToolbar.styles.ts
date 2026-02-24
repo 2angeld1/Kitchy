@@ -9,13 +9,12 @@ export const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: colors.background,
         zIndex: 100,
     },
     title: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xl,
         fontWeight: typography.fontWeight.black,
-        color: colors.textPrimary,
         letterSpacing: -1,
     },
     actions: {

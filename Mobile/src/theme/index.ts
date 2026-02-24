@@ -1,25 +1,38 @@
-export const colors = {
-    // Brand Colors - Red Premium Palette
-    primary: '#E11D48', // rose-600 (Vibrant & Premium Red)
-    primaryLight: '#FB7185', // rose-400
-    primaryShade: '#9F1239', // rose-800
-
-    // Neutral Colors (Greys for text, bg, and borders)
-    background: '#fafafa', // zinc-50
-    surface: 'rgba(244, 244, 245, 0.8)', // zinc-100/80
-    border: '#e4e4e7', // zinc-200
-    textPrimary: '#18181b', // zinc-900
-    textSecondary: '#71717a', // zinc-500
-    textMuted: '#A1A1AA', // zinc-400
-
-    // White / Black
+export const lightTheme = {
+    primary: '#E11D48',
+    primaryLight: '#FB7185',
+    primaryShade: '#9F1239',
+    background: '#fafafa',
+    surface: '#ffffff',
+    card: '#ffffff',
+    border: '#e4e4e7',
+    textPrimary: '#18181b',
+    textSecondary: '#71717a',
+    textMuted: '#A1A1AA',
     white: '#ffffff',
     black: '#000000',
-
-    // Specific UI Accents
     overlayHover: 'rgba(0,0,0, 0.05)',
-    error: '#EF4444', // red-500
+    error: '#EF4444',
 };
+
+export const darkTheme = {
+    primary: '#E11D48',
+    primaryLight: '#FB7185',
+    primaryShade: '#9F1239',
+    background: '#09090b',
+    surface: '#18181b',
+    card: '#18181b',
+    border: '#27272a',
+    textPrimary: '#fafafa',
+    textSecondary: '#a1a1aa',
+    textMuted: '#52525b',
+    white: '#ffffff',
+    black: '#000000',
+    overlayHover: 'rgba(255,255,255, 0.05)',
+    error: '#EF4444',
+};
+
+export type ThemeColors = typeof lightTheme;
 
 export const spacing = {
     xs: 4,
@@ -38,6 +51,13 @@ export const borderRadius = {
 };
 
 export const typography = {
+    fontFamily: {
+        light: 'Inter_300Light',
+        regular: 'Inter_400Regular',
+        medium: 'Inter_500Medium',
+        bold: 'Inter_700Bold',
+        black: 'Inter_900Black',
+    },
     fontSize: {
         xs: 11,
         sm: 14,
@@ -53,3 +73,6 @@ export const typography = {
         black: '900',
     } as const,
 };
+
+// Retrocompatibilidad
+export const colors = lightTheme;

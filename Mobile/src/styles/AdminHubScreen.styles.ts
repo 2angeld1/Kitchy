@@ -68,10 +68,21 @@ export const styles = StyleSheet.create({
         textAlign: 'center',
     },
     cardDesc: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: 10,
         color: colors.textMuted,
         textAlign: 'center',
         marginTop: 4,
         fontWeight: typography.fontWeight.bold,
+    },
+    themeToggle: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: colors.white,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: colors.border,
     }
 });

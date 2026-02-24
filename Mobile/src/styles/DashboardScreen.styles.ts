@@ -12,6 +12,7 @@ export const styles = StyleSheet.create({
         backgroundColor: colors.background,
     },
     loadingText: {
+        fontFamily: typography.fontFamily.medium,
         marginTop: spacing.md,
         fontSize: typography.fontSize.sm,
         color: colors.textSecondary,
@@ -33,6 +34,7 @@ export const styles = StyleSheet.create({
         zIndex: 10,
     },
     headerTitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xl,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -105,6 +107,7 @@ export const styles = StyleSheet.create({
         marginBottom: spacing.xl,
     },
     modalTitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.lg,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -133,20 +136,24 @@ export const styles = StyleSheet.create({
         flex: 1,
     },
     notifTitle: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: typography.fontSize.sm,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: typography.fontWeight.medium,
         color: colors.textPrimary,
         marginBottom: 2,
     },
     notifMsg: {
+        fontFamily: typography.fontFamily.light,
         fontSize: typography.fontSize.xs,
+        fontWeight: typography.fontWeight.normal,
         color: colors.textSecondary,
         marginBottom: 4,
     },
     notifTime: {
+        fontFamily: typography.fontFamily.medium,
         fontSize: 10,
         color: colors.textMuted,
-        fontWeight: typography.fontWeight.medium,
+        fontWeight: typography.fontWeight.normal,
     },
     modalFooterButton: {
         backgroundColor: colors.background,
@@ -156,6 +163,7 @@ export const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     modalFooterText: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: typography.fontSize.sm,
         fontWeight: typography.fontWeight.bold,
         color: colors.textPrimary,
@@ -165,6 +173,7 @@ export const styles = StyleSheet.create({
         zIndex: 1,
     },
     greetingTitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 12,
         fontWeight: typography.fontWeight.black,
         color: colors.textMuted,
@@ -174,6 +183,7 @@ export const styles = StyleSheet.create({
         marginBottom: 4,
     },
     greetingSubtitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xxl,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -222,12 +232,14 @@ export const styles = StyleSheet.create({
         borderColor: colors.border,
     },
     datePillText: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 10,
         fontWeight: typography.fontWeight.black,
         color: colors.textSecondary,
         textTransform: 'uppercase',
     },
     cardLabel: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xs,
         fontWeight: typography.fontWeight.black,
         color: colors.textSecondary,
@@ -236,14 +248,16 @@ export const styles = StyleSheet.create({
         marginBottom: spacing.xs,
     },
     cardValue: {
+        fontFamily: typography.fontFamily.black,
         fontSize: 40,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
         letterSpacing: -2,
     },
     cardSubtitle: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: typography.fontSize.xs,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: typography.fontWeight.medium,
         color: colors.textMuted,
         marginTop: spacing.xs,
     },
@@ -287,6 +301,7 @@ export const styles = StyleSheet.create({
         marginBottom: spacing.sm,
     },
     gridCardLabel: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xs,
         fontWeight: typography.fontWeight.black,
         color: colors.textSecondary,
@@ -294,14 +309,16 @@ export const styles = StyleSheet.create({
         letterSpacing: 1,
     },
     gridCardValue: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xl,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
         letterSpacing: -1,
     },
     gridCardSubtitle: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: 10,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: typography.fontWeight.medium,
         color: colors.textMuted,
     },
     badgeWarning: {
@@ -313,6 +330,7 @@ export const styles = StyleSheet.create({
         marginTop: 2,
     },
     badgeWarningText: {
+        fontFamily: typography.fontFamily.black,
         color: colors.error,
         fontSize: 8,
         fontWeight: typography.fontWeight.black,
@@ -349,6 +367,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
     },
     sectionTitle: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.sm,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -377,6 +396,7 @@ export const styles = StyleSheet.create({
         marginRight: spacing.md,
     },
     listItemRankText: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.base,
         fontWeight: typography.fontWeight.black,
         color: colors.textPrimary,
@@ -385,13 +405,15 @@ export const styles = StyleSheet.create({
         flex: 1,
     },
     listItemTitle: {
+        fontFamily: typography.fontFamily.bold,
         fontSize: typography.fontSize.sm,
-        fontWeight: typography.fontWeight.bold,
+        fontWeight: typography.fontWeight.medium,
         color: colors.textPrimary,
     },
     listItemSubtitle: {
+        fontFamily: typography.fontFamily.light,
         fontSize: typography.fontSize.xs,
-        fontWeight: typography.fontWeight.medium,
+        fontWeight: typography.fontWeight.normal,
         color: colors.textMuted,
         marginTop: 2,
     },
@@ -402,15 +424,17 @@ export const styles = StyleSheet.create({
         borderRadius: 20,
     },
     listItemRightBadgeText: {
+        fontFamily: typography.fontFamily.black,
         fontSize: typography.fontSize.xs,
         fontWeight: typography.fontWeight.black,
         color: colors.primary,
     },
     emptyText: {
+        fontFamily: typography.fontFamily.light,
         padding: spacing.xl,
         textAlign: 'center',
         color: colors.textMuted,
-        fontWeight: typography.fontWeight.medium,
+        fontWeight: typography.fontWeight.normal,
         fontSize: typography.fontSize.sm,
     }
 });

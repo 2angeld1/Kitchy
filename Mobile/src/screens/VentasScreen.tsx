@@ -3,9 +3,10 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, RefreshCont
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn, SlideInDown } from 'react-native-reanimated';
 import { useVentas, Producto } from '../hooks/useVentas';
-import { colors } from '../theme';
+import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/VentasScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
+import { useTheme } from '../context/ThemeContext';
 
 export default function VentasScreen() {
     const {
@@ -29,6 +30,9 @@ export default function VentasScreen() {
         metodoPago,
     } = useVentas();
 
+    const { isDark } = useTheme();
+    const colors = isDark ? darkTheme : lightTheme;
+
     const categorias = ['comida', 'bebida', 'postre'];
 
     const renderItem = (producto: Producto, index: number) => (
@@ -37,30 +41,30 @@ export default function VentasScreen() {
             key={producto._id}
         >
             <TouchableOpacity
-                style={styles.productCard}
+                style={[styles.productCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                 onPress={() => agregarAlCarrito(producto)}
                 activeOpacity={0.7}
             >
-                <View style={styles.imagePlaceholder}>
+                <View style={[styles.imagePlaceholder, { backgroundColor: colors.background }]}>
                     <Text style={styles.imageEmoji}>
                         {producto.categoria === 'comida' ? '🍔' :
                             producto.categoria === 'bebida' ? '🥤' :
                                 producto.categoria === 'postre' ? '🍰' : '📦'}
                     </Text>
                 </View>
-                <Text style={styles.productName} numberOfLines={2}>{producto.nombre}</Text>
-                <Text style={styles.productPrice}>${producto.precio.toFixed(2)}</Text>
+                <Text style={[styles.productName, { color: colors.textPrimary }]} numberOfLines={2}>{producto.nombre}</Text>
+                <Text style={[styles.productPrice, { color: colors.primary }]}>${producto.precio.toFixed(2)}</Text>
             </TouchableOpacity>
         </Animated.View>
     );
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <KitchyToolbar
                 title="Ventas"
                 extraButtons={
                     <TouchableOpacity
-                        style={styles.cartButton}
+                        style={[styles.cartButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                         onPress={() => setShowModal(true)}
                     >
                         <Ionicons name="cart-outline" size={22} color={colors.textPrimary} />
@@ -77,10 +81,10 @@ export default function VentasScreen() {
 
             {/* Buscador */}
             <View style={styles.searchContainer}>
-                <View style={styles.searchInputWrapper}>
+                <View style={[styles.searchInputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Ionicons name="search-outline" size={20} color={colors.textMuted} />
                     <TextInput
-                        style={styles.searchInput}
+                        style={[styles.searchInput, { color: colors.textPrimary }]}
                         placeholder="Buscar producto..."
                         placeholderTextColor={colors.textMuted}
                         value={busqueda}
@@ -97,18 +101,26 @@ export default function VentasScreen() {
                     contentContainerStyle={styles.categoriesContainer}
                 >
                     <TouchableOpacity
-                        style={[styles.categoryChip, !categoriaFiltro && styles.categoryChipActive]}
+                        style={[
+                            styles.categoryChip,
+                            { backgroundColor: colors.card, borderColor: colors.border },
+                            !categoriaFiltro && { backgroundColor: colors.primary, borderColor: colors.primary }
+                        ]}
                         onPress={() => setCategoriaFiltro('')}
                     >
-                        <Text style={[styles.categoryText, !categoriaFiltro && styles.categoryTextActive]}>Todos</Text>
+                        <Text style={[styles.categoryText, { color: colors.textSecondary }, !categoriaFiltro && { color: colors.white }]}>Todos</Text>
                     </TouchableOpacity>
                     {categorias.map(cat => (
                         <TouchableOpacity
                             key={cat}
-                            style={[styles.categoryChip, categoriaFiltro === cat && styles.categoryChipActive]}
+                            style={[
+                                styles.categoryChip,
+                                { backgroundColor: colors.card, borderColor: colors.border },
+                                categoriaFiltro === cat && { backgroundColor: colors.primary, borderColor: colors.primary }
+                            ]}
                             onPress={() => setCategoriaFiltro(cat)}
                         >
-                            <Text style={[styles.categoryText, categoriaFiltro === cat && styles.categoryTextActive]}>{cat}</Text>
+                            <Text style={[styles.categoryText, { color: colors.textSecondary }, categoriaFiltro === cat && { color: colors.white }]}>{cat}</Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
@@ -123,7 +135,7 @@ export default function VentasScreen() {
                 {productosFiltrados.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Ionicons name="search-outline" size={48} color={colors.border} />
-                        <Text style={styles.emptyText}>No hay productos que coincidan</Text>
+                        <Text style={[styles.emptyText, { color: colors.textMuted }]}>No hay productos que coincidan</Text>
                     </View>
                 ) : (
                     <View style={styles.productsGrid}>
@@ -145,12 +157,12 @@ export default function VentasScreen() {
                 >
                     <Animated.View
                         entering={SlideInDown.springify().damping(15)}
-                        style={styles.modalContent}
+                        style={[styles.modalContent, { backgroundColor: colors.card }]}
                     >
                         <View style={styles.modalHeader}>
                             <View>
-                                <Text style={styles.modalTitle}>Tu Pedido</Text>
-                                <Text style={styles.modalSubtitle}>{carrito.length} Items seleccionados</Text>
+                                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Tu Pedido</Text>
+                                <Text style={[styles.modalSubtitle, { color: colors.textMuted }]}>{carrito.length} Items seleccionados</Text>
                             </View>
                             <TouchableOpacity onPress={() => setShowModal(false)}>
                                 <Ionicons name="close-circle" size={32} color={colors.textMuted} />
@@ -161,26 +173,26 @@ export default function VentasScreen() {
                             {carrito.length === 0 ? (
                                 <View style={[styles.emptyContainer, { paddingTop: 100 }]}>
                                     <Ionicons name="cart-outline" size={64} color={colors.border} />
-                                    <Text style={styles.emptyText}>El carrito está vacío</Text>
+                                    <Text style={[styles.emptyText, { color: colors.textMuted }]}>El carrito está vacío</Text>
                                 </View>
                             ) : (
                                 carrito.map(item => (
-                                    <View key={item.producto._id} style={styles.cartItem}>
-                                        <View style={styles.cartItemImage}>
+                                    <View key={item.producto._id} style={[styles.cartItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                                        <View style={[styles.cartItemImage, { backgroundColor: colors.surface }]}>
                                             <Text style={{ fontSize: 20 }}>🍔</Text>
                                         </View>
                                         <View style={styles.cartItemInfo}>
-                                            <Text style={styles.cartItemName} numberOfLines={1}>{item.producto.nombre}</Text>
-                                            <Text style={styles.cartItemPrice}>${item.producto.precio.toFixed(2)}</Text>
+                                            <Text style={[styles.cartItemName, { color: colors.textPrimary }]} numberOfLines={1}>{item.producto.nombre}</Text>
+                                            <Text style={[styles.cartItemPrice, { color: colors.primary }]}>${item.producto.precio.toFixed(2)}</Text>
                                         </View>
-                                        <View style={styles.quantityControls}>
+                                        <View style={[styles.quantityControls, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                                             <TouchableOpacity
                                                 style={styles.qtyBtn}
                                                 onPress={() => quitarDelCarrito(item.producto._id)}
                                             >
                                                 <Ionicons name="remove" size={18} color={colors.textSecondary} />
                                             </TouchableOpacity>
-                                            <Text style={styles.qtyText}>{item.cantidad}</Text>
+                                            <Text style={[styles.qtyText, { color: colors.textPrimary }]}>{item.cantidad}</Text>
                                             <TouchableOpacity
                                                 style={styles.qtyBtn}
                                                 onPress={() => agregarAlCarrito(item.producto)}
@@ -194,24 +206,25 @@ export default function VentasScreen() {
                         </ScrollView>
 
                         {carrito.length > 0 && (
-                            <View style={styles.checkoutFooter}>
+                            <View style={[styles.checkoutFooter, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
                                 <View style={styles.formRow}>
                                     <TextInput
-                                        style={styles.inputSmall}
+                                        style={[styles.inputSmall, { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary }]}
                                         placeholder="Cliente (Opcional)"
+                                        placeholderTextColor={colors.textMuted}
                                         value={cliente}
                                         onChangeText={setCliente}
                                     />
-                                    <View style={styles.selectSmall}>
-                                        <Text style={styles.selectText}>
+                                    <View style={[styles.selectSmall, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                                        <Text style={[styles.selectText, { color: colors.textPrimary }]}>
                                             {metodoPago === 'efectivo' ? '💵 Efectivo' : '💸 Yappy'}
                                         </Text>
                                     </View>
                                 </View>
 
                                 <View style={styles.totalRow}>
-                                    <Text style={styles.totalLabel}>Total a pagar</Text>
-                                    <Text style={styles.totalValue}>${calcularTotal().toFixed(2)}</Text>
+                                    <Text style={[styles.totalLabel, { color: colors.textMuted }]}>Total a pagar</Text>
+                                    <Text style={[styles.totalValue, { color: colors.textPrimary }]}>${calcularTotal().toFixed(2)}</Text>
                                 </View>
 
                                 <TouchableOpacity
