@@ -20,7 +20,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
     return (
         <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={[styles.container, { backgroundColor: colors.background }]}
         >
             <View style={styles.innerContainer}>
