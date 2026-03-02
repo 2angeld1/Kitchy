@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/MainAppNavigator';
 import { useAuth } from '../context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
+import { useGastos } from '../hooks/useGastos';
+import { KitchyInput } from '../components/KitchyInput';
+import { KitchyButton } from '../components/KitchyButton';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
@@ -22,7 +25,14 @@ type DashboardScreenProps = {
 export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { user } = useAuth();
     const { data, loading, refreshing, error, onRefresh, clearError } = useDashboard();
+    const { registrarGasto, loading: creatingGasto } = useGastos();
     const { isDark } = useTheme();
+
+    // Estado Gasto
+    const [showGastoModal, setShowGastoModal] = React.useState(false);
+    const [gastoDesc, setGastoDesc] = React.useState('');
+    const [gastoMonto, setGastoMonto] = React.useState('');
+    const [gastoCat, setGastoCat] = React.useState('servicios');
 
     const colors = isDark ? darkTheme : lightTheme;
 
@@ -37,6 +47,27 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
             });
         }
     }, [error]);
+
+    const handleRegistrarGasto = async () => {
+        if (!gastoDesc || !gastoMonto) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'Descripción y monto requeridos' });
+            return;
+        }
+
+        const success = await registrarGasto({
+            descripcion: gastoDesc,
+            monto: parseFloat(gastoMonto),
+            categoria: gastoCat
+        });
+
+        if (success) {
+            Toast.show({ type: 'success', text1: 'Éxito', text2: 'Gasto registrado correctamente' });
+            setShowGastoModal(false);
+            setGastoDesc('');
+            setGastoMonto('');
+            onRefresh();
+        }
+    };
 
     if (loading && !data) {
         return (
@@ -94,7 +125,31 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                         <Ionicons name="stats-chart-outline" size={20} color="#3b82f6" />
                                     </View>
                                     <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Ventas Mes</Text>
-                                    <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                        <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
+                                        {data.ventas.mesPasado.total > 0 && (
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                backgroundColor: (Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total) ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                paddingHorizontal: 4,
+                                                borderRadius: 4
+                                            }}>
+                                                <Ionicons
+                                                    name={Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total ? "arrow-up" : "arrow-down"}
+                                                    size={10}
+                                                    color={Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total ? "#10b981" : "#ef4444"}
+                                                />
+                                                <Text style={{
+                                                    fontSize: 8,
+                                                    fontWeight: 'bold',
+                                                    color: Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total ? "#10b981" : "#ef4444"
+                                                }}>
+                                                    {Math.abs(((Number(data.finanzas.ingresosMes) - data.ventas.mesPasado.total) / data.ventas.mesPasado.total) * 100).toFixed(0)}%
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
                                     <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>{data.ventas.mes.cantidad} ventas</Text>
                                 </View>
                             </Animated.View>
@@ -129,21 +184,44 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                         {/* 2.5 Nueva Sección: Salud Financiera del Mes */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(480)}>
                             <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border, padding: 16 }]}>
-                                <Text style={[styles.cardLabel, { color: colors.textMuted, marginBottom: 12 }]}>Finanzas del Mes</Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                    <Text style={[styles.cardLabel, { color: colors.textMuted, marginBottom: 0 }]}>Finanzas del Mes</Text>
+                                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                                        {/* Merma Button */}
+                                        <TouchableOpacity
+                                            style={{ backgroundColor: 'rgba(225, 29, 72, 0.1)', width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}
+                                            onPress={() => { /* Handle merma action */ }} // Placeholder for merma action
+                                        >
+                                            <Ionicons name="flask-outline" size={20} color={colors.primary} />
+                                        </TouchableOpacity>
+                                        {/* Gasto Button */}
+                                        <TouchableOpacity
+                                            style={{ backgroundColor: colors.primary, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}
+                                            onPress={() => setShowGastoModal(true)}
+                                        >
+                                            <Ionicons name="add" size={20} color="white" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <View style={{ alignItems: 'center', flex: 1 }}>
-                                        <Text style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase' }}>Ingresos</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '800', color: '#10b981' }}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Ventas</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#10b981' }}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
                                     </View>
                                     <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
                                     <View style={{ alignItems: 'center', flex: 1 }}>
-                                        <Text style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase' }}>Costos</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.costosMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Insumos</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.costosMes).toFixed(0)}</Text>
                                     </View>
                                     <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
                                     <View style={{ alignItems: 'center', flex: 1 }}>
-                                        <Text style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase' }}>Merma</Text>
-                                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>${Number(data.finanzas.mermaMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Gastos</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.gastosMes).toFixed(0)}</Text>
+                                    </View>
+                                    <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
+                                    <View style={{ alignItems: 'center', flex: 1 }}>
+                                        <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Merma</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary }}>${Number(data.finanzas.mermaMes).toFixed(0)}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -259,6 +337,53 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                     </View>
                 )}
             </ScrollView>
+
+            {/* Modal de Gastos */}
+            <Modal visible={showGastoModal} animationType="slide" transparent>
+                <View style={styles.modalOverlay}>
+                    <Animated.View entering={FadeInDown.springify().damping(15)} style={[styles.notificationModal, { backgroundColor: colors.card }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Registrar Gasto Operativo</Text>
+                            <TouchableOpacity onPress={() => setShowGastoModal(false)}>
+                                <Ionicons name="close-circle" size={32} color={colors.textMuted} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <KitchyInput label="Descripción" value={gastoDesc} onChangeText={setGastoDesc} placeholder="Luz, Gas, Renta..." />
+                        <KitchyInput label="Monto ($)" value={gastoMonto} onChangeText={setGastoMonto} keyboardType="numeric" placeholder="0.00" />
+
+                        <Text style={[styles.cardLabel, { color: colors.textMuted, marginTop: 10, marginBottom: 10 }]}>Categoría</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                            {['servicios', 'renta', 'personal', 'mantenimiento', 'impuestos', 'otro'].map(cat => (
+                                <TouchableOpacity
+                                    key={cat}
+                                    style={{
+                                        paddingHorizontal: 12,
+                                        paddingVertical: 6,
+                                        borderRadius: 20,
+                                        borderWidth: 1,
+                                        borderColor: gastoCat === cat ? colors.primary : colors.border,
+                                        backgroundColor: gastoCat === cat ? 'rgba(225, 29, 72, 0.1)' : 'transparent'
+                                    }}
+                                    onPress={() => setGastoCat(cat)}
+                                >
+                                    <Text style={{
+                                        fontSize: 12,
+                                        color: gastoCat === cat ? colors.primary : colors.textSecondary,
+                                        textTransform: 'capitalize'
+                                    }}>{cat}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <KitchyButton
+                            title="Guardar Gasto"
+                            onPress={handleRegistrarGasto}
+                            loading={creatingGasto}
+                        />
+                    </Animated.View>
+                </View>
+            </Modal>
         </View>
     );
 }

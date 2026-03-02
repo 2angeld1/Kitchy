@@ -8,6 +8,7 @@ export interface DashboardData {
         hoy: { total: number; cantidad: number };
         semana: { total: number; cantidad: number };
         mes: { total: number; cantidad: number };
+        mesPasado: { total: number; cantidad: number };
     };
     inventario: {
         valorTotal: string;
@@ -18,6 +19,7 @@ export interface DashboardData {
     finanzas: {
         ingresosMes: string;
         costosMes: string;
+        gastosMes: string;
         mermaMes: string;
         gananciaMes: string;
     };

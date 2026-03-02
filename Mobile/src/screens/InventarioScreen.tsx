@@ -173,12 +173,20 @@ export default function InventarioScreen() {
 
     const renderItemCard = (item: InventarioItem, index: number) => {
         const isBajoStock = item.cantidad <= item.cantidadMinima;
+        const hoy = new Date();
+        const tresDias = new Date();
+        tresDias.setDate(hoy.getDate() + 3);
+        const estaPorVencer = item.fechaVencimiento && new Date(item.fechaVencimiento) <= tresDias;
 
         return (
             <Animated.View key={item._id} entering={FadeInDown.delay(index * 50)}>
                 <Swipeable renderRightActions={() => renderRightActions(item)}>
                     <GHTouchableOpacity
-                        style={[styles.itemCard, { backgroundColor: colors.background, borderBottomColor: colors.border }]}
+                        style={[
+                            styles.itemCard,
+                            { backgroundColor: colors.background, borderBottomColor: colors.border },
+                            estaPorVencer && { borderLeftWidth: 4, borderLeftColor: colors.primary }
+                        ]}
                         onPress={() => openEditModal(item)}
                         activeOpacity={0.8}
                     >
@@ -186,8 +194,13 @@ export default function InventarioScreen() {
                             <Ionicons
                                 name={item.categoria === 'comida' ? 'restaurant-outline' : item.categoria === 'bebida' ? 'cafe-outline' : 'cube-outline'}
                                 size={24}
-                                color={colors.primary}
+                                color={estaPorVencer ? colors.primary : colors.primary}
                             />
+                            {estaPorVencer && (
+                                <View style={{ position: 'absolute', top: -4, right: -4 }}>
+                                    <Ionicons name="alert-circle" size={16} color={colors.primary} />
+                                </View>
+                            )}
                         </View>
 
                         <View style={styles.itemInfo}>
@@ -203,7 +216,7 @@ export default function InventarioScreen() {
                                 <Text style={styles.stockWarning}>Bajo Stock (Min: {item.cantidadMinima})</Text>
                             )}
                             {item.fechaVencimiento && (
-                                <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
+                                <Text style={{ fontSize: 10, color: estaPorVencer ? colors.primary : colors.textMuted, marginTop: 2, fontWeight: estaPorVencer ? 'bold' : 'normal' }}>
                                     Vence: {new Date(item.fechaVencimiento).toLocaleDateString()}
                                 </Text>
                             )}

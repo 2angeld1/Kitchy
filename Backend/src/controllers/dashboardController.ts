@@ -4,7 +4,8 @@ import Venta from '../models/Venta';
 import Inventario from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
 import User from '../models/User';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import Gasto from '../models/Gasto';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 
 // Dashboard general
 export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
@@ -22,34 +23,52 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             negocioId: req.negocioId,
             createdAt: { $gte: inicioHoy, $lte: finHoy }
         });
-        const totalVentasHoy = ventasHoy.reduce((sum, v) => sum + v.total, 0);
+        const totalVentasHoy = ventasHoy.reduce((sum: number, v: any) => sum + v.total, 0);
 
         // Ventas de la semana
         const ventasSemana = await Venta.find({
             negocioId: req.negocioId,
             createdAt: { $gte: inicioSemana, $lte: finSemana }
         });
-        const totalVentasSemana = ventasSemana.reduce((sum, v) => sum + v.total, 0);
+        const totalVentasSemana = ventasSemana.reduce((sum: number, v: any) => sum + v.total, 0);
 
         // Ventas del mes
         const ventasMes = await Venta.find({
             negocioId: req.negocioId,
             createdAt: { $gte: inicioMes, $lte: finMes }
         });
-        const totalVentasMes = ventasMes.reduce((sum, v) => sum + v.total, 0);
+        const totalVentasMes = ventasMes.reduce((sum: number, v: any) => sum + v.total, 0);
+
+        // Ventas del mes pasado (para comparativa)
+        const inicioMesPasado = startOfMonth(subMonths(hoy, 1));
+        const finMesPasado = endOfMonth(subMonths(hoy, 1));
+        const ventasMesPasado = await Venta.find({
+            negocioId: req.negocioId,
+            createdAt: { $gte: inicioMesPasado, $lte: finMesPasado }
+        });
+        const totalVentasMesPasado = ventasMesPasado.reduce((sum: number, v: any) => sum + v.total, 0);
 
         // Inventario
         const inventario = await Inventario.find({ negocioId: req.negocioId });
         const valorInventario = inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0);
         const itemsStockBajo = inventario.filter(item => item.cantidad <= item.cantidadMinima).length;
 
-        // Costos del mes (entradas de inventario)
+        // Costos de insumos del mes (entradas de inventario)
         const costosMovimientos = await MovimientoInventario.find({
             negocioId: req.negocioId,
             tipo: 'entrada',
             createdAt: { $gte: inicioMes, $lte: finMes }
         });
-        const costosMes = costosMovimientos.reduce((sum, m) => sum + (m.costoTotal || 0), 0);
+        const costosInsumosMes = costosMovimientos.reduce((sum: number, m: any) => sum + (m.costoTotal || 0), 0);
+
+        // Gastos operativos del mes
+        const gastosOperativosQuery = await Gasto.find({
+            negocioId: req.negocioId,
+            fecha: { $gte: inicioMes, $lte: finMes }
+        });
+        const totalGastosOperativosMes = gastosOperativosQuery.reduce((sum: number, g: any) => sum + g.monto, 0);
+
+        const costosMes = costosInsumosMes + totalGastosOperativosMes;
 
         // Ganancia estimada del mes
         const gananciaMes = totalVentasMes - costosMes;
@@ -60,9 +79,6 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             tipo: 'merma',
             createdAt: { $gte: inicioMes, $lte: finMes }
         }).populate('inventario');
-
-        // Calculamos el costo de la merma (cantidad * costoUnitario del item en ese momento)
-        // Como el movimiento no guarda el costo unitario histórico, usaremos el actual del item
         const mermaMes = movimientosMerma.reduce((sum, m: any) => {
             const costo = m.inventario?.costoUnitario || 0;
             return sum + (m.cantidad * costo);
@@ -127,18 +143,8 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             ]);
 
             const costosTotal = await MovimientoInventario.aggregate([
-                {
-                    $match: {
-                        negocioId: req.negocioId,
-                        tipo: 'entrada'
-                    }
-                },
-                {
-                    $group: {
-                        _id: null,
-                        total: { $sum: "$costoTotal" }
-                    }
-                }
+                { $match: { negocioId: req.negocioId, tipo: 'entrada' } },
+                { $group: { _id: null, total: { $sum: "$costoTotal" } } }
             ]);
 
             const totalVentasHist = ventasTotal.length > 0 ? ventasTotal[0].total : 0;
@@ -156,7 +162,8 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             ventas: {
                 hoy: { total: totalVentasHoy, cantidad: ventasHoy.length },
                 semana: { total: totalVentasSemana, cantidad: ventasSemana.length },
-                mes: { total: totalVentasMes, cantidad: ventasMes.length }
+                mes: { total: totalVentasMes, cantidad: ventasMes.length },
+                mesPasado: { total: totalVentasMesPasado, cantidad: ventasMesPasado.length }
             },
             inventario: {
                 valorTotal: valorInventario.toFixed(2),
@@ -166,7 +173,8 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             },
             finanzas: {
                 ingresosMes: totalVentasMes.toFixed(2),
-                costosMes: costosMes.toFixed(2),
+                costosMes: costosInsumosMes.toFixed(2),
+                gastosMes: totalGastosOperativosMes.toFixed(2),
                 mermaMes: mermaMes.toFixed(2),
                 gananciaMes: gananciaMes.toFixed(2)
             },

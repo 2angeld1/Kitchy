@@ -85,6 +85,11 @@ export const createUser = (data: any) => api.post('/users', data);
 export const updateUserRole = (id: string, data: { rol: string }) => api.put(`/users/${id}/role`, data);
 export const deleteUser = (id: string) => api.delete(`/users/${id}`);
 
+// Gastos
+export const getGastos = (params?: any) => api.get('/gastos', { params });
+export const createGasto = (data: any) => api.post('/gastos', data);
+export const deleteGasto = (id: string) => api.delete(`/gastos/${id}`);
+
 // Negocios
 export const getNegocios = () => api.get('/negocios');
 export const createNegocio = (data: any) => api.post('/negocios', data);
