@@ -7,6 +7,7 @@ import {
     deleteInventario,
     registrarEntrada,
     registrarSalida,
+    registrarMerma,
     importarInventario
 } from '../services/api';
 
@@ -20,6 +21,8 @@ export interface InventarioItem {
     costoUnitario: number;
     categoria: string;
     proveedor?: string;
+    codigoBarras?: string;
+    fechaVencimiento?: string;
 }
 
 export const useInventario = () => {
@@ -37,7 +40,7 @@ export const useInventario = () => {
     const [selectedItem, setSelectedItem] = useState<InventarioItem | null>(null);
 
     // Movement Form
-    const [movTipo, setMovTipo] = useState<'entrada' | 'salida'>('entrada');
+    const [movTipo, setMovTipo] = useState<'entrada' | 'salida' | 'merma'>('entrada');
     const [movCantidad, setMovCantidad] = useState('');
     const [movMotivo, setMovMotivo] = useState('');
     const [movCosto, setMovCosto] = useState('');
@@ -58,6 +61,8 @@ export const useInventario = () => {
     const [costoUnitario, setCostoUnitario] = useState('');
     const [categoria, setCategoria] = useState('ingrediente');
     const [proveedor, setProveedor] = useState('');
+    const [codigoBarras, setCodigoBarras] = useState('');
+    const [fechaVencimiento, setFechaVencimiento] = useState('');
 
     const cargarInventario = useCallback(async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -97,6 +102,8 @@ export const useInventario = () => {
         setCostoUnitario('');
         setCategoria('ingrediente');
         setProveedor('');
+        setCodigoBarras('');
+        setFechaVencimiento('');
         setEditItem(null);
     };
 
@@ -110,7 +117,38 @@ export const useInventario = () => {
         setCostoUnitario(item.costoUnitario.toString());
         setCategoria(item.categoria);
         setProveedor(item.proveedor || '');
+        setCodigoBarras(item.codigoBarras || '');
+        setFechaVencimiento(item.fechaVencimiento ? item.fechaVencimiento.split('T')[0] : '');
         setShowModal(true);
+    };
+
+    const buscarPorCodigoBarras = async (code: string) => {
+        setLoading(true);
+        try {
+            const response = await getInventario({ codigoBarras: code });
+            const item = response.data[0];
+            if (item) {
+                // If exists, open movement modal for Entradas
+                setSelectedItem(item);
+                setMovTipo('entrada');
+                setMovCantidad('');
+                setMovMotivo('Compra/Escaneo');
+                setMovCosto(item.costoUnitario.toString());
+                setShowMovModal(true);
+                return item;
+            } else {
+                // If not exists, pre-fill create modal
+                resetForm();
+                setCodigoBarras(code);
+                setShowModal(true);
+                return null;
+            }
+        } catch (err) {
+            setError('Error al buscar código de barras');
+            return null;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async () => {
@@ -129,7 +167,9 @@ export const useInventario = () => {
                 cantidadMinima: parseFloat(cantidadMinima) || 0,
                 costoUnitario: parseFloat(costoUnitario),
                 categoria,
-                proveedor
+                proveedor,
+                codigoBarras,
+                fechaVencimiento: fechaVencimiento || undefined
             };
 
             if (editItem) {
@@ -163,7 +203,7 @@ export const useInventario = () => {
         }
     };
 
-    const openMovModal = (item: InventarioItem, tipo: 'entrada' | 'salida') => {
+    const openMovModal = (item: InventarioItem, tipo: 'entrada' | 'salida' | 'merma') => {
         setSelectedItem(item);
         setMovTipo(tipo);
         setMovCantidad('');
@@ -180,20 +220,28 @@ export const useInventario = () => {
 
         setLoading(true);
         try {
+            const parsedCantidad = parseFloat(movCantidad);
+            const parsedCosto = parseFloat(movCosto);
+
             if (movTipo === 'entrada') {
                 await registrarEntrada(selectedItem._id, {
-                    cantidad: parseFloat(movCantidad),
-                    costoTotal: parseFloat(movCosto) || undefined,
+                    cantidad: parsedCantidad,
+                    costoTotal: !isNaN(parsedCosto) ? parsedCosto : undefined,
                     motivo: movMotivo
                 });
-            } else {
+            } else if (movTipo === 'salida') {
                 await registrarSalida(selectedItem._id, {
-                    cantidad: parseFloat(movCantidad),
+                    cantidad: parsedCantidad,
+                    motivo: movMotivo
+                });
+            } else if (movTipo === 'merma') {
+                await registrarMerma(selectedItem._id, {
+                    cantidad: parsedCantidad,
                     motivo: movMotivo
                 });
             }
 
-            setSuccess(`${movTipo === 'entrada' ? 'Entrada' : 'Salida'} registrada`);
+            setSuccess(`${movTipo.charAt(0).toUpperCase() + movTipo.slice(1)} registrada`);
             setShowMovModal(false);
             cargarInventario();
         } catch (err: any) {
@@ -428,13 +476,10 @@ export const useInventario = () => {
         handleImportCsv,
 
         // Movement Form State
-        movTipo,
-        movCantidad,
-        setMovCantidad,
-        movMotivo,
-        setMovMotivo,
-        movCosto,
-        setMovCosto,
+        movTipo, setMovTipo,
+        movCantidad, setMovCantidad,
+        movMotivo, setMovMotivo,
+        movCosto, setMovCosto,
 
         // Item Form State
         nombre, setNombre,
@@ -445,11 +490,14 @@ export const useInventario = () => {
         costoUnitario, setCostoUnitario,
         categoria, setCategoria,
         proveedor, setProveedor,
+        codigoBarras, setCodigoBarras,
+        fechaVencimiento, setFechaVencimiento,
 
         // Actions
         handleRefresh,
         resetForm,
         openEditModal,
+        buscarPorCodigoBarras,
         handleSubmit,
         handleDelete,
         openMovModal,

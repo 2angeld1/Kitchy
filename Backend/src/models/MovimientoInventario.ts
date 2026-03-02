@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 // Para registrar compras/entradas y salidas del inventario
 export interface IMovimientoInventario extends Document {
     inventario: mongoose.Types.ObjectId;
-    tipo: 'entrada' | 'salida' | 'ajuste';
+    tipo: 'entrada' | 'salida' | 'ajuste' | 'merma';
     cantidad: number;
     costoTotal?: number; // Para entradas/compras
     motivo: string;
@@ -21,7 +21,7 @@ const MovimientoInventarioSchema: Schema = new Schema({
     },
     tipo: {
         type: String,
-        enum: ['entrada', 'salida', 'ajuste'],
+        enum: ['entrada', 'salida', 'ajuste', 'merma'],
         required: true
     },
     cantidad: {

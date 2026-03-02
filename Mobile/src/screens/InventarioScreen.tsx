@@ -14,6 +14,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
+import { BarCodeScanner } from 'expo-barcode-scanner';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
@@ -29,10 +30,15 @@ export default function InventarioScreen() {
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         categoria, setCategoria, proveedor, setProveedor,
+        codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleImportCsv, handleSmartAction,
-        isListening, setIsListening
+        isListening, setIsListening, buscarPorCodigoBarras
     } = useInventario();
+
+    const [hasPermission, setHasPermission] = React.useState<boolean | null>(null);
+    const [scanned, setScanned] = React.useState(false);
+    const [showScanner, setShowScanner] = React.useState(false);
 
     useSpeechRecognitionEvent("start", () => setIsListening(true));
     useSpeechRecognitionEvent("end", () => setIsListening(false));
@@ -43,6 +49,20 @@ export default function InventarioScreen() {
         console.warn("Speech error:", event);
         setIsListening(false);
     });
+
+    React.useEffect(() => {
+        (async () => {
+            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
+
+    const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
+        setScanned(true);
+        setShowScanner(false);
+        setScanned(false);
+        buscarPorCodigoBarras(data);
+    };
 
     React.useEffect(() => {
         if (error) {
@@ -127,7 +147,13 @@ export default function InventarioScreen() {
                     style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
                     onPress={() => openMovModal(item, 'salida')}
                 >
-                    <Ionicons name="arrow-down" size={22} color="#f59e0b" />
+                    <Ionicons name="cart-outline" size={22} color="#f59e0b" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
+                    onPress={() => openMovModal(item, 'merma')}
+                >
+                    <Ionicons name="flask-outline" size={22} color="#10b981" />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={{ backgroundColor: colors.surface, width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
@@ -176,6 +202,11 @@ export default function InventarioScreen() {
                             {isBajoStock && (
                                 <Text style={styles.stockWarning}>Bajo Stock (Min: {item.cantidadMinima})</Text>
                             )}
+                            {item.fechaVencimiento && (
+                                <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
+                                    Vence: {new Date(item.fechaVencimiento).toLocaleDateString()}
+                                </Text>
+                            )}
                         </View>
                         <Ionicons name="chevron-back" size={18} color={colors.textMuted} style={{ opacity: 0.8 }} />
                     </GHTouchableOpacity>
@@ -201,8 +232,11 @@ export default function InventarioScreen() {
                         onSubmitEditing={handleSmartAction}
                         returnKeyType="search"
                     />
-                    <TouchableOpacity onPress={startListening}>
+                    <TouchableOpacity onPress={startListening} style={{ paddingHorizontal: 4 }}>
                         <Ionicons name={isListening ? "mic" : "mic-outline"} size={22} color={isListening ? colors.primary : colors.textMuted} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => setShowScanner(true)} style={{ paddingHorizontal: 4 }}>
+                        <Ionicons name="barcode-outline" size={26} color={colors.primary} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -315,6 +349,8 @@ export default function InventarioScreen() {
 
                             <KitchyInput label="Categoría" value={categoria} onChangeText={setCategoria} placeholder="ingrediente, comida" />
                             <KitchyInput label="Proveedor (Opcional)" value={proveedor} onChangeText={setProveedor} placeholder="Meat Co." />
+                            <KitchyInput label="Código de Barras" value={codigoBarras} onChangeText={setCodigoBarras} placeholder="Scan o escribe..." />
+                            <KitchyInput label="Fecha de Vencimiento (YYYY-MM-DD)" value={fechaVencimiento} onChangeText={setFechaVencimiento} placeholder="2024-12-31" />
 
                             <View style={styles.actionButtonGroup}>
                                 <KitchyButton
@@ -346,7 +382,7 @@ export default function InventarioScreen() {
                     <Animated.View entering={SlideInDown.springify().damping(15)} style={[styles.modalContent, { backgroundColor: colors.card }]}>
                         <View style={styles.modalHeader}>
                             <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                                {movTipo === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida'}
+                                {movTipo === 'entrada' ? 'Registrar Entrada' : movTipo === 'merma' ? 'Reportar Merma' : 'Registrar Salida'}
                             </Text>
                             <TouchableOpacity onPress={() => setShowMovModal(false)}>
                                 <Ionicons name="close-circle" size={32} color={colors.textMuted} />
@@ -354,15 +390,14 @@ export default function InventarioScreen() {
                         </View>
 
                         <Text style={{ fontFamily: 'Inter_500Medium', color: colors.textSecondary, marginBottom: 20 }}>
-                            Producto: {selectedItem?.nombre} ({selectedItem?.cantidad} {selectedItem?.unidad} actuales)
+                            Item: <Text style={{ fontWeight: '800', color: colors.textPrimary }}>{selectedItem?.nombre}</Text>
                         </Text>
 
-                        <KitchyInput label="Cantidad" value={movCantidad} onChangeText={setMovCantidad} keyboardType="numeric" placeholder="0" />
-                        <KitchyInput label="Motivo (Opcional)" value={movMotivo} onChangeText={setMovMotivo} placeholder="Compra, Merma, etc..." />
-
                         {movTipo === 'entrada' && (
-                            <KitchyInput label="Costo Total (Opcional)" value={movCosto} onChangeText={setMovCosto} keyboardType="numeric" placeholder="$0.00" />
+                            <KitchyInput label="Costo Total de la Compra" value={movCosto} onChangeText={setMovCosto} keyboardType="numeric" placeholder="$0.00" />
                         )}
+                        <KitchyInput label="Cantidad" value={movCantidad} onChangeText={setMovCantidad} keyboardType="numeric" placeholder="0" />
+                        <KitchyInput label="Motivo / Nota" value={movMotivo} onChangeText={setMovMotivo} placeholder={movTipo === 'merma' ? 'Ej. Producto vencido en estante' : 'Ej. Uso en cocina'} />
 
                         <KitchyButton
                             title="Confirmar"
@@ -371,6 +406,29 @@ export default function InventarioScreen() {
                             variant={movTipo === 'entrada' ? 'primary' : 'dark'}
                         />
                     </Animated.View>
+                </View>
+            </Modal>
+            {/* Modal de Escaneo de Código de Barras */}
+            <Modal visible={showScanner} animationType="slide" onRequestClose={() => setShowScanner(false)}>
+                <View style={{ flex: 1, backgroundColor: '#000' }}>
+                    <BarCodeScanner
+                        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                        style={{ flex: 1 }}
+                    />
+                    <View style={{ position: 'absolute', bottom: 50, left: 0, right: 0, alignItems: 'center' }}>
+                        <TouchableOpacity
+                            onPress={() => setShowScanner(false)}
+                            style={{ backgroundColor: colors.primary, paddingVertical: 15, paddingHorizontal: 40, borderRadius: 30 }}
+                        >
+                            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Cancelar</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ position: 'absolute', top: 100, left: 20, right: 20, alignItems: 'center' }}>
+                        <View style={{ width: 250, height: 250, borderWidth: 2, borderColor: colors.primary, borderStyle: 'dotted', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                        <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>
+                            Apunta al código de barras
+                        </Text>
+                    </View>
                 </View>
             </Modal>
         </View>

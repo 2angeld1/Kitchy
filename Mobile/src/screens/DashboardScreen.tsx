@@ -106,16 +106,48 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                     </View>
                                     <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Inventario</Text>
                                     <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>{data.inventario.totalItems}</Text>
-                                    {data.inventario.itemsStockBajo > 0 ? (
-                                        <View style={styles.badgeWarning}>
-                                            <Text style={styles.badgeWarningText}>{data.inventario.itemsStockBajo} BAJO STOCK</Text>
-                                        </View>
-                                    ) : (
-                                        <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>Items totales</Text>
-                                    )}
+
+                                    <View style={{ gap: 2 }}>
+                                        {data.inventario.itemsStockBajo > 0 && (
+                                            <View style={styles.badgeWarning}>
+                                                <Text style={styles.badgeWarningText}>{data.inventario.itemsStockBajo} BAJO STOCK</Text>
+                                            </View>
+                                        )}
+                                        {data.inventario.itemsVenciendo > 0 && (
+                                            <View style={[styles.badgeWarning, { backgroundColor: 'rgba(225, 29, 72, 0.1)' }]}>
+                                                <Text style={[styles.badgeWarningText, { color: colors.primary }]}>{data.inventario.itemsVenciendo} X VENCER</Text>
+                                            </View>
+                                        )}
+                                        {data.inventario.itemsStockBajo === 0 && data.inventario.itemsVenciendo === 0 && (
+                                            <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>Todo en orden</Text>
+                                        )}
+                                    </View>
                                 </View>
                             </Animated.View>
                         </View>
+
+                        {/* 2.5 Nueva Sección: Salud Financiera del Mes */}
+                        <Animated.View entering={FadeInDown.springify().damping(15).delay(480)}>
+                            <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border, padding: 16 }]}>
+                                <Text style={[styles.cardLabel, { color: colors.textMuted, marginBottom: 12 }]}>Finanzas del Mes</Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <View style={{ alignItems: 'center', flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase' }}>Ingresos</Text>
+                                        <Text style={{ fontSize: 16, fontWeight: '800', color: '#10b981' }}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
+                                    </View>
+                                    <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
+                                    <View style={{ alignItems: 'center', flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase' }}>Costos</Text>
+                                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.costosMes).toFixed(0)}</Text>
+                                    </View>
+                                    <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
+                                    <View style={{ alignItems: 'center', flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase' }}>Merma</Text>
+                                        <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>${Number(data.finanzas.mermaMes).toFixed(0)}</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </Animated.View>
 
                         {/* Módulo Admin: Finanzas Históricas y Gráficos */}
                         {user?.rol === 'admin' && data.historico && (

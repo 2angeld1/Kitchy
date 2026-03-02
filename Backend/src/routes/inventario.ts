@@ -9,6 +9,7 @@ import {
     eliminarInventario,
     registrarEntrada,
     registrarSalida,
+    registrarMerma,
     ajustarInventario,
     obtenerMovimientos,
     obtenerStockBajo,
@@ -35,6 +36,7 @@ router.delete('/:id', eliminarInventario);
 // Rutas de movimientos
 router.post('/:id/entrada', registrarEntrada);
 router.post('/:id/salida', registrarSalida);
+router.post('/:id/merma', registrarMerma);
 router.post('/:id/ajuste', ajustarInventario);
 router.get('/:id/movimientos', obtenerMovimientos);
 

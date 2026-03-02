@@ -72,8 +72,9 @@ export const getInventario = (params?: any) => api.get('/inventario', { params }
 export const createInventario = (data: any) => api.post('/inventario', data);
 export const updateInventario = (id: string, data: any) => api.put(`/inventario/${id}`, data);
 export const deleteInventario = (id: string) => api.delete(`/inventario/${id}`);
-export const registrarEntrada = (id: string, data: any) => api.post(`/inventario/${id}/entradas`, data);
-export const registrarSalida = (id: string, data: any) => api.post(`/inventario/${id}/salidas`, data);
+export const registrarEntrada = (id: string, data: any) => api.post(`/inventario/${id}/entrada`, data);
+export const registrarSalida = (id: string, data: any) => api.post(`/inventario/${id}/salida`, data);
+export const registrarMerma = (id: string, data: any) => api.post(`/inventario/${id}/merma`, data);
 export const importarInventario = (data: any) => api.post('/inventario/importar', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });

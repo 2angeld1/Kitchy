@@ -9,6 +9,8 @@ export interface IInventario extends Document {
     costoUnitario: number;
     categoria: 'ingrediente' | 'insumo' | 'empaque' | 'otro';
     proveedor?: string;
+    codigoBarras?: string;
+    fechaVencimiento?: Date;
     usuario: mongoose.Types.ObjectId;
     negocioId: mongoose.Types.ObjectId;
     createdAt?: Date;
@@ -55,6 +57,14 @@ const InventarioSchema: Schema = new Schema({
         type: String,
         trim: true
     },
+    codigoBarras: {
+        type: String,
+        trim: true,
+        index: true
+    },
+    fechaVencimiento: {
+        type: Date
+    },
     usuario: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -73,5 +83,6 @@ const InventarioSchema: Schema = new Schema({
 InventarioSchema.index({ nombre: 'text', negocioId: 1 });
 InventarioSchema.index({ categoria: 1, negocioId: 1 });
 InventarioSchema.index({ cantidad: 1, cantidadMinima: 1, negocioId: 1 });
+InventarioSchema.index({ codigoBarras: 1, negocioId: 1 });
 
 export default mongoose.model<IInventario>('Inventario', InventarioSchema);

@@ -10,7 +10,7 @@ import fs from 'fs';
 // Crear un nuevo item de inventario
 export const crearInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, descripcion, cantidad, unidad, cantidadMinima, costoUnitario, categoria, proveedor } = req.body;
+        const { nombre, descripcion, cantidad, unidad, cantidadMinima, costoUnitario, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
         const userId = req.userId;
 
         const inventario = new Inventario({
@@ -22,6 +22,8 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
             costoUnitario,
             categoria: categoria || 'ingrediente',
             proveedor,
+            codigoBarras,
+            fechaVencimiento,
             usuario: userId,
             negocioId: req.negocioId
         });
@@ -52,8 +54,12 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
 // Obtener todo el inventario
 export const obtenerInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { categoria, stockBajo, busqueda } = req.query;
+        const { categoria, stockBajo, busqueda, codigoBarras } = req.query;
         const filtro: any = { negocioId: req.negocioId };
+
+        if (codigoBarras) {
+            filtro.codigoBarras = codigoBarras;
+        }
 
         if (categoria) {
             filtro.categoria = categoria;
@@ -99,7 +105,7 @@ export const obtenerInventarioPorId = async (req: AuthRequest, res: Response) =>
 export const actualizarInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion, unidad, cantidadMinima, costoUnitario, categoria, proveedor } = req.body;
+        const { nombre, descripcion, unidad, cantidadMinima, costoUnitario, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
         const userId = req.userId;
 
         const inventario = await Inventario.findOneAndUpdate(
@@ -112,6 +118,8 @@ export const actualizarInventario = async (req: AuthRequest, res: Response) => {
                 costoUnitario,
                 categoria,
                 proveedor,
+                codigoBarras,
+                fechaVencimiento,
                 usuario: userId
             },
             { new: true, runValidators: true }
@@ -239,6 +247,49 @@ export const registrarSalida = async (req: AuthRequest, res: Response) => {
     } catch (error: any) {
         console.error('Error al registrar salida:', error);
         res.status(500).json({ message: 'Error al registrar salida', error: error.message });
+    }
+};
+
+// Registrar merma de inventario (desperdicio)
+export const registrarMerma = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { cantidad, motivo } = req.body;
+        const userId = req.userId;
+
+        if (!cantidad || cantidad <= 0) {
+            return res.status(400).json({ message: 'La cantidad debe ser mayor a 0' });
+        }
+
+        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
+        if (!inventario) {
+            return res.status(404).json({ message: 'Item de inventario no encontrado' });
+        }
+
+        if (inventario.cantidad < cantidad) {
+            return res.status(400).json({ message: 'No hay suficiente stock para reportar merma' });
+        }
+
+        // Actualizar cantidad
+        inventario.cantidad -= cantidad;
+        inventario.usuario = userId as any;
+        await inventario.save();
+
+        // Registrar movimiento de merma
+        const movimiento = new MovimientoInventario({
+            inventario: id,
+            tipo: 'merma',
+            cantidad,
+            motivo: motivo || 'Merma/Desperdicio',
+            usuario: userId,
+            negocioId: req.negocioId
+        });
+        await movimiento.save();
+
+        res.json({ inventario, movimiento });
+    } catch (error: any) {
+        console.error('Error al registrar merma:', error);
+        res.status(500).json({ message: 'Error al registrar merma', error: error.message });
     }
 };
 

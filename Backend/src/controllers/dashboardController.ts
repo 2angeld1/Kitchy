@@ -54,6 +54,29 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
         // Ganancia estimada del mes
         const gananciaMes = totalVentasMes - costosMes;
 
+        // Merma del mes (desperdicio)
+        const movimientosMerma = await MovimientoInventario.find({
+            negocioId: req.negocioId,
+            tipo: 'merma',
+            createdAt: { $gte: inicioMes, $lte: finMes }
+        }).populate('inventario');
+
+        // Calculamos el costo de la merma (cantidad * costoUnitario del item en ese momento)
+        // Como el movimiento no guarda el costo unitario histórico, usaremos el actual del item
+        const mermaMes = movimientosMerma.reduce((sum, m: any) => {
+            const costo = m.inventario?.costoUnitario || 0;
+            return sum + (m.cantidad * costo);
+        }, 0);
+
+        // Vencimientos (próximos 7 días)
+        const proximaSemana = new Date();
+        proximaSemana.setDate(hoy.getDate() + 7);
+        const itemsVenciendo = inventario.filter(item =>
+            item.fechaVencimiento &&
+            new Date(item.fechaVencimiento) >= hoy &&
+            new Date(item.fechaVencimiento) <= proximaSemana
+        ).length;
+
         // Productos más vendidos del mes
         const productosCantidad: { [key: string]: { nombre: string; cantidad: number; total: number } } = {};
         ventasMes.forEach(venta => {
@@ -138,11 +161,13 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             inventario: {
                 valorTotal: valorInventario.toFixed(2),
                 itemsStockBajo,
+                itemsVenciendo,
                 totalItems: inventario.length
             },
             finanzas: {
                 ingresosMes: totalVentasMes.toFixed(2),
                 costosMes: costosMes.toFixed(2),
+                mermaMes: mermaMes.toFixed(2),
                 gananciaMes: gananciaMes.toFixed(2)
             },
             historico,

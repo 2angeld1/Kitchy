@@ -12,11 +12,13 @@ export interface DashboardData {
     inventario: {
         valorTotal: string;
         itemsStockBajo: number;
+        itemsVenciendo: number;
         totalItems: number;
     };
     finanzas: {
         ingresosMes: string;
         costosMes: string;
+        mermaMes: string;
         gananciaMes: string;
     };
     historico?: {
