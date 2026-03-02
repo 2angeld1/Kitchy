@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Mobile",
-    "slug": "Mobile",
+    "name": "Kitchy",
+    "slug": "Kitchy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/kitchy-logo.png",
@@ -31,7 +31,12 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/kitchy-logo.png"
+      "favicon": "./assets/kitchy-logo.png",
+      "name": "Kitchy",
+      "shortName": "Kitchy",
+      "display": "standalone",
+      "themeColor": "#ffffff",
+      "backgroundColor": "#ffffff"
     },
     "plugins": [
       "expo-speech-recognition"
