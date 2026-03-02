@@ -5,8 +5,10 @@ export interface IUser extends Document {
     email: string;
     password: string;
     nombre: string;
-    rol: 'superadmin' | 'admin' | 'usuario';
+    rol: 'admin' | 'usuario';
     activo: boolean;
+    negocioIds: mongoose.Types.ObjectId[];
+    negocioActivo?: mongoose.Types.ObjectId;
     comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -28,28 +30,36 @@ const userSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        enum: ['superadmin', 'admin', 'usuario'],
+        enum: ['admin', 'usuario'],
         default: 'usuario'
     },
     activo: {
         type: Boolean,
         default: true
+    },
+    negocioIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Negocio'
+    }],
+    negocioActivo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Negocio'
     }
 }, {
     timestamps: true
 });
 
 // Hash password antes de guardar
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();
-    
+
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
 // Método para comparar contraseñas
-userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.password);
 };
 

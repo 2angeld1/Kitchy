@@ -118,7 +118,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                         </View>
 
                         {/* Módulo Admin: Finanzas Históricas y Gráficos */}
-                        {(user?.rol === 'admin' || user?.rol === 'superadmin') && data.historico && (
+                        {user?.rol === 'admin' && data.historico && (
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(500)}>
                                 <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
                                     <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>

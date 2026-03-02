@@ -1,26 +1,35 @@
 import { Request, Response } from 'express';
 import MenuConfig from '../models/MenuConfig';
 
-// Get menu configuration (public - no auth required)
+// Get menu configuration (public - query ?negocioId=xxx required)
 export const getMenuConfig = async (req: Request, res: Response) => {
     try {
-        // There should only be one config document, get or create it
-        let config = await MenuConfig.findOne();
-        
-        if (!config) {
-            // Create default config if none exists
-            config = await MenuConfig.create({});
+        const { negocioId } = req.query;
+        if (!negocioId) {
+            return res.status(400).json({ message: 'negocioId es requerido' });
         }
-        
+
+        let config = await MenuConfig.findOne({ negocioId });
+
+        if (!config) {
+            return res.status(404).json({ message: 'Configuración no encontrada para este negocio' });
+        }
+
         res.json(config);
     } catch (error: any) {
         res.status(500).json({ message: 'Error al obtener configuración', error: error.message });
     }
 };
 
+import { AuthRequest } from '../middleware/auth';
+
 // Update menu configuration (protected - admin only)
-export const updateMenuConfig = async (req: Request, res: Response) => {
+export const updateMenuConfig = async (req: AuthRequest, res: Response) => {
     try {
+        const negocioId = req.negocioId;
+        if (!negocioId) {
+            return res.status(403).json({ message: 'No tienes un negocio asociado' });
+        }
         const {
             nombreRestaurante,
             subtitulo,
@@ -34,11 +43,11 @@ export const updateMenuConfig = async (req: Request, res: Response) => {
             redesSociales
         } = req.body;
 
-        // Find the single config or create one
-        let config = await MenuConfig.findOne();
-        
+        // Find the config or create one for this business
+        let config = await MenuConfig.findOne({ negocioId });
+
         if (!config) {
-            config = new MenuConfig({});
+            config = new MenuConfig({ negocioId });
         }
 
         // Update fields if provided
@@ -54,7 +63,7 @@ export const updateMenuConfig = async (req: Request, res: Response) => {
         if (redesSociales !== undefined) config.redesSociales = redesSociales;
 
         await config.save();
-        
+
         res.json(config);
     } catch (error: any) {
         res.status(500).json({ message: 'Error al actualizar configuración', error: error.message });

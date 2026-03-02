@@ -23,7 +23,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     extraButtons,
     onBack
 }) => {
-    const { logout } = useAuth();
+    const { logout, user, switchNegocioContext } = useAuth();
     const { isDark } = useTheme();
     const [showNotif, setShowNotif] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -40,6 +40,39 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
             text2: 'Vuelve pronto',
             position: 'top'
         });
+    }
+
+    // Check if user has multiple businesses
+    const hasMultipleNegocios = user?.negocioIds && user.negocioIds.length > 1;
+
+    // Add API logic locally for switching (or use from useUsuarios if preferred)
+    const [isSwitching, setIsSwitching] = useState(false);
+    const [showSwitchModal, setShowSwitchModal] = useState(false);
+
+    const handleSwitchNegocio = async (negocioId: string) => {
+        if (negocioId === user?.negocioActivo) {
+            setShowSwitchModal(false);
+            return;
+        }
+
+        setIsSwitching(true);
+        try {
+            // we need to call the switch API
+            // using api directly since we are in the toolbar
+            const api = require('../services/api').default;
+            const res = await api.put(`/negocios/switch/${negocioId}`);
+
+            if (res.data.success && res.data.user) {
+                await switchNegocioContext(res.data.user, res.data.token);
+                setShowSwitchModal(false);
+                setShowUserMenu(false);
+                Toast.show({ type: 'success', text1: 'Éxito', text2: 'Has cambiado de negocio.' });
+            }
+        } catch (err: any) {
+            Toast.show({ type: 'error', text1: 'Error', text2: err.response?.data?.message || 'Error al cambiar de negocio' });
+        } finally {
+            setIsSwitching(false);
+        }
     };
 
     return (
@@ -55,22 +88,31 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                         <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
                     </TouchableOpacity>
                 )}
-                <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+                <View>
+                    <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+                    {user?.negocioActivo && title === 'Dashboard' && (
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: -2, textTransform: 'uppercase' }}>
+                            Mi Sucursal
+                        </Text>
+                    )}
+                </View>
             </View>
 
-            <View style={styles.actions}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 {extraButtons}
+
+                {hasMultipleNegocios && (
+                    <TouchableOpacity
+                        style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}
+                        onPress={() => setShowSwitchModal(true)}
+                    >
+                        <Ionicons name="storefront" size={20} color={colors.primary} />
+                    </TouchableOpacity>
+                )}
 
                 {showNotifications && (
                     <TouchableOpacity
-                        style={[
-                            styles.iconButton,
-                            {
-                                backgroundColor: isDark ? colors.card : colors.white,
-                                borderColor: colors.border,
-                                shadowOpacity: isDark ? 0 : 0.03
-                            }
-                        ]}
+                        style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}
                         onPress={() => setShowNotif(true)}
                     >
                         <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
@@ -135,6 +177,54 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     </View>
                 </Pressable>
             </Modal>
+
+            {/* Modal para Cambiar de Negocio */}
+            {hasMultipleNegocios && (
+                <Modal visible={showSwitchModal} transparent animationType="fade" onRequestClose={() => setShowSwitchModal(false)}>
+                    <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+                        <View style={{ width: '100%', backgroundColor: colors.card, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 15 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary }}>Mis Negocios</Text>
+                                <TouchableOpacity onPress={() => setShowSwitchModal(false)}>
+                                    <Ionicons name="close-circle" size={28} color={colors.textMuted} />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={{ gap: 12 }}>
+                                {user?.negocioIds?.map((n: any, index: number) => {
+                                    const nId = n._id || n; // Handle if it's an object or just a string
+                                    const nNombre = n.nombre || `Sucursal ${index + 1}`;
+                                    const isActivo = user?.negocioActivo?.toString() === nId.toString();
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={nId.toString()}
+                                            style={{
+                                                flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 16,
+                                                backgroundColor: isActivo ? `${colors.primary}15` : colors.surface,
+                                                borderWidth: 1, borderColor: isActivo ? colors.primary : colors.border
+                                            }}
+                                            onPress={() => handleSwitchNegocio(nId)}
+                                            disabled={isSwitching}
+                                        >
+                                            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: isActivo ? colors.primary : colors.border, justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                                                <Ionicons name="storefront" size={20} color={isActivo ? "#fff" : colors.textSecondary} />
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ fontSize: 16, fontWeight: '800', color: isActivo ? colors.primary : colors.textPrimary }}>
+                                                    {nNombre}
+                                                </Text>
+                                                <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 2 }}>ID: {nId.toString().substring(0, 8)}...</Text>
+                                            </View>
+                                            {isActivo && <Ionicons name="checkmark-circle" size={24} color={colors.primary} />}
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            )}
         </View>
     );
 };

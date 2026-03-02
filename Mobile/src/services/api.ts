@@ -41,8 +41,15 @@ api.interceptors.response.use(
 export const login = (email: string, password: string) =>
     api.post('/auth/login', { email, password });
 
-export const register = (data: { email: string; password: string; nombre: string }) =>
-    api.post('/auth/register', data);
+export const register = (data: {
+    email: string;
+    password: string;
+    nombre: string;
+    negocioNombre: string;
+    direccion?: string;
+    telefono?: string;
+    logo?: string;
+}) => api.post('/auth/register', data);
 
 export const getDashboard = () => api.get('/dashboard');
 
@@ -51,8 +58,8 @@ export const getProductos = (params?: any) => api.get('/productos', { params });
 export const createProducto = (data: any) => api.post('/productos', data);
 export const updateProducto = (id: string, data: any) => api.put(`/productos/${id}`, data);
 export const deleteProducto = (id: string) => api.delete(`/productos/${id}`);
-export const toggleDisponibilidad = (id: string) => api.patch(`/productos/${id}/toggle`);
-export const importarProductos = (data: any) => api.post('/productos/import', data, {
+export const toggleDisponibilidad = (id: string) => api.patch(`/productos/${id}/disponibilidad`);
+export const importarProductos = (data: any) => api.post('/productos/importar', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
 
@@ -67,14 +74,20 @@ export const updateInventario = (id: string, data: any) => api.put(`/inventario/
 export const deleteInventario = (id: string) => api.delete(`/inventario/${id}`);
 export const registrarEntrada = (id: string, data: any) => api.post(`/inventario/${id}/entradas`, data);
 export const registrarSalida = (id: string, data: any) => api.post(`/inventario/${id}/salidas`, data);
-export const importarInventario = (data: any) => api.post('/inventario/import', data, {
+export const importarInventario = (data: any) => api.post('/inventario/importar', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
 
 // Users
 export const getUsers = () => api.get('/users');
+export const createUser = (data: any) => api.post('/users', data);
 export const updateUserRole = (id: string, data: { rol: string }) => api.put(`/users/${id}/role`, data);
 export const deleteUser = (id: string) => api.delete(`/users/${id}`);
+
+// Negocios
+export const getNegocios = () => api.get('/negocios');
+export const createNegocio = (data: any) => api.post('/negocios', data);
+export const switchNegocio = (negocioId: string) => api.put(`/negocios/switch/${negocioId}`);
 
 // Configuración Pública
 export const getMenuConfig = () => api.get('/menu-config');

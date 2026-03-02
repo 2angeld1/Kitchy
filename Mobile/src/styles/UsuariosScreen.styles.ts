@@ -152,5 +152,32 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '900',
         letterSpacing: 1,
+    },
+    fabContainer: {
+        position: 'absolute',
+        bottom: 24,
+        right: 24,
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        gap: 16,
+    },
+    fab: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    inputHelper: {
+        fontSize: 12,
+        fontWeight: '500',
+        marginTop: 4,
+        marginBottom: 16,
+        marginLeft: 4,
     }
 });

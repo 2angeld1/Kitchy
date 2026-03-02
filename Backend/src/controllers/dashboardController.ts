@@ -19,29 +19,33 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
 
         // Ventas del día
         const ventasHoy = await Venta.find({
+            negocioId: req.negocioId,
             createdAt: { $gte: inicioHoy, $lte: finHoy }
         });
         const totalVentasHoy = ventasHoy.reduce((sum, v) => sum + v.total, 0);
 
         // Ventas de la semana
         const ventasSemana = await Venta.find({
+            negocioId: req.negocioId,
             createdAt: { $gte: inicioSemana, $lte: finSemana }
         });
         const totalVentasSemana = ventasSemana.reduce((sum, v) => sum + v.total, 0);
 
         // Ventas del mes
         const ventasMes = await Venta.find({
+            negocioId: req.negocioId,
             createdAt: { $gte: inicioMes, $lte: finMes }
         });
         const totalVentasMes = ventasMes.reduce((sum, v) => sum + v.total, 0);
 
         // Inventario
-        const inventario = await Inventario.find();
+        const inventario = await Inventario.find({ negocioId: req.negocioId });
         const valorInventario = inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0);
         const itemsStockBajo = inventario.filter(item => item.cantidad <= item.cantidadMinima).length;
 
         // Costos del mes (entradas de inventario)
         const costosMovimientos = await MovimientoInventario.find({
+            negocioId: req.negocioId,
             tipo: 'entrada',
             createdAt: { $gte: inicioMes, $lte: finMes }
         });
@@ -73,6 +77,7 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             const inicioDia = startOfDay(dia);
             const finDia = endOfDay(dia);
             const ventasDia = await Venta.find({
+                negocioId: req.negocioId,
                 createdAt: { $gte: inicioDia, $lte: finDia }
             });
             ventasUltimos7Dias.push({
@@ -85,9 +90,10 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
         // Datos históricos (Admin only)
         let historico = undefined;
         const requestingUser = await User.findById(req.userId);
-        
-        if (requestingUser && (requestingUser.rol === 'admin' || requestingUser.rol === 'superadmin')) {
-             const ventasTotal = await Venta.aggregate([
+
+        if (requestingUser && requestingUser.rol === 'admin') {
+            const ventasTotal = await Venta.aggregate([
+                { $match: { negocioId: req.negocioId } },
                 {
                     $group: {
                         _id: null,
@@ -96,9 +102,14 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                     }
                 }
             ]);
-            
+
             const costosTotal = await MovimientoInventario.aggregate([
-                { $match: { tipo: 'entrada' } },
+                {
+                    $match: {
+                        negocioId: req.negocioId,
+                        tipo: 'entrada'
+                    }
+                },
                 {
                     $group: {
                         _id: null,

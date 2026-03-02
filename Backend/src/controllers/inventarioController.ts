@@ -22,7 +22,8 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
             costoUnitario,
             categoria: categoria || 'ingrediente',
             proveedor,
-            usuario: userId
+            usuario: userId,
+            negocioId: req.negocioId
         });
 
         await inventario.save();
@@ -35,7 +36,8 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
                 cantidad,
                 costoTotal: cantidad * costoUnitario,
                 motivo: 'Inventario inicial',
-                usuario: userId
+                usuario: userId,
+                negocioId: req.negocioId
             });
             await movimiento.save();
         }
@@ -51,7 +53,7 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
 export const obtenerInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { categoria, stockBajo, busqueda } = req.query;
-        const filtro: any = {};
+        const filtro: any = { negocioId: req.negocioId };
 
         if (categoria) {
             filtro.categoria = categoria;
@@ -80,7 +82,7 @@ export const obtenerInventario = async (req: AuthRequest, res: Response) => {
 export const obtenerInventarioPorId = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const inventario = await Inventario.findById(id).populate('usuario', 'nombre email');
+        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId }).populate('usuario', 'nombre email');
 
         if (!inventario) {
             return res.status(404).json({ message: 'Item de inventario no encontrado' });
@@ -100,8 +102,8 @@ export const actualizarInventario = async (req: AuthRequest, res: Response) => {
         const { nombre, descripcion, unidad, cantidadMinima, costoUnitario, categoria, proveedor } = req.body;
         const userId = req.userId;
 
-        const inventario = await Inventario.findByIdAndUpdate(
-            id,
+        const inventario = await Inventario.findOneAndUpdate(
+            { _id: id, negocioId: req.negocioId },
             {
                 nombre,
                 descripcion,
@@ -131,7 +133,13 @@ export const eliminarInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
 
-        // Eliminar movimientos asociados
+        // Eliminar movimientos asociados (opcional, podrías querer mantener historial o asegurar que el negocio sea el mismo)
+        // Pero primero verificamos que el item exista y sea del negocio
+        const itemCheck = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
+        if (!itemCheck) {
+            return res.status(404).json({ message: 'Item de inventario no encontrado' });
+        }
+
         await MovimientoInventario.deleteMany({ inventario: id });
 
         const inventario = await Inventario.findByIdAndDelete(id);
@@ -159,7 +167,7 @@ export const registrarEntrada = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ message: 'La cantidad debe ser mayor a 0' });
         }
 
-        const inventario = await Inventario.findById(id);
+        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
         if (!inventario) {
             return res.status(404).json({ message: 'Item de inventario no encontrado' });
         }
@@ -179,7 +187,8 @@ export const registrarEntrada = async (req: AuthRequest, res: Response) => {
             cantidad,
             costoTotal,
             motivo: motivo || 'Compra/reposición',
-            usuario: userId
+            usuario: userId,
+            negocioId: req.negocioId
         });
         await movimiento.save();
 
@@ -201,7 +210,7 @@ export const registrarSalida = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ message: 'La cantidad debe ser mayor a 0' });
         }
 
-        const inventario = await Inventario.findById(id);
+        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
         if (!inventario) {
             return res.status(404).json({ message: 'Item de inventario no encontrado' });
         }
@@ -221,7 +230,8 @@ export const registrarSalida = async (req: AuthRequest, res: Response) => {
             tipo: 'salida',
             cantidad,
             motivo: motivo || 'Uso/consumo',
-            usuario: userId
+            usuario: userId,
+            negocioId: req.negocioId
         });
         await movimiento.save();
 
@@ -243,7 +253,7 @@ export const ajustarInventario = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ message: 'La cantidad real debe ser 0 o mayor' });
         }
 
-        const inventario = await Inventario.findById(id);
+        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
         if (!inventario) {
             return res.status(404).json({ message: 'Item de inventario no encontrado' });
         }
@@ -261,7 +271,8 @@ export const ajustarInventario = async (req: AuthRequest, res: Response) => {
             tipo: 'ajuste',
             cantidad: diferencia,
             motivo: motivo || 'Ajuste de inventario',
-            usuario: userId
+            usuario: userId,
+            negocioId: req.negocioId
         });
         await movimiento.save();
 
@@ -278,7 +289,7 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response) => {
         const { id } = req.params;
         const { limite = 50 } = req.query;
 
-        const movimientos = await MovimientoInventario.find({ inventario: id })
+        const movimientos = await MovimientoInventario.find({ inventario: id, negocioId: req.negocioId })
             .sort({ createdAt: -1 })
             .limit(Number(limite))
             .populate('usuario', 'nombre email');
@@ -294,6 +305,7 @@ export const obtenerMovimientos = async (req: AuthRequest, res: Response) => {
 export const obtenerStockBajo = async (req: AuthRequest, res: Response) => {
     try {
         const inventario = await Inventario.find({
+            negocioId: req.negocioId,
             $expr: { $lte: ['$cantidad', '$cantidadMinima'] }
         }).sort({ cantidad: 1 });
 
@@ -307,7 +319,7 @@ export const obtenerStockBajo = async (req: AuthRequest, res: Response) => {
 // Obtener resumen de inventario
 export const obtenerResumenInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const inventario = await Inventario.find();
+        const inventario = await Inventario.find({ negocioId: req.negocioId });
 
         const totalItems = inventario.length;
         const valorTotal = inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0);
@@ -365,7 +377,10 @@ export const importarInventarioCsv = async (req: AuthRequest, res: Response) => 
                         const parsedCostoUnitario = parseFloat(costoUnitario) || 0;
 
                         // Buscar si el item ya existe
-                        const itemExistente = await Inventario.findOne({ nombre: { $regex: new RegExp(`^${nombre}$`, 'i') } });
+                        const itemExistente = await Inventario.findOne({
+                            nombre: { $regex: new RegExp(`^${nombre}$`, 'i') },
+                            negocioId: req.negocioId
+                        });
 
                         if (itemExistente) {
                             // Actualizar
@@ -396,7 +411,8 @@ export const importarInventarioCsv = async (req: AuthRequest, res: Response) => 
                                     cantidad: parsedCantidad,
                                     costoTotal: parsedCantidad * parsedCostoUnitario,
                                     motivo: 'Importación CSV (Suma al stock)',
-                                    usuario: userId
+                                    usuario: userId,
+                                    negocioId: req.negocioId
                                 });
                                 await movimiento.save();
                             }
@@ -412,7 +428,8 @@ export const importarInventarioCsv = async (req: AuthRequest, res: Response) => 
                                 costoUnitario: parsedCostoUnitario,
                                 categoria: categoria || 'ingrediente',
                                 proveedor,
-                                usuario: userId
+                                usuario: userId,
+                                negocioId: req.negocioId
                             });
 
                             await nuevoItem.save();
@@ -424,7 +441,8 @@ export const importarInventarioCsv = async (req: AuthRequest, res: Response) => 
                                     cantidad: parsedCantidad,
                                     costoTotal: parsedCantidad * parsedCostoUnitario,
                                     motivo: 'Importación CSV (Creación inicial)',
-                                    usuario: userId
+                                    usuario: userId,
+                                    negocioId: req.negocioId
                                 });
                                 await movimiento.save();
                             }

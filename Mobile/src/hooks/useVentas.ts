@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { getProductos, createVenta, getVentas } from '../services/api';
 import Toast from 'react-native-toast-message';
 
@@ -27,6 +28,7 @@ export interface Venta {
 }
 
 export const useVentas = () => {
+    const { user } = useAuth();
     const [productos, setProductos] = useState<Producto[]>([]);
     const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
     const [ventas, setVentas] = useState<Venta[]>([]);
@@ -47,7 +49,7 @@ export const useVentas = () => {
 
     useEffect(() => {
         cargarProductos();
-    }, []);
+    }, [user?.negocioActivo]);
 
     const cargarProductos = async () => {
         setLoading(true);

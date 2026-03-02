@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
     getInventario,
     createInventario,
@@ -22,6 +23,7 @@ export interface InventarioItem {
 }
 
 export const useInventario = () => {
+    const { user } = useAuth();
     const [items, setItems] = useState<InventarioItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -76,7 +78,7 @@ export const useInventario = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [filtro]);
+    }, [filtro, user?.negocioActivo]);
 
     useEffect(() => {
         cargarInventario();
@@ -210,16 +212,18 @@ export const useInventario = () => {
         try {
             const formData = new FormData();
 
-            // Para Web: file es un objeto File del navegador.
-            // Para Native (expo-document-picker): file tiene { uri, name, mimeType }
-            if (file.uri) {
+            // Para Native (expo-document-picker): file tiene { uri, name, mimeType, file? }
+            // Si estamos en web, expo-document-picker devuelve el File object en `file.file`
+            if (file.file) {
+                // Caida para web standard
+                formData.append('archivo', file.file);
+            } else if (file.uri) {
                 formData.append('archivo', {
                     uri: file.uri,
                     name: file.name || 'inventario.csv',
                     type: file.mimeType || 'text/csv'
                 } as any);
             } else {
-                // Caida para web standard si se usa un evento de input
                 formData.append('archivo', file);
             }
 

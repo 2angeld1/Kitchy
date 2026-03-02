@@ -6,9 +6,10 @@ export interface AuthRequest extends Request {
     userId?: string;
     file?: any;
     userRole?: string;
+    negocioId?: string;
 }
 
-export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const auth = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const token = req.header('Authorization')?.replace('Bearer ', '');
 
@@ -17,7 +18,17 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+
+        // Buscar el usuario para obtener su negocioActivo y rol
+        const user = await User.findById(decoded.userId);
+        if (!user) {
+            return res.status(401).json({ message: 'Usuario no encontrado' });
+        }
+
         req.userId = decoded.userId;
+        req.userRole = user.rol;
+        req.negocioId = user.negocioActivo?.toString();
+
         next();
     } catch (error) {
         res.status(401).json({ message: 'Token no válido' });
@@ -32,7 +43,7 @@ export const adminOnly = async (req: AuthRequest, res: Response, next: NextFunct
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        if (user.rol !== 'admin' && user.rol !== 'superadmin') {
+        if (user.rol !== 'admin') {
             return res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
         }
 

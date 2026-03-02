@@ -11,20 +11,35 @@ import { useUsuarios, User } from '../hooks/useUsuarios';
 import Toast from 'react-native-toast-message';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
+import { useAuth } from '../context/AuthContext';
+import { KitchyInput } from '../components/KitchyInput';
+import { createNegocio } from '../services/api';
 
 export default function UsuariosScreen() {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const navigation = useNavigation();
 
+    const { user: currentUser, switchNegocioContext } = useAuth();
     const {
         usuarios, loading, refreshing, error, clearError, success, clearSuccess,
-        handleRefresh, handleChangeRole, handleDeleteUser
+        handleRefresh, handleChangeRole, handleDeleteUser, handleCreateUser
     } = useUsuarios();
 
     const [showModal, setShowModal] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showCreateNegocioModal, setShowCreateNegocioModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [tempRole, setTempRole] = useState<string>('usuario');
+    const [isSubmittingNegocio, setIsSubmittingNegocio] = useState(false);
+
+    // Formulario de nuevo usuario
+    const [newUserName, setNewUserName] = useState('');
+    const [newUserEmail, setNewUserEmail] = useState('');
+    const [newUserPassword, setNewUserPassword] = useState('');
+
+    // Formulario de nuevo negocio
+    const [newNegocioNombre, setNewNegocioNombre] = useState('');
 
     useEffect(() => {
         if (error) {
@@ -50,9 +65,55 @@ export default function UsuariosScreen() {
         setShowModal(false);
     };
 
+    const confirmCreateUser = async () => {
+        if (!newUserName.trim() || !newUserEmail.trim() || !newUserPassword) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'Llena todos los campos' });
+            return;
+        }
+
+        const success = await handleCreateUser({
+            nombre: newUserName,
+            email: newUserEmail,
+            password: newUserPassword,
+            rol: 'usuario' // Siempre empieza como usuario
+        });
+
+        if (success) {
+            setShowCreateModal(false);
+            setNewUserName('');
+            setNewUserEmail('');
+            setNewUserPassword('');
+        }
+    };
+
+    const confirmCreateNegocio = async () => {
+        if (!newNegocioNombre.trim()) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'Ingresa el nombre del negocio' });
+            return;
+        }
+
+        setIsSubmittingNegocio(true);
+        try {
+            const res = await createNegocio({ nombre: newNegocioNombre });
+            Toast.show({ type: 'success', text1: 'Éxito', text2: 'Negocio creado correctamente' });
+            setShowCreateNegocioModal(false);
+            setNewNegocioNombre('');
+
+            if (res.data.success && res.data.user) {
+                clearSuccess(); // clear from hook so toast isn't overridden
+                await switchNegocioContext(res.data.user, res.data.token);
+                Toast.show({ type: 'success', text1: 'Éxito', text2: `Cambiado a ${res.data.user.negocioIds.length} negocios.` });
+            }
+
+        } catch (err: any) {
+            Toast.show({ type: 'error', text1: 'Error', text2: err.response?.data?.message || 'Error al crear negocio' });
+        } finally {
+            setIsSubmittingNegocio(false);
+        }
+    };
+
     const getRoleColor = (rol: string) => {
         switch (rol) {
-            case 'superadmin': return '#e11d48'; // Red
             case 'admin': return '#3b82f6'; // Blue
             default: return '#10b981'; // Green for usuario
         }
@@ -60,7 +121,6 @@ export default function UsuariosScreen() {
 
     const getRoleLabel = (rol: string) => {
         switch (rol) {
-            case 'superadmin': return 'SuperAdmin';
             case 'admin': return 'Administrador';
             default: return 'Cajero/Mesero';
         }
@@ -68,15 +128,14 @@ export default function UsuariosScreen() {
 
     const getRoleIcon = (rol: string) => {
         switch (rol) {
-            case 'superadmin': return 'shield-checkmark';
             case 'admin': return 'options';
             default: return 'person';
         }
     };
 
     const renderRightActions = (item: User) => {
-        // Validación más robusta: que sea superadmin o contenga '@superadmin' literal en su email
-        const isGodUser = item.rol === 'superadmin' || item.email.includes('@superadmin');
+        // No se puede borrar a un admin desde la app
+        const isProtected = item.rol === 'admin';
 
         return (
             <View style={{ flexDirection: 'row', alignItems: 'center', height: '100%' }}>
@@ -86,7 +145,7 @@ export default function UsuariosScreen() {
                 >
                     <Ionicons name="key" size={22} color={colors.textPrimary} />
                 </TouchableOpacity>
-                {!isGodUser && (
+                {!isProtected && (
                     <TouchableOpacity
                         style={{ backgroundColor: 'rgba(225, 29, 72, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(225, 29, 72, 0.2)' }}
                         onPress={() => handleDeleteUser(item._id)}
@@ -107,34 +166,39 @@ export default function UsuariosScreen() {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}
             >
                 {usuarios.length > 0 ? (
-                    usuarios.map((user, index) => (
-                        <Animated.View key={user._id} entering={FadeInDown.delay(index * 50)} style={{ marginBottom: 8 }}>
-                            <Swipeable renderRightActions={() => renderRightActions(user)}>
-                                <GHTouchableOpacity
-                                    style={[styles.userCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                                    activeOpacity={0.8}
-                                    onPress={() => openRoleModal(user)}
-                                >
-                                    <View style={[styles.avatarBox, { backgroundColor: `${getRoleColor(user.rol)}15` }]}>
-                                        <Ionicons name={getRoleIcon(user.rol) as any} size={24} color={getRoleColor(user.rol)} />
-                                    </View>
-
-                                    <View style={styles.infoContainer}>
-                                        <Text style={[styles.nameText, { color: colors.textPrimary }]} numberOfLines={1}>{user.nombre}</Text>
-
-                                        <View style={[styles.roleTag, { backgroundColor: `${getRoleColor(user.rol)}15` }]}>
-                                            <Ionicons name="ribbon" size={12} color={getRoleColor(user.rol)} />
-                                            <Text style={[styles.roleText, { color: getRoleColor(user.rol) }]}>{getRoleLabel(user.rol)}</Text>
+                    usuarios.map((user, index) => {
+                        const isMe = currentUser?.id === user._id;
+                        return (
+                            <Animated.View key={user._id} entering={FadeInDown.delay(index * 50)} style={{ marginBottom: 8 }}>
+                                <Swipeable renderRightActions={() => isMe ? <View /> : renderRightActions(user)}>
+                                    <GHTouchableOpacity
+                                        style={[styles.userCard, { backgroundColor: isMe ? `${colors.primary}10` : colors.card, borderColor: isMe ? colors.primary : colors.border }]}
+                                        activeOpacity={0.8}
+                                        onPress={() => !isMe && openRoleModal(user)}
+                                    >
+                                        <View style={[styles.avatarBox, { backgroundColor: `${getRoleColor(user.rol)}15` }]}>
+                                            <Ionicons name={getRoleIcon(user.rol) as any} size={24} color={getRoleColor(user.rol)} />
                                         </View>
 
-                                        <Text style={[styles.emailText, { color: colors.textSecondary }]}>{user.email}</Text>
-                                    </View>
+                                        <View style={styles.infoContainer}>
+                                            <Text style={[styles.nameText, { color: colors.textPrimary }]} numberOfLines={1}>
+                                                {user.nombre} {isMe && <Text style={{ color: colors.primary, fontSize: 12 }}> (Tú)</Text>}
+                                            </Text>
 
-                                    <Ionicons name="chevron-back" size={18} color={colors.textMuted} style={{ opacity: 0.8 }} />
-                                </GHTouchableOpacity>
-                            </Swipeable>
-                        </Animated.View>
-                    ))
+                                            <View style={[styles.roleTag, { backgroundColor: `${getRoleColor(user.rol)}15` }]}>
+                                                <Ionicons name="ribbon" size={12} color={getRoleColor(user.rol)} />
+                                                <Text style={[styles.roleText, { color: getRoleColor(user.rol) }]}>{getRoleLabel(user.rol)}</Text>
+                                            </View>
+
+                                            <Text style={[styles.emailText, { color: colors.textSecondary }]}>{user.email}</Text>
+                                        </View>
+
+                                        {!isMe && <Ionicons name="chevron-back" size={18} color={colors.textMuted} style={{ opacity: 0.8 }} />}
+                                    </GHTouchableOpacity>
+                                </Swipeable>
+                            </Animated.View>
+                        )
+                    })
                 ) : (
                     !loading && (
                         <Animated.View entering={FadeInDown} style={styles.emptyState}>
@@ -150,11 +214,31 @@ export default function UsuariosScreen() {
                 )}
             </ScrollView>
 
+            <View style={styles.fabContainer}>
+                {currentUser?.rol === 'admin' && (
+                    <TouchableOpacity
+                        style={[styles.fab, { backgroundColor: colors.surface }]}
+                        onPress={() => setShowCreateNegocioModal(true)}
+                        activeOpacity={0.8}
+                    >
+                        <Ionicons name="storefront" size={24} color={colors.textPrimary} />
+                    </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                    style={[styles.fab, { backgroundColor: colors.primary }]}
+                    onPress={() => setShowCreateModal(true)}
+                    activeOpacity={0.8}
+                >
+                    <Ionicons name="person-add" size={24} color="#fff" />
+                </TouchableOpacity>
+            </View>
+
             {/* Modal Editar Rol */}
-            <Modal visible={showModal} animationType="slide" transparent={true} onRequestClose={() => setShowModal(false)}>
+            <Modal visible={showModal} animationType="fade" transparent={true} onRequestClose={() => setShowModal(false)}>
                 <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
                     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%' }}>
-                        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                        <Animated.View entering={SlideInDown.duration(300).springify()} style={[styles.modalContent, { backgroundColor: colors.background }]}>
                             <View style={styles.modalHeader}>
                                 <View>
                                     <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
@@ -171,7 +255,6 @@ export default function UsuariosScreen() {
 
                             <ScrollView showsVerticalScrollIndicator={false}>
                                 {[
-                                    { id: 'superadmin', name: 'SuperAdmin', icon: 'shield-checkmark', desc: 'Acceso total a borrar el negocio y facturacion', color: '#e11d48' },
                                     { id: 'admin', name: 'Administrador', icon: 'options', desc: 'Acceso total para editar catálogo y modificar ventas', color: '#3b82f6' },
                                     { id: 'usuario', name: 'Cajero/Mesero', icon: 'person', desc: 'Acceso solamente al Punto de Venta (POS)', color: '#10b981' },
                                 ].map((rol) => {
@@ -207,7 +290,113 @@ export default function UsuariosScreen() {
                                 </TouchableOpacity>
 
                             </ScrollView>
-                        </View>
+                        </Animated.View>
+                    </KeyboardAvoidingView>
+                </View>
+            </Modal>
+
+            {/* Modal Crear Usuario */}
+            <Modal visible={showCreateModal} animationType="fade" transparent={true} onRequestClose={() => setShowCreateModal(false)}>
+                <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%' }}>
+                        <Animated.View entering={SlideInDown.duration(300).springify()} style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                            <View style={styles.modalHeader}>
+                                <View>
+                                    <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                                        Nuevo <Text style={{ color: colors.primary }}>Empleado</Text>
+                                    </Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '500', color: colors.textMuted, marginTop: 4 }}>
+                                        Añade a alguien a tu equipo
+                                    </Text>
+                                </View>
+                                <TouchableOpacity style={[styles.closeButton, { backgroundColor: colors.surface }]} onPress={() => setShowCreateModal(false)}>
+                                    <Ionicons name="close" size={24} color={colors.textPrimary} />
+                                </TouchableOpacity>
+                            </View>
+
+                            <ScrollView showsVerticalScrollIndicator={false}>
+                                <KitchyInput
+                                    label="Nombre Completo"
+                                    placeholder="Ej. Juan Pérez"
+                                    value={newUserName}
+                                    onChangeText={setNewUserName}
+                                />
+                                <KitchyInput
+                                    label="Correo Electrónico"
+                                    placeholder="juan@ejemplo.com"
+                                    value={newUserEmail}
+                                    onChangeText={setNewUserEmail}
+                                    keyboardType="email-address"
+                                    autoCapitalize="none"
+                                />
+                                <KitchyInput
+                                    label="Contraseña"
+                                    placeholder="Minimo 6 caracteres"
+                                    value={newUserPassword}
+                                    onChangeText={setNewUserPassword}
+                                    secureTextEntry
+                                />
+                                <Text style={[styles.inputHelper, { color: colors.textMuted }]}>
+                                    * Los usuarios nuevos siempre se crean como Cajero/Mesero por seguridad.
+                                    Luego podrás cambiarles el rol.
+                                </Text>
+
+                                <TouchableOpacity
+                                    style={[styles.updateBtn, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
+                                    onPress={confirmCreateUser}
+                                    disabled={loading}
+                                >
+                                    <Text style={styles.updateBtnText}>
+                                        {loading ? 'Creando...' : 'Crear Usuario'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </ScrollView>
+                        </Animated.View>
+                    </KeyboardAvoidingView>
+                </View>
+            </Modal>
+
+            {/* Modal Crear Negocio */}
+            <Modal visible={showCreateNegocioModal} animationType="fade" transparent={true} onRequestClose={() => setShowCreateNegocioModal(false)}>
+                <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%' }}>
+                        <Animated.View entering={SlideInDown.duration(300).springify()} style={[styles.modalContent, { backgroundColor: colors.background }]}>
+                            <View style={styles.modalHeader}>
+                                <View>
+                                    <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                                        Nuevo <Text style={{ color: colors.primary }}>Negocio</Text>
+                                    </Text>
+                                    <Text style={{ fontSize: 13, fontWeight: '500', color: colors.textMuted, marginTop: 4 }}>
+                                        Abre otra sucursal o foodtruck
+                                    </Text>
+                                </View>
+                                <TouchableOpacity style={[styles.closeButton, { backgroundColor: colors.surface }]} onPress={() => setShowCreateNegocioModal(false)}>
+                                    <Ionicons name="close" size={24} color={colors.textPrimary} />
+                                </TouchableOpacity>
+                            </View>
+
+                            <ScrollView showsVerticalScrollIndicator={false}>
+                                <KitchyInput
+                                    label="Nombre del Negocio"
+                                    placeholder="Ej. Burguer Truck II"
+                                    value={newNegocioNombre}
+                                    onChangeText={setNewNegocioNombre}
+                                />
+                                <Text style={[styles.inputHelper, { color: colors.textMuted }]}>
+                                    * Este nuevo negocio tendrá inventario y ventas 100% independientes.
+                                </Text>
+
+                                <TouchableOpacity
+                                    style={[styles.updateBtn, { backgroundColor: colors.primary, opacity: isSubmittingNegocio ? 0.7 : 1 }]}
+                                    onPress={confirmCreateNegocio}
+                                    disabled={isSubmittingNegocio}
+                                >
+                                    <Text style={styles.updateBtnText}>
+                                        {isSubmittingNegocio ? 'Creando...' : 'Crear Negocio'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </ScrollView>
+                        </Animated.View>
                     </KeyboardAvoidingView>
                 </View>
             </Modal>

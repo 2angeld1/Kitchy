@@ -6,7 +6,9 @@ interface User {
     id: string;
     email: string;
     nombre: string;
-    rol: 'superadmin' | 'admin' | 'usuario';
+    rol: 'admin' | 'usuario';
+    negocioIds?: string[];
+    negocioActivo?: string;
 }
 
 interface AuthContextType {
@@ -15,8 +17,17 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isAdmin: boolean;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string, nombre: string) => Promise<void>;
+    register: (data: {
+        email: string;
+        password: string;
+        nombre: string;
+        negocioNombre: string;
+        direccion?: string;
+        telefono?: string;
+        logo?: string;
+    }) => Promise<void>;
     logout: () => void;
+    switchNegocioContext: (newUserContext: User, newToken: string) => Promise<void>;
     loading: boolean;
 }
 
@@ -59,8 +70,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };
 
-    const register = async (email: string, password: string, nombre: string) => {
-        const response = await apiRegister({ email, password, nombre });
+    const register = async (data: {
+        email: string;
+        password: string;
+        nombre: string;
+        negocioNombre: string;
+        direccion?: string;
+        telefono?: string;
+        logo?: string;
+    }) => {
+        const response = await apiRegister(data);
         const { token: newToken, user: userData } = response.data;
 
         await AsyncStorage.setItem('kitchy_token', newToken);
@@ -79,8 +98,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         delete api.defaults.headers.common['Authorization'];
     };
 
+    const switchNegocioContext = async (newUserContext: User, newToken: string) => {
+        await AsyncStorage.setItem('kitchy_token', newToken);
+        await AsyncStorage.setItem('kitchy_user', JSON.stringify(newUserContext));
+        setToken(newToken);
+        setUser(newUserContext);
+        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    };
+
     const isAuthenticated = !!token && !!user;
-    const isAdmin = user?.rol === 'admin' || user?.rol === 'superadmin';
+    const isAdmin = user?.rol === 'admin';
 
     return (
         <AuthContext.Provider value={{
@@ -91,6 +118,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             login,
             register,
             logout,
+            switchNegocioContext,
             loading
         }}>
             {children}

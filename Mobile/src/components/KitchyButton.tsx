@@ -5,14 +5,16 @@ import { colors, borderRadius, spacing, typography } from '../theme';
 interface KitchyButtonProps extends TouchableOpacityProps {
     title: string;
     loading?: boolean;
-    variant?: 'primary' | 'dark'; // Añadí un dark variant para el login
+    variant?: 'primary' | 'dark' | 'outline';
 }
 
 export function KitchyButton({ title, loading, variant = 'primary', style, ...rest }: KitchyButtonProps) {
 
     const isPrimary = variant === 'primary';
-    const bgColor = isPrimary ? colors.primary : colors.textPrimary;
-    const shadowColor = isPrimary ? colors.primary : colors.textPrimary;
+    const isOutline = variant === 'outline';
+    const bgColor = isOutline ? 'transparent' : (isPrimary ? colors.primary : colors.textPrimary);
+    const shadowColor = isOutline ? 'transparent' : (isPrimary ? colors.primary : colors.textPrimary);
+    const textColor = isOutline ? colors.primary : colors.white;
 
     return (
         <TouchableOpacity
@@ -20,6 +22,7 @@ export function KitchyButton({ title, loading, variant = 'primary', style, ...re
             style={[
                 styles.button,
                 { backgroundColor: bgColor, shadowColor: shadowColor },
+                isOutline && { borderWidth: 2, borderColor: colors.primary, elevation: 0, shadowOpacity: 0 },
                 loading && styles.buttonDisabled,
                 style
             ]}
@@ -27,9 +30,9 @@ export function KitchyButton({ title, loading, variant = 'primary', style, ...re
             {...rest}
         >
             {loading ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color={textColor} />
             ) : (
-                <Text style={styles.buttonText}>{title}</Text>
+                <Text style={[styles.buttonText, { color: textColor }]}>{title}</Text>
             )}
         </TouchableOpacity>
     );

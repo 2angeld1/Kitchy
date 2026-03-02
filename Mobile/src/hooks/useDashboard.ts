@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getDashboard } from '../services/api';
 import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 
 export interface DashboardData {
     ventas: {
@@ -29,6 +30,7 @@ export interface DashboardData {
 }
 
 export const useDashboard = () => {
+    const { user } = useAuth();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -65,7 +67,7 @@ export const useDashboard = () => {
 
             // Función cleanup (se ejecuta al salir de la pantalla)
             return () => clearInterval(interval);
-        }, [])
+        }, [user?.negocioActivo])
     );
 
     const onRefresh = useCallback(async () => {

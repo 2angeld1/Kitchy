@@ -22,9 +22,9 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
         const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
 
         for (const item of items) {
-            const producto = await Producto.findById(item.productoId);
+            const producto = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
             if (!producto) {
-                return res.status(404).json({ message: `Producto no encontrado: ${item.productoId}` });
+                return res.status(404).json({ message: `Producto no encontrado o no pertenece a tu negocio: ${item.productoId}` });
             }
             if (!producto.disponible) {
                 return res.status(400).json({ message: `Producto no disponible: ${producto.nombre}` });
@@ -56,16 +56,17 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
             total,
             metodoPago: metodoPago || 'efectivo',
             usuario: userId,
+            negocioId: req.negocioId,
             cliente,
             notas
         });
 
         await venta.save();
 
-        // Aplicar todas las deducciones del inventario
+        // Aplicar todas las deducciones del inventario (FILTRADO POR NEGOCIO)
         for (const deduccion of deduccionesInventario) {
-            await Inventario.findByIdAndUpdate(
-                deduccion.inventarioId,
+            await Inventario.findOneAndUpdate(
+                { _id: deduccion.inventarioId, negocioId: req.negocioId },
                 { $inc: { cantidad: -deduccion.cantidadADescontar } }
             );
         }
@@ -90,7 +91,7 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
 export const obtenerVentas = async (req: AuthRequest, res: Response) => {
     try {
         const { fechaInicio, fechaFin, usuario, metodoPago, limite = 50 } = req.query;
-        const filtro: any = {};
+        const filtro: any = { negocioId: req.negocioId };
 
         if (fechaInicio && fechaFin) {
             filtro.createdAt = {
@@ -126,7 +127,7 @@ export const obtenerVentas = async (req: AuthRequest, res: Response) => {
 export const obtenerVentaPorId = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const venta = await Venta.findById(id)
+        const venta = await Venta.findOne({ _id: id, negocioId: req.negocioId })
             .populate('usuario', 'nombre email')
             .populate('items.producto', 'nombre precio categoria');
 
@@ -150,6 +151,7 @@ export const obtenerVentasHoy = async (req: AuthRequest, res: Response) => {
         manana.setDate(manana.getDate() + 1);
 
         const ventas = await Venta.find({
+            negocioId: req.negocioId,
             createdAt: { $gte: hoy, $lt: manana }
         })
             .sort({ createdAt: -1 })
@@ -177,15 +179,19 @@ export const obtenerEstadisticas = async (req: AuthRequest, res: Response) => {
     try {
         const { fechaInicio, fechaFin } = req.query;
 
-        let filtroFecha: any = {};
+        let filtro: any = { negocioId: req.negocioId };
         if (fechaInicio && fechaFin) {
-            filtroFecha.createdAt = {
+            filtro.createdAt = {
                 $gte: new Date(fechaInicio as string),
                 $lte: new Date(fechaFin as string)
             };
+        } else if (fechaInicio) {
+            filtro.createdAt = { $gte: new Date(fechaInicio as string) };
+        } else if (fechaFin) {
+            filtro.createdAt = { $lte: new Date(fechaFin as string) };
         }
 
-        const ventas = await Venta.find(filtroFecha);
+        const ventas = await Venta.find(filtro);
 
         const totalVentas = ventas.reduce((sum, v) => sum + v.total, 0);
         const cantidadVentas = ventas.length;
@@ -236,9 +242,9 @@ export const eliminarVenta = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
 
-        const venta = await Venta.findByIdAndDelete(id);
+        const venta = await Venta.findOneAndDelete({ _id: id, negocioId: req.negocioId });
         if (!venta) {
-            return res.status(404).json({ message: 'Venta no encontrada' });
+            return res.status(404).json({ message: 'Venta no encontrada o no pertenece a tu negocio' });
         }
 
         res.json({ message: 'Venta eliminada correctamente' });

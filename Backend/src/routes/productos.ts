@@ -15,16 +15,18 @@ import {
 const router = Router();
 const upload = multer({ dest: 'uploads/' });
 
-// Rutas públicas (para ver menú)
+// Todas las rutas de productos (para la app admin/cajero) requieren autenticación para obtener el negocioId
+router.use(auth);
+
 router.get('/', obtenerProductos);
 router.get('/categorias', obtenerCategorias);
 router.get('/:id', obtenerProductoPorId);
 
-// Rutas protegidas (requieren autenticación - admin)
-router.post('/importar', auth, upload.single('archivo'), importarProductosCsv);
-router.post('/', auth, crearProducto);
-router.put('/:id', auth, actualizarProducto);
-router.delete('/:id', auth, eliminarProducto);
-router.patch('/:id/disponibilidad', auth, toggleDisponibilidad);
+// Rutas de administración
+router.post('/importar', upload.single('archivo'), importarProductosCsv);
+router.post('/', crearProducto);
+router.put('/:id', actualizarProducto);
+router.delete('/:id', eliminarProducto);
+router.patch('/:id/disponibilidad', toggleDisponibilidad);
 
 export default router;

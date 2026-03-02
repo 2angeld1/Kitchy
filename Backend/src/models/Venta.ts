@@ -13,7 +13,8 @@ export interface IVenta extends Document {
     total: number;
     metodoPago: 'efectivo' | 'tarjeta' | 'yappy' | 'otro';
     usuario: mongoose.Types.ObjectId;
-    cliente?: string; // Nombre opcional del cliente
+    negocioId: mongoose.Types.ObjectId;
+    cliente?: string;
     notas?: string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -51,7 +52,7 @@ const VentaSchema: Schema = new Schema({
         type: [ItemVentaSchema],
         required: true,
         validate: {
-            validator: function(items: IItemVenta[]) {
+            validator: function (items: IItemVenta[]) {
                 return items.length > 0;
             },
             message: 'La venta debe tener al menos un producto'
@@ -64,7 +65,7 @@ const VentaSchema: Schema = new Schema({
     },
     metodoPago: {
         type: String,
-        enum: ['efectivo', 'yappy', 'otro'],
+        enum: ['efectivo', 'yappy', 'tarjeta', 'otro'],
         default: 'efectivo'
     },
     usuario: {
@@ -79,14 +80,19 @@ const VentaSchema: Schema = new Schema({
     notas: {
         type: String,
         trim: true
+    },
+    negocioId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Negocio',
+        required: true
     }
 }, {
     timestamps: true
 });
 
 // Índices para búsquedas y reportes
-VentaSchema.index({ createdAt: -1 });
-VentaSchema.index({ usuario: 1, createdAt: -1 });
-VentaSchema.index({ metodoPago: 1 });
+VentaSchema.index({ negocioId: 1, createdAt: -1 });
+VentaSchema.index({ usuario: 1, negocioId: 1, createdAt: -1 });
+VentaSchema.index({ metodoPago: 1, negocioId: 1 });
 
 export default mongoose.model<IVenta>('Venta', VentaSchema);

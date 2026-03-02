@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, KeyboardAvoidingView, Platform, Image, Switch, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, SlideInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, SlideInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/ProductosScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
@@ -243,10 +243,10 @@ export default function ProductosScreen() {
             </View>
 
             {/* Modal Crear/Editar */}
-            <Modal visible={showModal} animationType="slide" transparent={true} onRequestClose={() => setShowModal(false)}>
-                <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', height: '92%' }}>
-                        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+            <Modal visible={showModal} animationType="fade" transparent={true} onRequestClose={() => setShowModal(false)}>
+                <Animated.View entering={FadeIn.duration(200)} style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', flex: 1, justifyContent: 'flex-end' }}>
+                        <Animated.View entering={SlideInDown.duration(300).springify()} style={[styles.modalContent, { backgroundColor: colors.background }]}>
                             <View style={styles.modalHeader}>
                                 <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
                                     {editItem ? 'Editar' : 'Nuevo'} <Text style={{ color: colors.primary }}>Producto</Text>
@@ -372,9 +372,9 @@ export default function ProductosScreen() {
                                 </TouchableOpacity>
 
                             </ScrollView>
-                        </View>
+                        </Animated.View>
                     </KeyboardAvoidingView>
-                </View>
+                </Animated.View>
             </Modal>
 
         </View>

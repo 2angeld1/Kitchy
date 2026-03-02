@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert } from 'react-native';
-import { getUsers, updateUserRole, deleteUser } from '../services/api';
+import { getUsers, updateUserRole, deleteUser, createUser } from '../services/api';
 
 export interface User {
     _id: string;
     email: string;
     nombre: string;
-    rol: 'superadmin' | 'admin' | 'usuario';
+    rol: 'admin' | 'usuario';
     activo: boolean;
     createdAt?: string;
     updatedAt?: string;
@@ -55,6 +55,21 @@ export const useUsuarios = () => {
         }
     };
 
+    const handleCreateUser = async (data: any) => {
+        setLoading(true);
+        try {
+            const response = await createUser(data);
+            setUsuarios(prev => [...prev, response.data]);
+            setSuccess('Usuario creado correctamente');
+            return true;
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al crear usuario');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleDeleteUser = (id: string) => {
         Alert.alert(
             "Eliminar Usuario",
@@ -92,6 +107,7 @@ export const useUsuarios = () => {
         success, clearSuccess,
         handleRefresh,
         handleChangeRole,
-        handleDeleteUser
+        handleDeleteUser,
+        handleCreateUser
     };
 };

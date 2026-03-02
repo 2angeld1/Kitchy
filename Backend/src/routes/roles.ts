@@ -7,10 +7,10 @@ const router = express.Router();
 
 router.use(auth);
 
-// Solo superadmin puede gestionar roles
-router.get('/', checkRole(['superadmin']), getRoles);
-router.post('/', checkRole(['superadmin']), createRole);
-router.put('/:id', checkRole(['superadmin']), updateRole);
-router.delete('/:id', checkRole(['superadmin']), deleteRole);
+// Solo admin puede gestionar roles
+router.get('/', checkRole(['admin']), getRoles);
+router.post('/', checkRole(['admin']), createRole);
+router.put('/:id', checkRole(['admin']), updateRole);
+router.delete('/:id', checkRole(['admin']), deleteRole);
 
 export default router;

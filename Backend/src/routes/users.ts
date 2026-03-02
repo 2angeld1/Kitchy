@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, updateUserRole, deleteUser } from '../controllers/UserController';
+import { getUsers, updateUserRole, deleteUser, createUser } from '../controllers/UserController';
 import { auth } from '../middleware/auth';
 import { checkRole } from '../middleware/checkRole';
 
@@ -8,9 +8,10 @@ const router = express.Router();
 // Todas las rutas requieren autenticación
 router.use(auth);
 
-// Rutas accesibles por superadmin
-router.get('/', checkRole(['superadmin']), getUsers);
-router.put('/:id/role', checkRole(['superadmin']), updateUserRole);
-router.delete('/:id', checkRole(['superadmin']), deleteUser);
+// Rutas accesibles por admin (gestiona usuarios de su negocio)
+router.get('/', checkRole(['admin']), getUsers);
+router.post('/', checkRole(['admin']), createUser);
+router.put('/:id/role', checkRole(['admin']), updateUserRole);
+router.delete('/:id', checkRole(['admin']), deleteUser);
 
 export default router;

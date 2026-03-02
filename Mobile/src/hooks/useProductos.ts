@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Alert } from 'react-native'; // Fallback just in case, though we'll use Toast natively in the screen
 import {
     getProductos,
@@ -27,6 +28,7 @@ export interface Producto {
 }
 
 export const useProductos = () => {
+    const { user } = useAuth();
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -69,7 +71,7 @@ export const useProductos = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [filtro]);
+    }, [filtro, user?.negocioActivo]);
 
     useEffect(() => {
         cargarProductos();
@@ -197,7 +199,11 @@ export const useProductos = () => {
         try {
             const formData = new FormData();
 
-            if (file.uri) {
+            if (file.file) {
+                // Estamos en web
+                formData.append('archivo', file.file);
+            } else if (file.uri) {
+                // Estamos nativo
                 formData.append('archivo', {
                     uri: file.uri,
                     name: file.name || 'productos.csv',

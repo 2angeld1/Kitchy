@@ -7,9 +7,14 @@ import fs from 'fs';
 import { AuthRequest } from '../middleware/auth';
 
 // Crear un nuevo producto
-export const crearProducto = async (req: Request, res: Response) => {
+export const crearProducto = async (req: AuthRequest, res: Response) => {
     try {
         const { nombre, descripcion, precio, categoria, disponible, imagen, ingredientes } = req.body;
+        const negocioId = req.negocioId;
+
+        if (!negocioId) {
+            return res.status(403).json({ message: 'No tienes un negocio asociado' });
+        }
 
         // Subir imagen a Cloudinary si existe (y es base64)
         let imagenUrl = imagen;
@@ -24,7 +29,8 @@ export const crearProducto = async (req: Request, res: Response) => {
             categoria: categoria || 'comida',
             disponible: disponible !== undefined ? disponible : true,
             imagen: imagenUrl,
-            ingredientes: ingredientes || []
+            ingredientes: ingredientes || [],
+            negocioId
         });
 
         await producto.save();
@@ -36,10 +42,10 @@ export const crearProducto = async (req: Request, res: Response) => {
 };
 
 // Obtener todos los productos (con filtros opcionales)
-export const obtenerProductos = async (req: Request, res: Response) => {
+export const obtenerProductos = async (req: AuthRequest, res: Response) => {
     try {
         const { disponible, categoria, busqueda } = req.query;
-        const filtro: any = {};
+        const filtro: any = { negocioId: req.negocioId };
 
         if (disponible !== undefined) {
             filtro.disponible = disponible === 'true';
@@ -62,10 +68,10 @@ export const obtenerProductos = async (req: Request, res: Response) => {
 };
 
 // Obtener un producto por ID
-export const obtenerProductoPorId = async (req: Request, res: Response) => {
+export const obtenerProductoPorId = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const producto = await Producto.findById(id).populate('ingredientes.inventario', 'nombre unidad');
+        const producto = await Producto.findOne({ _id: id, negocioId: req.negocioId }).populate('ingredientes.inventario', 'nombre unidad');
 
         if (!producto) {
             return res.status(404).json({ message: 'Producto no encontrado' });
@@ -79,7 +85,7 @@ export const obtenerProductoPorId = async (req: Request, res: Response) => {
 };
 
 // Actualizar un producto
-export const actualizarProducto = async (req: Request, res: Response) => {
+export const actualizarProducto = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { nombre, descripcion, precio, categoria, disponible, imagen, ingredientes } = req.body;
@@ -90,8 +96,8 @@ export const actualizarProducto = async (req: Request, res: Response) => {
             imagenUrl = await uploadImage(imagen) || undefined;
         }
 
-        const producto = await Producto.findByIdAndUpdate(
-            id,
+        const producto = await Producto.findOneAndUpdate(
+            { _id: id, negocioId: req.negocioId },
             { nombre, descripcion, precio, categoria, disponible, imagen: imagenUrl, ingredientes },
             { new: true, runValidators: true }
         ).populate('ingredientes.inventario', 'nombre unidad');
@@ -108,11 +114,11 @@ export const actualizarProducto = async (req: Request, res: Response) => {
 };
 
 // Eliminar un producto
-export const eliminarProducto = async (req: Request, res: Response) => {
+export const eliminarProducto = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
 
-        const producto = await Producto.findByIdAndDelete(id);
+        const producto = await Producto.findOneAndDelete({ _id: id, negocioId: req.negocioId });
         if (!producto) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
@@ -125,11 +131,11 @@ export const eliminarProducto = async (req: Request, res: Response) => {
 };
 
 // Cambiar disponibilidad de un producto
-export const toggleDisponibilidad = async (req: Request, res: Response) => {
+export const toggleDisponibilidad = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
 
-        const producto = await Producto.findById(id);
+        const producto = await Producto.findOne({ _id: id, negocioId: req.negocioId });
         if (!producto) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
@@ -145,7 +151,7 @@ export const toggleDisponibilidad = async (req: Request, res: Response) => {
 };
 
 // Obtener categorías disponibles
-export const obtenerCategorias = async (req: Request, res: Response) => {
+export const obtenerCategorias = async (req: AuthRequest, res: Response) => {
     try {
         const categorias = ['comida', 'bebida', 'postre', 'otro'];
         res.json(categorias);
@@ -197,7 +203,8 @@ export const importarProductosCsv = async (req: AuthRequest, res: Response) => {
 
                                         // Buscar o crear en el inventario
                                         let invItem = await Inventario.findOne({
-                                            nombre: { $regex: new RegExp(`^${cleanIngName}$`, 'i') }
+                                            nombre: { $regex: new RegExp(`^${cleanIngName}$`, 'i') },
+                                            negocioId: req.negocioId
                                         });
 
                                         if (!invItem) {
@@ -207,7 +214,8 @@ export const importarProductosCsv = async (req: AuthRequest, res: Response) => {
                                                 unidad: 'unidades', // default simple
                                                 costoUnitario: 0,
                                                 categoria: 'ingrediente',
-                                                usuario: req.userId
+                                                usuario: req.userId,
+                                                negocioId: req.negocioId
                                             });
                                             await invItem.save();
                                         }
@@ -221,8 +229,11 @@ export const importarProductosCsv = async (req: AuthRequest, res: Response) => {
                             }
                         }
 
-                        // Buscar si el producto ya existe
-                        const productoExistente = await Producto.findOne({ nombre: { $regex: new RegExp(`^${nombre}$`, 'i') } });
+                        // Buscar si el producto ya existe en ESTE negocio
+                        const productoExistente = await Producto.findOne({
+                            nombre: { $regex: new RegExp(`^${nombre}$`, 'i') },
+                            negocioId: req.negocioId
+                        });
 
                         if (productoExistente) {
                             // Actualizar
@@ -246,7 +257,8 @@ export const importarProductosCsv = async (req: AuthRequest, res: Response) => {
                                 precio: parsedPrecio,
                                 categoria: categoria || 'comida',
                                 disponible: parsedDisponible,
-                                ingredientes: ingredientesParsed
+                                ingredientes: ingredientesParsed,
+                                negocioId: req.negocioId as any
                             });
 
                             await nuevoProducto.save();

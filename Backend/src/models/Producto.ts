@@ -13,6 +13,7 @@ export interface IProducto extends Document {
     disponible: boolean;
     imagen?: string;
     ingredientes?: IIngredienteProducto[];
+    negocioId: mongoose.Types.ObjectId;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -61,13 +62,18 @@ const ProductoSchema: Schema = new Schema({
     ingredientes: {
         type: [IngredienteProductoSchema],
         default: []
+    },
+    negocioId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Negocio',
+        required: true
     }
 }, {
     timestamps: true
 });
 
 // Índice para búsquedas por categoría y disponibilidad
-ProductoSchema.index({ categoria: 1, disponible: 1 });
-ProductoSchema.index({ nombre: 'text' });
+ProductoSchema.index({ negocioId: 1, categoria: 1, disponible: 1 });
+ProductoSchema.index({ nombre: 'text', negocioId: 1 });
 
 export default mongoose.model<IProducto>('Producto', ProductoSchema);

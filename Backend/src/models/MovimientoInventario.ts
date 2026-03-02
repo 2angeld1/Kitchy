@@ -8,6 +8,7 @@ export interface IMovimientoInventario extends Document {
     costoTotal?: number; // Para entradas/compras
     motivo: string;
     usuario: mongoose.Types.ObjectId;
+    negocioId: mongoose.Types.ObjectId;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -40,13 +41,18 @@ const MovimientoInventarioSchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    negocioId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Negocio',
+        required: true
     }
 }, {
     timestamps: true
 });
 
 // Índices
-MovimientoInventarioSchema.index({ inventario: 1, createdAt: -1 });
-MovimientoInventarioSchema.index({ tipo: 1, createdAt: -1 });
+MovimientoInventarioSchema.index({ inventario: 1, negocioId: 1, createdAt: -1 });
+MovimientoInventarioSchema.index({ tipo: 1, negocioId: 1, createdAt: -1 });
 
 export default mongoose.model<IMovimientoInventario>('MovimientoInventario', MovimientoInventarioSchema);

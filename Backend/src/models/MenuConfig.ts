@@ -15,6 +15,7 @@ export interface IMenuConfig extends Document {
         facebook?: string;
         whatsapp?: string;
     };
+    negocioId: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -62,6 +63,12 @@ const MenuConfigSchema: Schema = new Schema({
         instagram: { type: String, default: '' },
         facebook: { type: String, default: '' },
         whatsapp: { type: String, default: '' }
+    },
+    negocioId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Negocio',
+        required: true,
+        unique: true
     }
 }, {
     timestamps: true
