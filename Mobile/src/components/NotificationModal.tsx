@@ -6,20 +6,22 @@ import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/NotificationModal.styles';
 import { useTheme } from '../context/ThemeContext';
 
+interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    time: string;
+}
+
 interface NotificationModalProps {
     visible: boolean;
     onClose: () => void;
+    notifications?: Notification[];
 }
 
-export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, onClose }) => {
+export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, onClose, notifications = [] }) => {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
-
-    const dummyNotifications = [
-        { id: '1', title: 'Stock Bajo', message: 'El producto "Leche" está por agotarse.', time: 'Hace 5 min' },
-        { id: '2', title: 'Venta Nueva', message: 'Se ha registrado una venta por $45.00', time: 'Hace 20 min' },
-        { id: '3', title: 'Sistema', message: 'Bienvenido al nuevo Dashboard de Kitchy.', time: 'Hace 1 hora' },
-    ];
 
     return (
         <Modal
@@ -41,7 +43,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, o
                     </View>
 
                     <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-                        {dummyNotifications.map((notif) => (
+                        {notifications.length > 0 ? notifications.map((notif: Notification) => (
                             <View key={notif.id} style={[styles.item, { borderBottomColor: colors.border }]}>
                                 <View style={[styles.iconCircle, { backgroundColor: colors.background }]}>
                                     <Ionicons
@@ -58,7 +60,12 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, o
                                     <Text style={[styles.msg, { color: colors.textSecondary }]}>{notif.message}</Text>
                                 </View>
                             </View>
-                        ))}
+                        )) : (
+                            <View style={{ padding: 40, alignItems: 'center' }}>
+                                <Ionicons name="notifications-off-outline" size={48} color={colors.textMuted} />
+                                <Text style={{ color: colors.textMuted, marginTop: 12, textAlign: 'center' }}>No hay notificaciones recientes</Text>
+                            </View>
+                        )}
                     </ScrollView>
 
                     <TouchableOpacity style={[styles.footerBtn, { backgroundColor: colors.background }]} onPress={onClose}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getDashboard } from '../services/api';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,7 @@ export interface DashboardData {
         semana: { total: number; cantidad: number };
         mes: { total: number; cantidad: number };
         mesPasado: { total: number; cantidad: number };
+        recientes: any[];
     };
     inventario: {
         valorTotal: string;
@@ -30,7 +31,6 @@ export interface DashboardData {
     };
     productosMasVendidos: { nombre: string; cantidad: number; total: number }[];
     ventasUltimos7Dias: { fecha: string; total: number; cantidad: number }[];
-    metodosPago: { metodo: string; total: number; cantidad: number; porcentaje: number }[];
 }
 
 export const useDashboard = () => {
@@ -44,7 +44,6 @@ export const useDashboard = () => {
         if (isRefreshing) {
             setRefreshing(true);
         } else if (!data) {
-            // Solo muestra cargando principal si no hay datos iniciales
             setLoading(true);
         }
 
@@ -61,15 +60,10 @@ export const useDashboard = () => {
         }
     };
 
-    // useFocusEffect funciona igual que useIonViewWillEnter, se ejecuta 
-    // cuando la pantalla del Stack gana el "foco" (es visitada por el usuario).
     useFocusEffect(
         useCallback(() => {
             cargarDashboard();
-            // Polling en segundo plano cada 5 seg
-            const interval = setInterval(() => cargarDashboard(true), 5000);
-
-            // Función cleanup (se ejecuta al salir de la pantalla)
+            const interval = setInterval(() => cargarDashboard(true), 15000); // 15 seg es más que suficiente
             return () => clearInterval(interval);
         }, [user?.negocioActivo])
     );
@@ -78,14 +72,50 @@ export const useDashboard = () => {
         await cargarDashboard(true);
     }, []);
 
-    const clearError = () => setError('');
+    // Lógica de Negocio: Generar notificaciones basadas en la data
+    const notifications = useMemo(() => {
+        if (!data) return [];
+        const notifs = [];
+
+        if (data.ventas.recientes) {
+            data.ventas.recientes.slice(0, 3).forEach((v: any) => {
+                notifs.push({
+                    id: v._id,
+                    title: 'Venta Nueva',
+                    message: `Se registró una venta por $${v.total.toFixed(2)}`,
+                    time: 'Hoy'
+                });
+            });
+        }
+
+        if (data.inventario.itemsStockBajo > 0) {
+            notifs.push({
+                id: 'low-stock',
+                title: 'Stock Bajo',
+                message: `Atención: Tienes ${data.inventario.itemsStockBajo} productos con stock crítico.`,
+                time: 'Ahora'
+            });
+        }
+
+        if (data.inventario.itemsVenciendo > 0) {
+            notifs.push({
+                id: 'expiring-soon',
+                title: 'Vencimientos',
+                message: `${data.inventario.itemsVenciendo} productos están por vencer esta semana.`,
+                time: 'Alerta'
+            });
+        }
+
+        return notifs;
+    }, [data]);
 
     return {
         data,
         loading,
         refreshing,
         error,
+        notifications,
         onRefresh,
-        clearError
+        clearError: () => setError('')
     };
 };

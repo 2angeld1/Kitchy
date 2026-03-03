@@ -158,12 +158,18 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             };
         }
 
+        // Ventas recientes (para notificaciones)
+        const ventasRecientes = await Venta.find({ negocioId: req.negocioId })
+            .sort({ createdAt: -1 })
+            .limit(5);
+
         res.json({
             ventas: {
                 hoy: { total: totalVentasHoy, cantidad: ventasHoy.length },
                 semana: { total: totalVentasSemana, cantidad: ventasSemana.length },
                 mes: { total: totalVentasMes, cantidad: ventasMes.length },
-                mesPasado: { total: totalVentasMesPasado, cantidad: ventasMesPasado.length }
+                mesPasado: { total: totalVentasMesPasado, cantidad: ventasMesPasado.length },
+                recientes: ventasRecientes
             },
             inventario: {
                 valorTotal: valorInventario.toFixed(2),

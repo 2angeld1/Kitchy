@@ -13,6 +13,7 @@ import { RootStackParamList } from '../../App';
 interface KitchyToolbarProps {
     title: string;
     showNotifications?: boolean;
+    notifications?: any[]; // Prop opcional para inyectar notificaciones
     extraButtons?: React.ReactNode;
     onBack?: () => void;
 }
@@ -20,6 +21,7 @@ interface KitchyToolbarProps {
 export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     title,
     showNotifications = true,
+    notifications,
     extraButtons,
     onBack
 }) => {
@@ -139,6 +141,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
             <NotificationModal
                 visible={showNotif}
                 onClose={() => setShowNotif(false)}
+                notifications={notifications}
             />
 
             {/* Modal Menú de Usuario */}

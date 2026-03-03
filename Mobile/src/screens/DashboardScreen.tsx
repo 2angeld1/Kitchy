@@ -24,47 +24,47 @@ type DashboardScreenProps = {
 
 export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { user } = useAuth();
-    const { data, loading, refreshing, error, onRefresh, clearError } = useDashboard();
+    const {
+        data,
+        loading,
+        refreshing,
+        error,
+        notifications, // Consumimos la lógica de negocio procesada
+        onRefresh,
+        clearError
+    } = useDashboard();
+
     const { registrarGasto, loading: creatingGasto } = useGastos();
     const { isDark } = useTheme();
 
-    // Estado Gasto
+    // Estado UI (Este sí puede vivir aquí porque es puramente visual/modal)
     const [showGastoModal, setShowGastoModal] = React.useState(false);
-    const [gastoDesc, setGastoDesc] = React.useState('');
-    const [gastoMonto, setGastoMonto] = React.useState('');
-    const [gastoCat, setGastoCat] = React.useState('servicios');
+    const [form, setForm] = React.useState({ desc: '', monto: '', cat: 'servicios' });
 
     const colors = isDark ? darkTheme : lightTheme;
 
     React.useEffect(() => {
         if (error) {
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: error,
-                position: 'top',
-                onHide: clearError
-            });
+            Toast.show({ type: 'error', text1: 'Error', text2: error, position: 'top', onHide: clearError });
         }
     }, [error]);
 
-    const handleRegistrarGasto = async () => {
-        if (!gastoDesc || !gastoMonto) {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'Descripción y monto requeridos' });
+    const handleGuardarGasto = async () => {
+        if (!form.desc || !form.monto) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'Completa todos los campos' });
             return;
         }
 
         const success = await registrarGasto({
-            descripcion: gastoDesc,
-            monto: parseFloat(gastoMonto),
-            categoria: gastoCat
+            descripcion: form.desc,
+            monto: parseFloat(form.monto),
+            categoria: form.cat
         });
 
         if (success) {
-            Toast.show({ type: 'success', text1: 'Éxito', text2: 'Gasto registrado correctamente' });
+            Toast.show({ type: 'success', text1: 'Éxito', text2: 'Gasto guardado' });
             setShowGastoModal(false);
-            setGastoDesc('');
-            setGastoMonto('');
+            setForm({ desc: '', monto: '', cat: 'servicios' });
             onRefresh();
         }
     };
@@ -80,7 +80,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title="Dashboard" />
+            <KitchyToolbar title="Dashboard" notifications={notifications} />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -349,8 +349,8 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             </TouchableOpacity>
                         </View>
 
-                        <KitchyInput label="Descripción" value={gastoDesc} onChangeText={setGastoDesc} placeholder="Luz, Gas, Renta..." />
-                        <KitchyInput label="Monto ($)" value={gastoMonto} onChangeText={setGastoMonto} keyboardType="numeric" placeholder="0.00" />
+                        <KitchyInput label="Descripción" value={form.desc} onChangeText={(t) => setForm({ ...form, desc: t })} placeholder="Luz, Gas, Renta..." />
+                        <KitchyInput label="Monto ($)" value={form.monto} onChangeText={(t) => setForm({ ...form, monto: t })} keyboardType="numeric" placeholder="0.00" />
 
                         <Text style={[styles.cardLabel, { color: colors.textMuted, marginTop: 10, marginBottom: 10 }]}>Categoría</Text>
                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
@@ -362,14 +362,14 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                         paddingVertical: 6,
                                         borderRadius: 20,
                                         borderWidth: 1,
-                                        borderColor: gastoCat === cat ? colors.primary : colors.border,
-                                        backgroundColor: gastoCat === cat ? 'rgba(225, 29, 72, 0.1)' : 'transparent'
+                                        borderColor: form.cat === cat ? colors.primary : colors.border,
+                                        backgroundColor: form.cat === cat ? 'rgba(225, 29, 72, 0.1)' : 'transparent'
                                     }}
-                                    onPress={() => setGastoCat(cat)}
+                                    onPress={() => setForm({ ...form, cat })}
                                 >
                                     <Text style={{
                                         fontSize: 12,
-                                        color: gastoCat === cat ? colors.primary : colors.textSecondary,
+                                        color: form.cat === cat ? colors.primary : colors.textSecondary,
                                         textTransform: 'capitalize'
                                     }}>{cat}</Text>
                                 </TouchableOpacity>
@@ -378,7 +378,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
                         <KitchyButton
                             title="Guardar Gasto"
-                            onPress={handleRegistrarGasto}
+                            onPress={handleGuardarGasto}
                             loading={creatingGasto}
                         />
                     </Animated.View>
