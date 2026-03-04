@@ -187,7 +187,7 @@ export const useInventario = () => {
         }
     }, [items]);
 
-    const handleBarCodeScanned = useCallback(({ data }: { data: string }) => {
+    const handleBarCodeScanned = useCallback((data: string) => {
         setScanned(true);
         setShowScanner(false);
         buscarPorCodigoBarras(data);

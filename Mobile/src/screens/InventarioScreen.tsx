@@ -13,6 +13,8 @@ import Toast from 'react-native-toast-message';
 import { CameraView } from 'expo-camera';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
+import { Platform } from 'react-native';
+import { WebScanner } from '../components/WebScanner';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
@@ -250,6 +252,11 @@ export default function InventarioScreen() {
                                 <Text style={{ color: '#fff', fontWeight: 'bold' }}>Habilitar</Text>
                             </TouchableOpacity>
                         </View>
+                    ) : Platform.OS === 'web' ? (
+                        <WebScanner
+                            onScanned={handleBarCodeScanned}
+                            onClose={() => setShowScanner(false)}
+                        />
                     ) : (
                         <TouchableOpacity activeOpacity={1} style={{ flex: 1 }} onPress={handleScannerTap}>
                             <CameraView
@@ -257,7 +264,7 @@ export default function InventarioScreen() {
                                 facing="back"
                                 zoom={scannerZoom}
                                 barcodeScannerSettings={scannerSettings}
-                                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                                onBarcodeScanned={scanned ? undefined : (result) => handleBarCodeScanned(result.data)}
                             />
                             {tapCoords && (
                                 <Animated.View entering={FadeIn} style={{ position: 'absolute', left: tapCoords.x - 30, top: tapCoords.y - 30, width: 60, height: 60, borderRadius: 30, borderWidth: 2, borderColor: colors.primary, backgroundColor: 'rgba(255,255,255,0.1)' }} />
