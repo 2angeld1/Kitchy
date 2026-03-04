@@ -457,6 +457,7 @@ export default function InventarioScreen() {
                         <>
                             <CameraView
                                 style={{ flex: 1 }}
+                                facing="back"
                                 barcodeScannerSettings={{
                                     barcodeTypes: ["ean13", "ean8", "qr", "upc_a", "upc_e", "code128", "code39"],
                                 }}
