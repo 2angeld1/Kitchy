@@ -31,7 +31,7 @@ export default function InventarioScreen() {
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
-        hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening,
+        hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening, searchingGlobal,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
@@ -183,7 +183,15 @@ export default function InventarioScreen() {
                 <View style={styles.modalOverlay}>
                     <Animated.View entering={SlideInDown.springify().damping(15)} style={[styles.modalContent, { backgroundColor: colors.card }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{editItem ? 'Editar Item' : 'Nuevo Item'}</Text>
+                            <View>
+                                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{editItem ? 'Editar Item' : 'Nuevo Item'}</Text>
+                                {searchingGlobal && (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                        <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 6 }} />
+                                        <Text style={{ fontSize: 10, color: colors.textMuted }}>Buscando información del producto...</Text>
+                                    </View>
+                                )}
+                            </View>
                             <TouchableOpacity onPress={() => setShowModal(false)}><Ionicons name="close-circle" size={32} color={colors.textMuted} /></TouchableOpacity>
                         </View>
                         <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>

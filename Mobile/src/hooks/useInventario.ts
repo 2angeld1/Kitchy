@@ -73,6 +73,7 @@ export const useInventario = () => {
     const [scanned, setScanned] = useState(false);
     const [scannerZoom, setScannerZoom] = useState(0);
     const [tapCoords, setTapCoords] = useState<{ x: number, y: number } | null>(null);
+    const [searchingGlobal, setSearchingGlobal] = useState(false);
 
     // Memoized scanner settings to prevent camera restarts
     const scannerSettings = useMemo(() => ({
@@ -179,24 +180,26 @@ export const useInventario = () => {
                 // 2. ¡TRUCO PREMIUM! Si no está en tu inventario, lo buscamos en el mundo
                 resetForm();
                 setCodigoBarras(code);
+                setShowModal(true); // Abrimos el modal DE UNA, para que no parezca que falló
 
+                setSearchingGlobal(true);
                 try {
-                    // Consultamos base de datos mundial (Open Food Facts)
+                    // Consultamos en segundo plano para no bloquear al usuario
                     const globalRes = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
                     const globalData = await globalRes.json();
 
                     if (globalData.status === 1) {
                         const product = globalData.product;
-                        // Auto-llenamos los campos con lo que encontramos en el mundo
+                        // Los datos aparecen "mágicamente" mientras el usuario ya está viendo el modal
                         setNombre(product.product_name || product.generic_name || '');
-                        setDescripcion(product.brands ? `Marca: ${product.brands}` : 'Cargado automáticamente');
-                        setCategoria('ingrediente');
+                        setDescripcion(product.brands ? `Marca: ${product.brands}` : 'Cargado automáticamente desde base de datos global');
                     }
                 } catch (globalErr) {
                     console.warn("No se pudo conectar con la base de datos global", globalErr);
+                } finally {
+                    setSearchingGlobal(false);
                 }
 
-                setShowModal(true);
                 return null;
             }
         } catch (err) {
@@ -518,7 +521,7 @@ export const useInventario = () => {
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings,
-        isListening,
+        isListening, searchingGlobal,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleImportCsv, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
