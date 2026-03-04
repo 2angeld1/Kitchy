@@ -16,12 +16,14 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Kitchy necesita acceso para que puedas dictarle los productos a registrar.",
-        "NSMicrophoneUsageDescription": "Kitchy necesita el micrófono para escuchar tu voz."
+        "NSMicrophoneUsageDescription": "Kitchy necesita el micrófono para escuchar tu voz.",
+        "NSCameraUsageDescription": "Kitchy necesita acceso a la cámara para escanear códigos de barras."
       }
     },
     "android": {
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/kitchy-logo-v2.png",
@@ -40,7 +42,7 @@
     },
     "plugins": [
       "expo-speech-recognition",
-      "expo-barcode-scanner"
+      "expo-camera"
     ]
   }
 }

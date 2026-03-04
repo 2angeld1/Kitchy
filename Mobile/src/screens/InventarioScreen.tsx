@@ -14,7 +14,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, Camera } from 'expo-camera';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
@@ -52,7 +52,7 @@ export default function InventarioScreen() {
 
     React.useEffect(() => {
         (async () => {
-            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            const { status } = await Camera.requestCameraPermissionsAsync();
             setHasPermission(status === 'granted');
         })();
     }, []);
@@ -60,8 +60,12 @@ export default function InventarioScreen() {
     const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
         setScanned(true);
         setShowScanner(false);
-        setScanned(false);
         buscarPorCodigoBarras(data);
+    };
+
+    const openScanner = () => {
+        setScanned(false);
+        setShowScanner(true);
     };
 
     React.useEffect(() => {
@@ -248,9 +252,6 @@ export default function InventarioScreen() {
                     <TouchableOpacity onPress={startListening} style={{ paddingHorizontal: 4 }}>
                         <Ionicons name={isListening ? "mic" : "mic-outline"} size={22} color={isListening ? colors.primary : colors.textMuted} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setShowScanner(true)} style={{ paddingHorizontal: 4 }}>
-                        <Ionicons name="barcode-outline" size={26} color={colors.primary} />
-                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -310,7 +311,14 @@ export default function InventarioScreen() {
                 )}
             </ScrollView>
 
-            {/* Import Data FAB */}
+            {/* FABs Stack */}
+            <TouchableOpacity
+                style={[styles.fab, { backgroundColor: colors.surface, bottom: 156, borderWidth: 1, borderColor: colors.border }]}
+                onPress={openScanner}
+            >
+                <Ionicons name="barcode-outline" size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+
             <TouchableOpacity
                 style={[styles.fab, { backgroundColor: colors.surface, bottom: 90, borderWidth: 1, borderColor: colors.border }]}
                 onPress={pickDocument}
@@ -424,10 +432,44 @@ export default function InventarioScreen() {
             {/* Modal de Escaneo de Código de Barras */}
             <Modal visible={showScanner} animationType="slide" onRequestClose={() => setShowScanner(false)}>
                 <View style={{ flex: 1, backgroundColor: '#000' }}>
-                    <BarCodeScanner
-                        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                        style={{ flex: 1 }}
-                    />
+                    {hasPermission === null ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                            <ActivityIndicator size="large" color={colors.primary} />
+                            <Text style={{ color: '#fff', marginTop: 10 }}>Solicitando permiso de cámara...</Text>
+                        </View>
+                    ) : hasPermission === false ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                            <Ionicons name="camera-reverse-outline" size={64} color={colors.error} />
+                            <Text style={{ color: '#fff', marginTop: 20, textAlign: 'center', fontSize: 18 }}>
+                                No tenemos permiso para usar la cámara.
+                            </Text>
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    const { status } = await Camera.requestCameraPermissionsAsync();
+                                    setHasPermission(status === 'granted');
+                                }}
+                                style={{ backgroundColor: colors.primary, marginTop: 20, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 25 }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Intentar de nuevo</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <>
+                            <CameraView
+                                style={{ flex: 1 }}
+                                barcodeScannerSettings={{
+                                    barcodeTypes: ["ean13", "ean8", "qr", "upc_a", "upc_e", "code128", "code39"],
+                                }}
+                                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                            />
+                            <View style={{ position: 'absolute', top: 100, left: 20, right: 20, alignItems: 'center' }}>
+                                <View style={{ width: 250, height: 250, borderWidth: 2, borderColor: colors.primary, borderStyle: 'dotted', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                                <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>
+                                    Apunta al código de barras
+                                </Text>
+                            </View>
+                        </>
+                    )}
                     <View style={{ position: 'absolute', bottom: 50, left: 0, right: 0, alignItems: 'center' }}>
                         <TouchableOpacity
                             onPress={() => setShowScanner(false)}
@@ -435,12 +477,6 @@ export default function InventarioScreen() {
                         >
                             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Cancelar</Text>
                         </TouchableOpacity>
-                    </View>
-                    <View style={{ position: 'absolute', top: 100, left: 20, right: 20, alignItems: 'center' }}>
-                        <View style={{ width: 250, height: 250, borderWidth: 2, borderColor: colors.primary, borderStyle: 'dotted', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }} />
-                        <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>
-                            Apunta al código de barras
-                        </Text>
                     </View>
                 </View>
             </Modal>
