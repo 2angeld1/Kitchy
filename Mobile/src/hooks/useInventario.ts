@@ -1,15 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import {
-    getInventario,
-    createInventario,
-    updateInventario,
-    deleteInventario,
-    registrarEntrada,
-    registrarSalida,
-    registrarMerma,
-    importarInventario
-} from '../services/api';
+import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, registrarMerma, importarInventario } from '../services/api';
+import { Camera } from 'expo-camera';
+import * as DocumentPicker from 'expo-document-picker';
+import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 
 export interface InventarioItem {
     _id: string;
@@ -34,6 +28,7 @@ export const useInventario = () => {
     // Modals
     const [showModal, setShowModal] = useState(false);
     const [showMovModal, setShowMovModal] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
 
     // Selection
     const [editItem, setEditItem] = useState<InventarioItem | null>(null);
@@ -63,6 +58,35 @@ export const useInventario = () => {
     const [proveedor, setProveedor] = useState('');
     const [codigoBarras, setCodigoBarras] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
+
+    // Scanner States
+    const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+    const [scanned, setScanned] = useState(false);
+    const [scannerZoom, setScannerZoom] = useState(0.1);
+    const [tapCoords, setTapCoords] = useState<{ x: number, y: number } | null>(null);
+
+    // Speech States
+    const [smartText, setSmartText] = useState('');
+    const [isListening, setIsListening] = useState(false);
+
+    // Setup Speech Recognition
+    useSpeechRecognitionEvent("start", () => setIsListening(true));
+    useSpeechRecognitionEvent("end", () => setIsListening(false));
+    useSpeechRecognitionEvent("result", (event) => {
+        setSmartText(event.results[0]?.transcript || '');
+    });
+    useSpeechRecognitionEvent("error", (event) => {
+        console.warn("Speech error:", event);
+        setIsListening(false);
+    });
+
+    // Initial Permissions
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            setHasPermission(status === 'granted');
+        })();
+    }, []);
 
     const cargarInventario = useCallback(async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -128,7 +152,6 @@ export const useInventario = () => {
             const response = await getInventario({ codigoBarras: code });
             const item = response.data[0];
             if (item) {
-                // If exists, open movement modal for Entradas
                 setSelectedItem(item);
                 setMovTipo('entrada');
                 setMovCantidad('');
@@ -137,7 +160,6 @@ export const useInventario = () => {
                 setShowMovModal(true);
                 return item;
             } else {
-                // If not exists, pre-fill create modal
                 resetForm();
                 setCodigoBarras(code);
                 setShowModal(true);
@@ -149,6 +171,34 @@ export const useInventario = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleBarCodeScanned = ({ data }: { data: string }) => {
+        setScanned(true);
+        setShowScanner(false);
+        buscarPorCodigoBarras(data);
+    };
+
+    const openScanner = () => {
+        setScanned(false);
+        setShowScanner(true);
+    };
+
+    const forceFocus = () => {
+        setScannerZoom(0.11);
+        setTimeout(() => setScannerZoom(0.1), 100);
+    };
+
+    const handleScannerTap = (event: any) => {
+        const { locationX, locationY } = event.nativeEvent;
+        setTapCoords({ x: locationX, y: locationY });
+        forceFocus();
+        setTimeout(() => setTapCoords(null), 500);
+    };
+
+    const requestCameraPermission = async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === 'granted');
     };
 
     const handleSubmit = async () => {
@@ -251,19 +301,25 @@ export const useInventario = () => {
         }
     };
 
-    const clearError = () => setError('');
-    const clearSuccess = () => setSuccess('');
+    const pickDocument = async () => {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
+                copyToCacheDirectory: true
+            });
 
-    // Csv Import
+            if (result.canceled) return;
+            handleImportCsv(result.assets[0]);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleImportCsv = async (file: any) => {
         setLoading(true);
         try {
             const formData = new FormData();
-
-            // Para Native (expo-document-picker): file tiene { uri, name, mimeType, file? }
-            // Si estamos en web, expo-document-picker devuelve el File object en `file.file`
             if (file.file) {
-                // Caida para web standard
                 formData.append('archivo', file.file);
             } else if (file.uri) {
                 formData.append('archivo', {
@@ -278,10 +334,6 @@ export const useInventario = () => {
             const response = await importarInventario(formData);
             const data = response.data;
             setSuccess(`Importación lista. Nuevos: ${data.detalles.creados}, Actualizados: ${data.detalles.actualizados}`);
-
-            if (data.detalles.errores && data.detalles.errores.length > 0) {
-                console.warn('Errores de importación:', data.detalles.errores);
-            }
             cargarInventario();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al importar CSV');
@@ -290,9 +342,72 @@ export const useInventario = () => {
         }
     };
 
-    // Smart Input (Asistente de Voz / Comandos Rápidos)
-    const [smartText, setSmartText] = useState('');
-    const [isListening, setIsListening] = useState(false);
+    const startListening = async () => {
+        if (isListening) {
+            ExpoSpeechRecognitionModule.stop();
+            return;
+        }
+
+        const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+        if (!granted) {
+            setError('Permiso de micrófono denegado');
+            return;
+        }
+
+        try {
+            ExpoSpeechRecognitionModule.start({
+                lang: "es-ES",
+                interimResults: true,
+                maxAlternatives: 1,
+            });
+        } catch (err) {
+            setError('Error al iniciar reconocimiento de voz');
+            setIsListening(false);
+        }
+    };
+
+    const handleSmartAction = async () => {
+        if (!smartText) return;
+        const parsed = parseSmartInput(smartText);
+
+        if (!parsed) {
+            const existing = findSmartMatch(smartText);
+            if (existing) {
+                openMovModal(existing, 'entrada');
+            } else {
+                resetForm();
+                setNombre(smartText.charAt(0).toUpperCase() + smartText.slice(1));
+                setShowModal(true);
+            }
+            setSmartText('');
+            return;
+        }
+
+        const { cantidad, unidad, nombre: rawNombre, precio, isSalida } = parsed;
+        const itemName = rawNombre.trim();
+        const existing = findSmartMatch(itemName);
+        const qty = parseFloat(cantidad);
+
+        if (existing) {
+            let costoTotal = precio ? precio * qty : existing.costoUnitario * qty;
+            setSelectedItem(existing);
+            setMovTipo(isSalida ? 'salida' : 'entrada');
+            setMovCantidad(qty.toString());
+            setMovCosto(costoTotal > 0 ? costoTotal.toString() : '');
+            setMovMotivo('Voz/Inteligente: ' + smartText);
+            setShowMovModal(true);
+        } else {
+            resetForm();
+            setNombre(itemName.charAt(0).toUpperCase() + itemName.slice(1));
+            setDescripcion('Ingreso rápido');
+            setCantidad(qty.toString());
+            setUnidad(normalizeUnit(unidad));
+            setCantidadMinima('1');
+            if (precio) setCostoUnitario(precio.toString());
+            setShowModal(true);
+        }
+        setSmartText('');
+    };
 
     const parseSmartInput = (text: string) => {
         let cleanText = text.trim();
@@ -307,7 +422,6 @@ export const useInventario = () => {
 
         const priceRegex = /\s+(\d+(?:[\.,]\d{1,2})?)\s*(?:dolar|dolares|usd|peso|pesos|\$)?$/i;
         const priceMatch = cleanText.match(priceRegex);
-
         if (priceMatch) {
             precio = parseFloat(priceMatch[1].replace(',', '.'));
             cleanText = cleanText.replace(priceRegex, '').trim();
@@ -325,28 +439,7 @@ export const useInventario = () => {
                 isSalida
             };
         }
-
-        if (precio !== null && cleanText) {
-            return {
-                cantidad: "1",
-                unidad: "unidades",
-                nombre: cleanText,
-                precio,
-                isSalida
-            };
-        }
-
-        if (isSalida && cleanText) {
-            return {
-                cantidad: "1",
-                unidad: "unidades",
-                nombre: cleanText,
-                precio: null,
-                isSalida
-            };
-        }
-
-        return null;
+        return (precio !== null || isSalida) ? { cantidad: "1", unidad: "unidades", nombre: cleanText, precio, isSalida } : null;
     };
 
     const normalizeUnit = (u: string = '') => {
@@ -356,151 +449,44 @@ export const useInventario = () => {
         if (['l', 'litro', 'litros'].includes(unit)) return 'litros';
         if (['ml', 'mililitro', 'mililitros'].includes(unit)) return 'ml';
         if (['g', 'gramo', 'gramos'].includes(unit)) return 'gramos';
-        if (['caja', 'cajas'].includes(unit)) return 'unidades';
         return 'unidades';
     };
 
     const findSmartMatch = (searchName: string) => {
         const cleanName = searchName.toLowerCase().trim();
         const baseName = cleanName.replace(/es$|s$/, '');
-
         return items.find(item => {
             const itemName = item.nombre.toLowerCase();
             const itemBase = itemName.replace(/es$|s$/, '');
-            return itemName === cleanName ||
-                itemBase === baseName ||
-                itemName.includes(baseName) ||
-                baseName.includes(itemBase);
+            return itemName === cleanName || itemBase === baseName || itemName.includes(baseName) || baseName.includes(itemBase);
         });
-    };
-
-    const handleSmartAction = async () => {
-        if (!smartText) return;
-
-        const parsed = parseSmartInput(smartText);
-
-        if (!parsed) {
-            const existing = findSmartMatch(smartText);
-            if (existing) {
-                setSelectedItem(existing);
-                setMovTipo('entrada');
-                setMovCantidad('');
-                setMovMotivo('');
-                setMovCosto('');
-                setShowMovModal(true);
-            } else {
-                resetForm();
-                setNombre(smartText.charAt(0).toUpperCase() + smartText.slice(1));
-                setShowModal(true);
-            }
-            setSmartText('');
-            return;
-        }
-
-        const { cantidad, unidad, nombre: rawNombre, precio, isSalida } = parsed;
-        const itemName = rawNombre.trim();
-        const existing = findSmartMatch(itemName);
-        const qty = parseFloat(cantidad);
-
-        if (existing) {
-            let costoTotal = 0;
-            if (precio) {
-                costoTotal = precio * qty;
-            } else {
-                costoTotal = existing.costoUnitario * qty;
-            }
-
-            setSelectedItem(existing);
-            setMovTipo(isSalida ? 'salida' : 'entrada');
-            setMovCantidad(qty.toString());
-            setMovCosto(costoTotal > 0 ? costoTotal.toString() : '');
-            setMovMotivo('Voz/Inteligente: ' + smartText);
-            setShowMovModal(true);
-
-        } else {
-            resetForm();
-            setNombre(itemName.charAt(0).toUpperCase() + itemName.slice(1));
-            setDescripcion('Ingreso rápido');
-            setCantidad(qty.toString());
-            setUnidad(normalizeUnit(unidad));
-            setCantidadMinima('1');
-
-            if (precio) {
-                setCostoUnitario(precio.toString());
-            }
-
-            setShowModal(true);
-        }
-
-        setSmartText('');
     };
 
     const itemsFiltrados = items.filter(item => {
         if (!smartText) return true;
-        const parsed = parseSmartInput(smartText);
-        const searchTerm = parsed && parsed.nombre ? parsed.nombre.toLowerCase().trim() : smartText.toLowerCase().trim();
+        const searchTerm = smartText.toLowerCase().trim();
         return item.nombre.toLowerCase().includes(searchTerm);
     });
 
+    const clearError = () => setError('');
+    const clearSuccess = () => setSuccess('');
+
     return {
-        // Data
-        items,
-        loading,
-        refreshing,
-        error,
-        success,
-        clearError,
-        clearSuccess,
-        itemsFiltrados,
-
-        // Modal Visibility
-        showModal,
-        setShowModal,
-        showMovModal,
-        setShowMovModal,
-
-        // Selection
-        editItem,
-        selectedItem,
-
-        // Filters
-        filtro,
-        setFiltro,
-
-        // Smart Input
-        smartText,
-        setSmartText,
+        items, loading, refreshing, error, success, clearError, clearSuccess, itemsFiltrados,
+        showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
+        editItem, selectedItem, movTipo, setMovTipo, movCantidad, setMovCantidad,
+        movMotivo, setMovMotivo, movCosto, setMovCosto,
+        filtro, setFiltro, smartText, setSmartText,
+        nombre, setNombre, descripcion, setDescripcion,
+        cantidad, setCantidad, unidad, setUnidad,
+        cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
+        categoria, setCategoria, proveedor, setProveedor,
+        codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
+        hasPermission, scanned, scannerZoom, tapCoords,
         isListening,
-        setIsListening,
-        handleSmartAction,
-        handleImportCsv,
-
-        // Movement Form State
-        movTipo, setMovTipo,
-        movCantidad, setMovCantidad,
-        movMotivo, setMovMotivo,
-        movCosto, setMovCosto,
-
-        // Item Form State
-        nombre, setNombre,
-        descripcion, setDescripcion,
-        cantidad, setCantidad,
-        unidad, setUnidad,
-        cantidadMinima, setCantidadMinima,
-        costoUnitario, setCostoUnitario,
-        categoria, setCategoria,
-        proveedor, setProveedor,
-        codigoBarras, setCodigoBarras,
-        fechaVencimiento, setFechaVencimiento,
-
-        // Actions
-        handleRefresh,
-        resetForm,
-        openEditModal,
-        buscarPorCodigoBarras,
-        handleSubmit,
-        handleDelete,
-        openMovModal,
-        handleMovimiento
+        handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
+        openMovModal, handleMovimiento, handleImportCsv, handleSmartAction,
+        handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
+        pickDocument, startListening, setIsListening
     };
 };

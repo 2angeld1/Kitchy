@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, SlideInDown, FadeIn } from 'react-native-reanimated';
-import { lightTheme, darkTheme } from '../theme';
+import { lightTheme, darkTheme, spacing } from '../theme';
 import { styles } from '../styles/InventarioScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
@@ -10,11 +10,9 @@ import { useInventario, InventarioItem } from '../hooks/useInventario';
 import { KitchyInput } from '../components/KitchyInput';
 import { KitchyButton } from '../components/KitchyButton';
 import Toast from 'react-native-toast-message';
-import * as DocumentPicker from 'expo-document-picker';
+import { CameraView } from 'expo-camera';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
-import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
-import { CameraView, Camera } from 'expo-camera';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
@@ -22,8 +20,8 @@ export default function InventarioScreen() {
 
     const {
         loading, refreshing, error, success, clearError, clearSuccess, itemsFiltrados,
-        showModal, setShowModal, showMovModal, setShowMovModal,
-        editItem, selectedItem, movTipo, movCantidad, setMovCantidad,
+        showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
+        editItem, selectedItem, movTipo, setMovTipo, movCantidad, setMovCantidad,
         movMotivo, setMovMotivo, movCosto, setMovCosto,
         filtro, setFiltro, smartText, setSmartText,
         nombre, setNombre, descripcion, setDescripcion,
@@ -31,149 +29,44 @@ export default function InventarioScreen() {
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
+        hasPermission, scanned, scannerZoom, tapCoords, isListening,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
-        openMovModal, handleMovimiento, handleImportCsv, handleSmartAction,
-        isListening, setIsListening, buscarPorCodigoBarras
+        openMovModal, handleMovimiento, handleSmartAction,
+        handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
+        pickDocument, startListening
     } = useInventario();
-
-    const [hasPermission, setHasPermission] = React.useState<boolean | null>(null);
-    const [scanned, setScanned] = React.useState(false);
-    const [showScanner, setShowScanner] = React.useState(false);
-
-    useSpeechRecognitionEvent("start", () => setIsListening(true));
-    useSpeechRecognitionEvent("end", () => setIsListening(false));
-    useSpeechRecognitionEvent("result", (event) => {
-        setSmartText(event.results[0]?.transcript || '');
-    });
-    useSpeechRecognitionEvent("error", (event) => {
-        console.warn("Speech error:", event);
-        setIsListening(false);
-    });
-
-    React.useEffect(() => {
-        (async () => {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            setHasPermission(status === 'granted');
-        })();
-    }, []);
-
-    const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
-        setScanned(true);
-        setShowScanner(false);
-        buscarPorCodigoBarras(data);
-    };
-
-    const openScanner = () => {
-        setScanned(false);
-        setShowScanner(true);
-    };
 
     React.useEffect(() => {
         if (error) {
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: error,
-                position: 'top',
-                onHide: clearError
-            });
+            Toast.show({ type: 'error', text1: 'Error', text2: error, position: 'top', onHide: clearError });
         }
     }, [error]);
 
     React.useEffect(() => {
         if (success) {
-            Toast.show({
-                type: 'success',
-                text1: 'Éxito',
-                text2: success,
-                position: 'top',
-                onHide: clearSuccess
-            });
+            Toast.show({ type: 'success', text1: 'Éxito', text2: success, position: 'top', onHide: clearSuccess });
         }
     }, [success]);
 
-    const pickDocument = async () => {
-        try {
-            const result = await DocumentPicker.getDocumentAsync({
-                type: ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'],
-                copyToCacheDirectory: true
-            });
-
-            if (result.canceled) return;
-            handleImportCsv(result.assets[0]);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    const startListening = async () => {
-        if (isListening) {
-            ExpoSpeechRecognitionModule.stop();
-            return;
-        }
-
-        const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-        if (!granted) {
-            Toast.show({
-                type: 'error',
-                text1: 'Permiso Denegado',
-                text2: 'Necesitamos usar el micrófono para escuchar tu pedido.',
-            });
-            return;
-        }
-
-        try {
-            ExpoSpeechRecognitionModule.start({
-                lang: "es-ES",
-                interimResults: true,
-                maxAlternatives: 1,
-            });
-        } catch (error) {
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Tu dispositivo no soporta dictado por voz de forma nativa.',
-            });
-            setIsListening(false);
-        }
-    };
-
-    const renderRightActions = (item: InventarioItem) => {
-        return (
-            <View style={{ flexDirection: 'row', alignItems: 'center', height: '100%' }}>
-                <TouchableOpacity
-                    style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => openMovModal(item, 'entrada')}
-                >
-                    <Ionicons name="arrow-up" size={22} color="#3b82f6" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => openMovModal(item, 'salida')}
-                >
-                    <Ionicons name="cart-outline" size={22} color="#f59e0b" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => openMovModal(item, 'merma')}
-                >
-                    <Ionicons name="flask-outline" size={22} color="#10b981" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ backgroundColor: colors.surface, width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => openEditModal(item)}
-                >
-                    <Ionicons name="pencil" size={22} color={colors.textPrimary} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={{ backgroundColor: 'rgba(225, 29, 72, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }}
-                    onPress={() => handleDelete(item._id)}
-                >
-                    <Ionicons name="trash" size={22} color="#e11d48" />
-                </TouchableOpacity>
-            </View>
-        );
-    };
+    const renderRightActions = (item: InventarioItem) => (
+        <View style={{ flexDirection: 'row', alignItems: 'center', height: '100%' }}>
+            <TouchableOpacity style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => openMovModal(item, 'entrada')}>
+                <Ionicons name="arrow-up" size={22} color="#3b82f6" />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => openMovModal(item, 'salida')}>
+                <Ionicons name="cart-outline" size={22} color="#f59e0b" />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => openMovModal(item, 'merma')}>
+                <Ionicons name="flask-outline" size={22} color="#10b981" />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ backgroundColor: colors.surface, width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => openEditModal(item)}>
+                <Ionicons name="pencil" size={22} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ backgroundColor: 'rgba(225, 29, 72, 0.1)', width: 60, height: '100%', justifyContent: 'center', alignItems: 'center' }} onPress={() => handleDelete(item._id)}>
+                <Ionicons name="trash" size={22} color="#e11d48" />
+            </TouchableOpacity>
+        </View>
+    );
 
     const renderItemCard = (item: InventarioItem, index: number) => {
         const isBajoStock = item.cantidad <= item.cantidadMinima;
@@ -186,39 +79,22 @@ export default function InventarioScreen() {
             <Animated.View key={item._id} entering={FadeInDown.delay(index * 50)}>
                 <Swipeable renderRightActions={() => renderRightActions(item)}>
                     <GHTouchableOpacity
-                        style={[
-                            styles.itemCard,
-                            { backgroundColor: colors.background, borderBottomColor: colors.border },
-                            estaPorVencer && { borderLeftWidth: 4, borderLeftColor: colors.primary }
-                        ]}
+                        style={[styles.itemCard, { backgroundColor: colors.background, borderBottomColor: colors.border }, estaPorVencer && { borderLeftWidth: 4, borderLeftColor: colors.primary }]}
                         onPress={() => openEditModal(item)}
                         activeOpacity={0.8}
                     >
                         <View style={[styles.itemIconBox, { backgroundColor: colors.card }]}>
-                            <Ionicons
-                                name={item.categoria === 'comida' ? 'restaurant-outline' : item.categoria === 'bebida' ? 'cafe-outline' : 'cube-outline'}
-                                size={24}
-                                color={estaPorVencer ? colors.primary : colors.primary}
-                            />
-                            {estaPorVencer && (
-                                <View style={{ position: 'absolute', top: -4, right: -4 }}>
-                                    <Ionicons name="alert-circle" size={16} color={colors.primary} />
-                                </View>
-                            )}
+                            <Ionicons name={item.categoria === 'comida' ? 'restaurant-outline' : item.categoria === 'bebida' ? 'cafe-outline' : 'cube-outline'} size={24} color={colors.primary} />
+                            {estaPorVencer && <View style={{ position: 'absolute', top: -4, right: -4 }}><Ionicons name="alert-circle" size={16} color={colors.primary} /></View>}
                         </View>
-
                         <View style={styles.itemInfo}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
                                 <Text style={[styles.itemTitle, { color: colors.textPrimary }]} numberOfLines={1}>{item.nombre}</Text>
                                 <Text style={[styles.itemSub, { color: colors.textMuted, marginHorizontal: 6 }]}>•</Text>
                                 <Text style={[styles.itemTitle, { color: colors.primary, flexShrink: 1 }]} numberOfLines={1}>{item.cantidad} {item.unidad}</Text>
                             </View>
-                            <Text style={[styles.itemSub, { color: colors.textSecondary }]}>
-                                ${(item.costoUnitario || 0).toFixed(2)} / ud
-                            </Text>
-                            {isBajoStock && (
-                                <Text style={styles.stockWarning}>Bajo Stock (Min: {item.cantidadMinima})</Text>
-                            )}
+                            <Text style={[styles.itemSub, { color: colors.textSecondary }]}>${(item.costoUnitario || 0).toFixed(2)} / ud</Text>
+                            {isBajoStock && <Text style={styles.stockWarning}>Bajo Stock (Min: {item.cantidadMinima})</Text>}
                             {item.fechaVencimiento && (
                                 <Text style={{ fontSize: 10, color: estaPorVencer ? colors.primary : colors.textMuted, marginTop: 2, fontWeight: estaPorVencer ? 'bold' : 'normal' }}>
                                     Vence: {new Date(item.fechaVencimiento).toLocaleDateString()}
@@ -236,7 +112,6 @@ export default function InventarioScreen() {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <KitchyToolbar title="Inventario" />
 
-            {/* Búsqueda rápida */}
             <View style={styles.headerRow}>
                 <View style={[styles.searchInputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Ionicons name="search-outline" size={20} color={colors.textMuted} />
@@ -255,34 +130,19 @@ export default function InventarioScreen() {
                 </View>
             </View>
 
-            {isListening ? (
-                <Animated.Text entering={FadeInDown} style={{ paddingHorizontal: 24, fontSize: 12, color: colors.primary, marginBottom: 8, fontStyle: 'italic' }}>
-                    🎙️ Te escucho... Ej: "Gasté 5 litros de leche"
-                </Animated.Text>
-            ) : (
-                <Text style={{ paddingHorizontal: 24, fontSize: 12, color: colors.textMuted, marginBottom: 8, fontStyle: 'italic' }}>
-                    💡 Escribe o dicta: "5 tomates a 10 dólares" o "usé 2 libras de carne"
-                </Text>
-            )}
+            <Text style={{ paddingHorizontal: 24, fontSize: 12, color: isListening ? colors.primary : colors.textMuted, marginBottom: 8, fontStyle: 'italic' }}>
+                {isListening ? '🎙️ Te escucho... Ej: "Gasté 5 litros de leche"' : '💡 Escribe o dicta: "5 tomates a 10 dólares" o "usé 2 libras de carne"'}
+            </Text>
 
-            {/* Filtros Horizontales */}
             <View style={styles.filterContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
                     {['todos', 'stockBajo', 'ingrediente'].map(opcion => (
                         <TouchableOpacity
                             key={opcion}
-                            style={[
-                                styles.filterChip,
-                                { backgroundColor: colors.card, borderColor: colors.border },
-                                filtro === opcion && { backgroundColor: colors.primary, borderColor: colors.primary }
-                            ]}
+                            style={[styles.filterChip, { backgroundColor: colors.card, borderColor: colors.border }, filtro === opcion && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                             onPress={() => setFiltro(opcion)}
                         >
-                            <Text style={[
-                                styles.filterText,
-                                { color: colors.textSecondary },
-                                filtro === opcion && { color: colors.white }
-                            ]}>
+                            <Text style={[styles.filterText, { color: colors.textSecondary }, filtro === opcion && { color: colors.white }]}>
                                 {opcion === 'stockBajo' ? 'Bajo Stock' : opcion === 'ingrediente' ? 'Insumos' : 'Todos'}
                             </Text>
                         </TouchableOpacity>
@@ -290,108 +150,55 @@ export default function InventarioScreen() {
                 </ScrollView>
             </View>
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContainer}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
-                }
-            >
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContainer} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />}>
                 {loading && !refreshing && itemsFiltrados.length === 0 ? (
-                    <View style={styles.emptyContainer}>
-                        <ActivityIndicator size="large" color={colors.primary} />
-                    </View>
+                    <View style={styles.emptyContainer}><ActivityIndicator size="large" color={colors.primary} /></View>
                 ) : itemsFiltrados.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <Ionicons name="cube-outline" size={48} color={colors.border} />
-                        <Text style={[styles.emptyText, { color: colors.textMuted }]}>Inventario vacío.</Text>
+                        <Ionicons name="cube-outline" size={48} color={colors.border} /><Text style={[styles.emptyText, { color: colors.textMuted }]}>Inventario vacío.</Text>
                     </View>
                 ) : (
                     itemsFiltrados.map((item, i) => renderItemCard(item, i))
                 )}
             </ScrollView>
 
-            {/* FABs Stack */}
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: colors.surface, bottom: 156, borderWidth: 1, borderColor: colors.border }]}
-                onPress={openScanner}
-            >
-                <Ionicons name="barcode-outline" size={24} color={colors.textPrimary} />
-            </TouchableOpacity>
+            <View style={{ position: 'absolute', bottom: spacing.lg, right: spacing.xl, gap: spacing.md }}>
+                <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface, position: 'relative', right: 0, bottom: 0, borderWidth: 1, borderColor: colors.border }]} onPress={openScanner}>
+                    <Ionicons name="barcode-outline" size={24} color={colors.textPrimary} />
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: colors.surface, bottom: 90, borderWidth: 1, borderColor: colors.border }]}
-                onPress={pickDocument}
-            >
-                <Ionicons name="cloud-download-outline" size={24} color={colors.textPrimary} />
-            </TouchableOpacity>
+                <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface, position: 'relative', right: 0, bottom: 0, borderWidth: 1, borderColor: colors.border }]} onPress={pickDocument}>
+                    <Ionicons name="cloud-download-outline" size={24} color={colors.textPrimary} />
+                </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: colors.primary }]}
-                onPress={() => { resetForm(); setShowModal(true); }}
-            >
-                <Ionicons name="add" size={30} color={colors.white} />
-            </TouchableOpacity>
+                <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary, position: 'relative', right: 0, bottom: 0 }]} onPress={() => { resetForm(); setShowModal(true); }}>
+                    <Ionicons name="add" size={30} color={colors.white} />
+                </TouchableOpacity>
+            </View>
 
             {/* Modal de Crear/Editar Item */}
             <Modal visible={showModal} transparent animationType="fade">
                 <View style={styles.modalOverlay}>
                     <Animated.View entering={SlideInDown.springify().damping(15)} style={[styles.modalContent, { backgroundColor: colors.card }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                                {editItem ? 'Editar Item' : 'Nuevo Item'}
-                            </Text>
-                            <TouchableOpacity onPress={() => setShowModal(false)}>
-                                <Ionicons name="close-circle" size={32} color={colors.textMuted} />
-                            </TouchableOpacity>
+                            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{editItem ? 'Editar Item' : 'Nuevo Item'}</Text>
+                            <TouchableOpacity onPress={() => setShowModal(false)}><Ionicons name="close-circle" size={32} color={colors.textMuted} /></TouchableOpacity>
                         </View>
-
                         <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-                            <KitchyInput label="Nombre" value={nombre} onChangeText={setNombre} placeholder="Ej. Lomo de Res" />
-                            <KitchyInput label="Descripción (Opcional)" value={descripcion} onChangeText={setDescripcion} placeholder="Para cocina" />
-
+                            <KitchyInput label="Nombre" value={nombre} onChangeText={setNombre} />
+                            <KitchyInput label="Descripción" value={descripcion} onChangeText={setDescripcion} />
                             <View style={styles.formRow}>
-                                <View style={styles.inputSmall}>
-                                    <KitchyInput label="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" placeholder="0" />
-                                </View>
-                                <View style={styles.inputSmall}>
-                                    <KitchyInput label="Medida" value={unidad} onChangeText={setUnidad} placeholder="kg, litros, ud" />
-                                </View>
+                                <View style={styles.inputSmall}><KitchyInput label="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" /></View>
+                                <View style={styles.inputSmall}><KitchyInput label="Medida" value={unidad} onChangeText={setUnidad} /></View>
                             </View>
-
                             <View style={styles.formRow}>
-                                <View style={styles.inputSmall}>
-                                    <KitchyInput label="Costo / Ud" value={costoUnitario} onChangeText={setCostoUnitario} keyboardType="numeric" placeholder="$0.00" />
-                                </View>
-                                <View style={styles.inputSmall}>
-                                    <KitchyInput label="Min Stock" value={cantidadMinima} onChangeText={setCantidadMinima} keyboardType="numeric" placeholder="Min" />
-                                </View>
+                                <View style={styles.inputSmall}><KitchyInput label="Costo / Ud" value={costoUnitario} onChangeText={setCostoUnitario} keyboardType="numeric" /></View>
+                                <View style={styles.inputSmall}><KitchyInput label="Min Stock" value={cantidadMinima} onChangeText={setCantidadMinima} keyboardType="numeric" /></View>
                             </View>
-
-                            <KitchyInput label="Categoría" value={categoria} onChangeText={setCategoria} placeholder="ingrediente, comida" />
-                            <KitchyInput label="Proveedor (Opcional)" value={proveedor} onChangeText={setProveedor} placeholder="Meat Co." />
-                            <KitchyInput label="Código de Barras" value={codigoBarras} onChangeText={setCodigoBarras} placeholder="Scan o escribe..." />
-                            <KitchyInput label="Fecha de Vencimiento (YYYY-MM-DD)" value={fechaVencimiento} onChangeText={setFechaVencimiento} placeholder="2024-12-31" />
-
-                            <View style={styles.actionButtonGroup}>
-                                <KitchyButton
-                                    title={editItem ? 'Actualizar' : 'Guardar'}
-                                    onPress={handleSubmit}
-                                    loading={loading}
-                                    variant="primary"
-                                />
-                                {editItem && (
-                                    <TouchableOpacity
-                                        style={{ justifyContent: 'center', paddingHorizontal: 20 }}
-                                        onPress={() => {
-                                            setShowModal(false);
-                                            handleDelete(editItem._id);
-                                        }}
-                                    >
-                                        <Text style={{ color: colors.error, fontWeight: 'bold' }}>Eliminar</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
+                            <KitchyInput label="Categoría" value={categoria} onChangeText={setCategoria} />
+                            <KitchyInput label="Código de Barras" value={codigoBarras} onChangeText={setCodigoBarras} />
+                            <KitchyInput label="Fecha Vencimiento" value={fechaVencimiento} onChangeText={setFechaVencimiento} />
+                            <KitchyButton title={editItem ? 'Actualizar' : 'Guardar'} onPress={handleSubmit} loading={loading} variant="primary" />
                         </ScrollView>
                     </Animated.View>
                 </View>
@@ -429,53 +236,35 @@ export default function InventarioScreen() {
                     </Animated.View>
                 </View>
             </Modal>
-            {/* Modal de Escaneo de Código de Barras */}
+
+            {/* Modal de Escaneo */}
             <Modal visible={showScanner} animationType="slide" onRequestClose={() => setShowScanner(false)}>
                 <View style={{ flex: 1, backgroundColor: '#000' }}>
                     {hasPermission === null ? (
-                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                            <ActivityIndicator size="large" color={colors.primary} />
-                            <Text style={{ color: '#fff', marginTop: 10 }}>Solicitando permiso de cámara...</Text>
-                        </View>
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color={colors.primary} /></View>
                     ) : hasPermission === false ? (
                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
                             <Ionicons name="camera-reverse-outline" size={64} color={colors.error} />
-                            <Text style={{ color: '#fff', marginTop: 20, textAlign: 'center', fontSize: 18 }}>
-                                No tenemos permiso para usar la cámara.
-                            </Text>
-                            <TouchableOpacity
-                                onPress={async () => {
-                                    const { status } = await Camera.requestCameraPermissionsAsync();
-                                    setHasPermission(status === 'granted');
-                                }}
-                                style={{ backgroundColor: colors.primary, marginTop: 20, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 25 }}
-                            >
-                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Intentar de nuevo</Text>
+                            <Text style={{ color: '#fff', marginTop: 20, textAlign: 'center', fontSize: 18 }}>Sin permiso de cámara</Text>
+                            <TouchableOpacity onPress={requestCameraPermission} style={{ backgroundColor: colors.primary, marginTop: 20, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 25 }}>
+                                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Habilitar</Text>
                             </TouchableOpacity>
                         </View>
                     ) : (
-                        <>
-                            <CameraView
-                                style={{ flex: 1 }}
-                                facing="back"
-                                barcodeScannerSettings={{
-                                    barcodeTypes: ["ean13", "ean8", "qr", "upc_a", "upc_e", "code128", "code39"],
-                                }}
-                                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-                            />
+                        <TouchableOpacity activeOpacity={1} style={{ flex: 1 }} onPress={handleScannerTap}>
+                            <CameraView style={{ flex: 1 }} facing="back" zoom={scannerZoom} barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "qr", "upc_a", "upc_e", "code128", "code39"] }} onBarcodeScanned={scanned ? undefined : handleBarCodeScanned} />
+                            {tapCoords && (
+                                <Animated.View entering={FadeIn} style={{ position: 'absolute', left: tapCoords.x - 30, top: tapCoords.y - 30, width: 60, height: 60, borderRadius: 30, borderWidth: 2, borderColor: colors.primary, backgroundColor: 'rgba(255,255,255,0.1)' }} />
+                            )}
                             <View style={{ position: 'absolute', top: 100, left: 20, right: 20, alignItems: 'center' }}>
                                 <View style={{ width: 250, height: 250, borderWidth: 2, borderColor: colors.primary, borderStyle: 'dotted', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }} />
-                                <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>
-                                    Apunta al código de barras
-                                </Text>
+                                <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>Apunta al código de barras</Text>
+                                <Text style={{ color: 'rgba(255,255,255,0.6)', marginTop: 10, fontSize: 12 }}>Toca la pantalla para enfocar</Text>
                             </View>
-                        </>
+                        </TouchableOpacity>
                     )}
                     <View style={{ position: 'absolute', bottom: 50, left: 0, right: 0, alignItems: 'center' }}>
-                        <TouchableOpacity
-                            onPress={() => setShowScanner(false)}
-                            style={{ backgroundColor: colors.primary, paddingVertical: 15, paddingHorizontal: 40, borderRadius: 30 }}
-                        >
+                        <TouchableOpacity onPress={() => setShowScanner(false)} style={{ backgroundColor: colors.primary, paddingVertical: 15, paddingHorizontal: 40, borderRadius: 30 }}>
                             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Cancelar</Text>
                         </TouchableOpacity>
                     </View>
