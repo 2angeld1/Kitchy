@@ -163,39 +163,46 @@ export const useInventario = () => {
     };
 
     const buscarPorCodigoBarras = useCallback(async (code: string) => {
-        setLoading(true);
+        // 1. Búsqueda local instantánea en el frontend
+        const localItem = items.find(i => i.codigoBarras === code);
+
+        if (localItem) {
+            setSelectedItem(localItem);
+            setMovTipo('entrada');
+            setMovCantidad('');
+            setMovMotivo('Compra/Escaneo');
+            setMovCosto(localItem.costoUnitario?.toString() || '');
+            setShowMovModal(true);
+            return;
+        }
+
+        // 2. Si no es local, abrimos el formulario de nuevo ítem DE UNA
+        resetForm();
+        setCodigoBarras(code);
+        setShowModal(true);
+        setSearchingGlobal(true); // Activa el "loading" del modal
+
         try {
-            // Llamamos al NUEVO endpoint del backend que busca local y globalmente
+            // Llamamos al backend para el catálogo mundial
             const response = await lookupProducto(code);
             const { isLocal, producto } = response.data;
 
-            if (isLocal) {
-                // Producto ya existe en MI inventario
+            if (isLocal && producto) {
+                // Caso borde: Estaba en el server pero no en el cliente todavía
+                setShowModal(false);
                 setSelectedItem(producto);
-                setMovTipo('entrada');
-                setMovCantidad('');
-                setMovMotivo('Compra/Escaneo');
-                setMovCosto(producto.costoUnitario?.toString() || '');
                 setShowMovModal(true);
+            } else if (producto && producto.nombre) {
+                setNombre(producto.nombre);
+                setDescripcion(producto.descripcion || '');
+                setCategoria(producto.categoria || 'ingrediente');
             } else {
-                // Producto NO existe localmente (pero puede venir con datos del API global)
-                resetForm();
-                setCodigoBarras(code);
-                setShowModal(true);
-
-                if (producto.nombre) {
-                    setNombre(producto.nombre);
-                    setDescripcion(producto.descripcion || '');
-                    setCategoria(producto.categoria || 'ingrediente');
-                } else {
-                    // Si el backend tampoco lo encontró en el mundo, avisamos
-                    setSuccess('Código nuevo detectado. ¡Regístralo!');
-                }
+                setSuccess('Código nuevo detectado. ¡Regístralo!');
             }
         } catch (err) {
-            setError('No se pudo procesar el código de barras');
+            console.warn("Error en lookup global", err);
         } finally {
-            setLoading(false);
+            setSearchingGlobal(false);
         }
     }, [items]);
 
