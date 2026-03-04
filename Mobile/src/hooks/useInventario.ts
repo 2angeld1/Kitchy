@@ -8,7 +8,8 @@ import {
     registrarEntrada,
     registrarSalida,
     registrarMerma,
-    importarInventario
+    importarInventario,
+    lookupProducto
 } from '../services/api';
 import { Camera } from 'expo-camera';
 import * as DocumentPicker from 'expo-document-picker';
@@ -164,47 +165,35 @@ export const useInventario = () => {
     const buscarPorCodigoBarras = useCallback(async (code: string) => {
         setLoading(true);
         try {
-            // 1. Primero buscamos en TU inventario local
-            const response = await getInventario({ codigoBarras: code });
-            const item = response.data[0];
+            // Llamamos al NUEVO endpoint del backend que busca local y globalmente
+            const response = await lookupProducto(code);
+            const { isLocal, producto } = response.data;
 
-            if (item) {
-                setSelectedItem(item);
+            if (isLocal) {
+                // Producto ya existe en MI inventario
+                setSelectedItem(producto);
                 setMovTipo('entrada');
                 setMovCantidad('');
                 setMovMotivo('Compra/Escaneo');
-                setMovCosto(item.costoUnitario.toString());
+                setMovCosto(producto.costoUnitario?.toString() || '');
                 setShowMovModal(true);
-                return item;
             } else {
-                // 2. ¡TRUCO PREMIUM! Si no está en tu inventario, lo buscamos en el mundo
+                // Producto NO existe localmente (pero puede venir con datos del API global)
                 resetForm();
                 setCodigoBarras(code);
-                setShowModal(true); // Abrimos el modal DE UNA, para que no parezca que falló
+                setShowModal(true);
 
-                setSearchingGlobal(true);
-                try {
-                    // Consultamos en segundo plano para no bloquear al usuario
-                    const globalRes = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
-                    const globalData = await globalRes.json();
-
-                    if (globalData.status === 1) {
-                        const product = globalData.product;
-                        // Los datos aparecen "mágicamente" mientras el usuario ya está viendo el modal
-                        setNombre(product.product_name || product.generic_name || '');
-                        setDescripcion(product.brands ? `Marca: ${product.brands}` : 'Cargado automáticamente desde base de datos global');
-                    }
-                } catch (globalErr) {
-                    console.warn("No se pudo conectar con la base de datos global", globalErr);
-                } finally {
-                    setSearchingGlobal(false);
+                if (producto.nombre) {
+                    setNombre(producto.nombre);
+                    setDescripcion(producto.descripcion || '');
+                    setCategoria(producto.categoria || 'ingrediente');
+                } else {
+                    // Si el backend tampoco lo encontró en el mundo, avisamos
+                    setSuccess('Código nuevo detectado. ¡Regístralo!');
                 }
-
-                return null;
             }
         } catch (err) {
-            setError('Error al procesar el código de barras');
-            return null;
+            setError('No se pudo procesar el código de barras');
         } finally {
             setLoading(false);
         }

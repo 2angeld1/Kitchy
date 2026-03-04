@@ -528,3 +528,61 @@ export const importarInventarioCsv = async (req: AuthRequest, res: Response) => 
         res.status(500).json({ message: 'Error general en la importación', error: error.message });
     }
 };
+// Buscar producto por código de barras (local y global)
+export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
+    try {
+        const { codigo } = req.params;
+        const negocioId = req.negocioId;
+
+        // 1. Buscar en el inventario local del negocio
+        const localItem = await Inventario.findOne({
+            codigoBarras: codigo,
+            negocioId
+        });
+
+        if (localItem) {
+            return res.json({
+                isLocal: true,
+                producto: localItem
+            });
+        }
+
+        // 2. Si no existe localmente, buscar en Open Food Facts
+        try {
+            const globalResponse = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigo}.json`);
+            const globalData: any = await globalResponse.json();
+
+            if (globalData.status === 1) {
+                const p = globalData.product;
+                return res.json({
+                    isLocal: false,
+                    producto: {
+                        nombre: p.product_name || p.generic_name || '',
+                        descripcion: p.brands ? `Marca: ${p.brands}` : 'Producto encontrado en catálogo global',
+                        categoria: 'ingrediente',
+                        unidad: 'unidades', // Default
+                        codigoBarras: codigo,
+                        costoUnitario: 0 // Usuario debe proveerlo
+                    }
+                });
+            }
+        } catch (fetchError) {
+            console.warn('Error llamando a Open Food Facts:', fetchError);
+        }
+
+        // 3. No se encontró en ningún lado
+        return res.json({
+            isLocal: false,
+            producto: {
+                nombre: '',
+                descripcion: '',
+                codigoBarras: codigo,
+                isNew: true
+            }
+        });
+
+    } catch (error: any) {
+        console.error('Error en buscarProductoGlobal:', error);
+        res.status(500).json({ message: 'Error al buscar el producto', error: error.message });
+    }
+};

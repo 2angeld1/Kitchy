@@ -78,6 +78,7 @@ export const registrarMerma = (id: string, data: any) => api.post(`/inventario/$
 export const importarInventario = (data: any) => api.post('/inventario/importar', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
+export const lookupProducto = (codigo: string) => api.get(`/inventario/lookup/${codigo}`);
 
 // Users
 export const getUsers = () => api.get('/users');
