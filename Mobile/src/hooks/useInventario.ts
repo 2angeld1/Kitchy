@@ -163,8 +163,10 @@ export const useInventario = () => {
     const buscarPorCodigoBarras = useCallback(async (code: string) => {
         setLoading(true);
         try {
+            // 1. Primero buscamos en TU inventario local
             const response = await getInventario({ codigoBarras: code });
             const item = response.data[0];
+
             if (item) {
                 setSelectedItem(item);
                 setMovTipo('entrada');
@@ -174,13 +176,31 @@ export const useInventario = () => {
                 setShowMovModal(true);
                 return item;
             } else {
+                // 2. ¡TRUCO PREMIUM! Si no está en tu inventario, lo buscamos en el mundo
                 resetForm();
                 setCodigoBarras(code);
+
+                try {
+                    // Consultamos base de datos mundial (Open Food Facts)
+                    const globalRes = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+                    const globalData = await globalRes.json();
+
+                    if (globalData.status === 1) {
+                        const product = globalData.product;
+                        // Auto-llenamos los campos con lo que encontramos en el mundo
+                        setNombre(product.product_name || product.generic_name || '');
+                        setDescripcion(product.brands ? `Marca: ${product.brands}` : 'Cargado automáticamente');
+                        setCategoria('ingrediente');
+                    }
+                } catch (globalErr) {
+                    console.warn("No se pudo conectar con la base de datos global", globalErr);
+                }
+
                 setShowModal(true);
                 return null;
             }
         } catch (err) {
-            setError('Error al buscar código de barras');
+            setError('Error al procesar el código de barras');
             return null;
         } finally {
             setLoading(false);
