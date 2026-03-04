@@ -1,6 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, registrarMerma, importarInventario } from '../services/api';
+import {
+    getInventario,
+    createInventario,
+    updateInventario,
+    deleteInventario,
+    registrarEntrada,
+    registrarSalida,
+    registrarMerma,
+    importarInventario
+} from '../services/api';
 import { Camera } from 'expo-camera';
 import * as DocumentPicker from 'expo-document-picker';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
@@ -59,11 +68,16 @@ export const useInventario = () => {
     const [codigoBarras, setCodigoBarras] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
 
-    // Scanner States
+    // Scanner States (Optimized to avoid re-renders)
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
     const [scanned, setScanned] = useState(false);
-    const [scannerZoom, setScannerZoom] = useState(0.1);
+    const [scannerZoom, setScannerZoom] = useState(0);
     const [tapCoords, setTapCoords] = useState<{ x: number, y: number } | null>(null);
+
+    // Memoized scanner settings to prevent camera restarts
+    const scannerSettings = useMemo(() => ({
+        barcodeTypes: ["ean13", "ean8", "qr", "upc_a", "upc_e", "code128", "code39"] as any[],
+    }), []);
 
     // Speech States
     const [smartText, setSmartText] = useState('');
@@ -146,7 +160,7 @@ export const useInventario = () => {
         setShowModal(true);
     };
 
-    const buscarPorCodigoBarras = async (code: string) => {
+    const buscarPorCodigoBarras = useCallback(async (code: string) => {
         setLoading(true);
         try {
             const response = await getInventario({ codigoBarras: code });
@@ -171,22 +185,23 @@ export const useInventario = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [items]);
 
-    const handleBarCodeScanned = ({ data }: { data: string }) => {
+    const handleBarCodeScanned = useCallback(({ data }: { data: string }) => {
         setScanned(true);
         setShowScanner(false);
         buscarPorCodigoBarras(data);
-    };
+    }, [buscarPorCodigoBarras]);
 
     const openScanner = () => {
         setScanned(false);
+        setScannerZoom(0); // Empezamos en 0 para mejor profundidad
         setShowScanner(true);
     };
 
     const forceFocus = () => {
-        setScannerZoom(0.11);
-        setTimeout(() => setScannerZoom(0.1), 100);
+        setScannerZoom(0.1);
+        setTimeout(() => setScannerZoom(0), 200);
     };
 
     const handleScannerTap = (event: any) => {
@@ -482,7 +497,7 @@ export const useInventario = () => {
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
-        hasPermission, scanned, scannerZoom, tapCoords,
+        hasPermission, scanned, scannerZoom, tapCoords, scannerSettings,
         isListening,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleImportCsv, handleSmartAction,

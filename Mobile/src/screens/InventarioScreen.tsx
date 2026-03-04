@@ -29,7 +29,7 @@ export default function InventarioScreen() {
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
-        hasPermission, scanned, scannerZoom, tapCoords, isListening,
+        hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
@@ -252,7 +252,13 @@ export default function InventarioScreen() {
                         </View>
                     ) : (
                         <TouchableOpacity activeOpacity={1} style={{ flex: 1 }} onPress={handleScannerTap}>
-                            <CameraView style={{ flex: 1 }} facing="back" zoom={scannerZoom} barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "qr", "upc_a", "upc_e", "code128", "code39"] }} onBarcodeScanned={scanned ? undefined : handleBarCodeScanned} />
+                            <CameraView
+                                style={{ flex: 1 }}
+                                facing="back"
+                                zoom={scannerZoom}
+                                barcodeScannerSettings={scannerSettings}
+                                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                            />
                             {tapCoords && (
                                 <Animated.View entering={FadeIn} style={{ position: 'absolute', left: tapCoords.x - 30, top: tapCoords.y - 30, width: 60, height: 60, borderRadius: 30, borderWidth: 2, borderColor: colors.primary, backgroundColor: 'rgba(255,255,255,0.1)' }} />
                             )}
