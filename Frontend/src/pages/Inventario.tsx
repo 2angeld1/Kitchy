@@ -4,7 +4,7 @@ import {
     IonLoading, IonToast, IonButtons, IonMenuButton, IonRefresher, IonRefresherContent,
     IonSegment, IonSegmentButton
 } from '@ionic/react';
-import { add, cloudUpload } from 'ionicons/icons';
+import { add, cloudUpload, camera } from 'ionicons/icons';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -28,15 +28,29 @@ const Inventario: React.FC = () => {
         setCantidadMinima, costoUnitario, setCostoUnitario, categoria, setCategoria, proveedor,
         setProveedor, handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, smartText, setSmartText, handleSmartAction, isListening,
-        setIsListening, handleImportCsv
+        setIsListening, handleImportCsv, handleCaitlynInvoice
     } = useInventario();
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
     const { isAdmin } = useAuth();
 
     const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             handleImportCsv(e.target.files[0]);
+            e.target.value = '';
+        }
+    };
+
+    const onCameraChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                handleCaitlynInvoice(base64String);
+            };
+            reader.readAsDataURL(file);
             e.target.value = '';
         }
     };
@@ -75,6 +89,7 @@ const Inventario: React.FC = () => {
 
                 <div className="max-w-3xl mx-auto px-4 pb-24 space-y-6">
                     <input type="file" accept=".csv" ref={fileInputRef} className="hidden" onChange={onFileChange} />
+                    <input type="file" accept="image/*" capture="environment" ref={cameraInputRef} className="hidden" onChange={onCameraChange} />
 
                     <SmartInput
                         smartText={smartText}
@@ -142,6 +157,18 @@ const Inventario: React.FC = () => {
                     movMotivo={movMotivo} setMovMotivo={setMovMotivo}
                     handleMovimiento={handleMovimiento}
                 />
+
+                <IonFab vertical="bottom" horizontal="end" slot="fixed" style={{ marginBottom: '145px' }}>
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        transition={springTransition}
+                    >
+                        <IonFabButton color="tertiary" onClick={() => cameraInputRef.current?.click()} style={{ '--box-shadow': 'none' }}>
+                            <IonIcon icon={camera} />
+                        </IonFabButton>
+                    </motion.div>
+                </IonFab>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed" style={{ marginBottom: '80px' }}>
                     <motion.div

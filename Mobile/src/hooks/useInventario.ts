@@ -1,18 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import {
-    getInventario,
-    createInventario,
-    updateInventario,
-    deleteInventario,
-    registrarEntrada,
-    registrarSalida,
-    registrarMerma,
-    importarInventario,
-    lookupProducto
-} from '../services/api';
+import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, registrarMerma, importarInventario, lookupProducto, procesarFacturaCaitlyn } from '../services/api';
 import { Camera } from 'expo-camera';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 
 export interface InventarioItem {
@@ -376,6 +367,46 @@ export const useInventario = () => {
         }
     };
 
+    const handleCaitlynInvoice = async (base64: string) => {
+        setLoading(true);
+        try {
+            const response = await procesarFacturaCaitlyn(base64);
+            setSuccess('Factura guardada. Caitlyn está analizando los productos...');
+            console.log('Factura procesada:', response.data);
+            // Podríamos cargar el inventario si la IA ya hizo cambios, 
+            // pero como es revisión, por ahora solo confirmamos.
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al procesar factura');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const tomarFotoFactura = async () => {
+        try {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+                setError('Necesitamos permiso de cámara para capturar la factura');
+                return;
+            }
+
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true,
+            });
+
+            if (!result.canceled && result.assets[0].base64) {
+                const base64String = `data:image/jpeg;base64,${result.assets[0].base64}`;
+                handleCaitlynInvoice(base64String);
+            }
+        } catch (err) {
+            console.error('Error al capturar foto:', err);
+            setError('Error al abrir la cámara');
+        }
+    };
+
     const startListening = async () => {
         if (isListening) {
             ExpoSpeechRecognitionModule.stop();
@@ -519,8 +550,8 @@ export const useInventario = () => {
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings,
         isListening, searchingGlobal,
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
-        openMovModal, handleMovimiento, handleImportCsv, handleSmartAction,
+        openMovModal, handleMovimiento, handleImportCsv, handleCaitlynInvoice, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, startListening, setIsListening
+        pickDocument, tomarFotoFactura, startListening, setIsListening
     };
 };

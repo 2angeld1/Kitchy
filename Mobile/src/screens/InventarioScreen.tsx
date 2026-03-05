@@ -35,7 +35,7 @@ export default function InventarioScreen() {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, startListening
+        pickDocument, startListening, handleCaitlynInvoice, tomarFotoFactura
     } = useInventario();
 
     React.useEffect(() => {
@@ -165,6 +165,13 @@ export default function InventarioScreen() {
             </ScrollView>
 
             <View style={{ position: 'absolute', bottom: spacing.lg, right: spacing.xl, gap: spacing.md }}>
+                <TouchableOpacity
+                    style={[styles.fab, { backgroundColor: '#4f46e5', position: 'relative', right: 0, bottom: 0 }]}
+                    onPress={tomarFotoFactura}
+                >
+                    <Ionicons name="camera" size={24} color={colors.white} />
+                </TouchableOpacity>
+
                 <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface, position: 'relative', right: 0, bottom: 0, borderWidth: 1, borderColor: colors.border }]} onPress={openScanner}>
                     <Ionicons name="barcode-outline" size={24} color={colors.textPrimary} />
                 </TouchableOpacity>

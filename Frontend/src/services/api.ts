@@ -163,4 +163,8 @@ export const updateUserRole = (id: string, rol: string) =>
 export const deleteUser = (id: string) =>
     api.delete(`/users/${id}`);
 
+// Agente Caitlyn (IA)
+export const procesarFacturaCaitlyn = (imagenBase64: string) =>
+    api.post('/agente/factura', { imagen: imagenBase64 });
+
 export default api;

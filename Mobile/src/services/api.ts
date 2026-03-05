@@ -100,4 +100,8 @@ export const switchNegocio = (negocioId: string) => api.put(`/negocios/switch/${
 export const getMenuConfig = () => api.get('/menu-config');
 export const updateMenuConfig = (data: any) => api.put('/menu-config', data);
 
+// Agente Caitlyn (IA)
+export const procesarFacturaCaitlyn = (imagenBase64: string) =>
+    api.post('/agente/factura', { imagen: imagenBase64 });
+
 export default api;

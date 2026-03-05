@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, importarInventario } from '../services/api';
+import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, importarInventario, procesarFacturaCaitlyn } from '../services/api';
 
 export interface InventarioItem {
     _id: string;
@@ -216,6 +216,20 @@ export const useInventario = () => {
             cargarInventario();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al importar CSV');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCaitlynInvoice = async (base64: string) => {
+        setLoading(true);
+        try {
+            const response = await procesarFacturaCaitlyn(base64);
+            setSuccess('Factura guardada. Caitlyn está analizando los productos...');
+            // Aquí podríamos abrir el modal de revisión con los items detectados
+            console.log('Factura procesada:', response.data);
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al procesar factura');
         } finally {
             setLoading(false);
         }
@@ -460,6 +474,7 @@ export const useInventario = () => {
         handleDelete,
         openMovModal,
         handleMovimiento,
-        handleImportCsv
+        handleImportCsv,
+        handleCaitlynInvoice
     };
 };
