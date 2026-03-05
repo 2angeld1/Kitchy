@@ -586,3 +586,101 @@ export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error al buscar el producto', error: error.message });
     }
 };
+// Procesar un lote de productos (usado por Caitlyn / Importaciones rápidas)
+export const procesarLoteInventario = async (req: AuthRequest, res: Response) => {
+    try {
+        const { items } = req.body;
+        const userId = req.userId;
+        const negocioId = req.negocioId;
+
+        if (!items || !Array.isArray(items)) {
+            return res.status(400).json({ message: 'Se requiere un array de items' });
+        }
+
+        let creados = 0;
+        let actualizados = 0;
+        const errores: any[] = [];
+
+        for (const item of items) {
+            try {
+                const { nombre, cantidad, unidad, precioUnitario, categoria } = item;
+                const qty = parseFloat(cantidad) || 0;
+                const price = parseFloat(precioUnitario) || 0;
+
+                // Buscar si existe (insensible a mayúsculas/minúsculas)
+                let producto = await Inventario.findOne({
+                    nombre: { $regex: new RegExp(`^${nombre.trim()}$`, 'i') },
+                    negocioId
+                });
+
+                if (producto) {
+                    // Actualizar Stock
+                    const cantidadAnterior = producto.cantidad;
+                    producto.cantidad += qty;
+
+                    // Actualizar costo unitario (promedio simple o reemplazo si el anterior era 0)
+                    if (price > 0) {
+                        if (producto.costoUnitario === 0) {
+                            producto.costoUnitario = price;
+                        } else {
+                            // Promedio ponderado básico
+                            producto.costoUnitario = ((cantidadAnterior * producto.costoUnitario) + (qty * price)) / (producto.cantidad || 1);
+                        }
+                    }
+
+                    producto.usuario = userId as any;
+                    await producto.save();
+
+                    // Registrar movimiento
+                    const movimiento = new MovimientoInventario({
+                        inventario: producto._id,
+                        tipo: 'entrada',
+                        cantidad: qty,
+                        costoTotal: qty * price,
+                        motivo: 'Carga masiva desde factura (Caitlyn)',
+                        usuario: userId,
+                        negocioId
+                    });
+                    await movimiento.save();
+                    actualizados++;
+                } else {
+                    // Crear Nuevo
+                    const nuevoProducto = new Inventario({
+                        nombre: nombre.trim(),
+                        cantidad: qty,
+                        unidad: unidad || 'unidades',
+                        costoUnitario: price,
+                        categoria: categoria || 'comida',
+                        cantidadMinima: 1,
+                        usuario: userId,
+                        negocioId
+                    });
+                    await nuevoProducto.save();
+
+                    const movimiento = new MovimientoInventario({
+                        inventario: nuevoProducto._id,
+                        tipo: 'entrada',
+                        cantidad: qty,
+                        costoTotal: qty * price,
+                        motivo: 'Carga inicial desde factura (Caitlyn)',
+                        usuario: userId,
+                        negocioId
+                    });
+                    await movimiento.save();
+                    creados++;
+                }
+            } catch (err: any) {
+                errores.push({ item: item.nombre, error: err.message });
+            }
+        }
+
+        res.json({
+            message: 'Procesamiento de lote finalizado',
+            detalles: { creados, actualizados, errores }
+        });
+
+    } catch (error: any) {
+        console.error('Error en procesarLoteInventario:', error);
+        res.status(500).json({ message: 'Error interno al procesar lote', error: error.message });
+    }
+};

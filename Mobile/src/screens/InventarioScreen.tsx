@@ -23,6 +23,8 @@ export default function InventarioScreen() {
     const {
         loading, refreshing, error, success, clearError, clearSuccess, itemsFiltrados,
         showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
+        showInvoiceReview, setShowInvoiceReview, invoiceItems, setInvoiceItems,
+        invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,
         editItem, selectedItem, movTipo, setMovTipo, movCantidad, setMovCantidad,
         movMotivo, setMovMotivo, movCosto, setMovCosto,
         filtro, setFiltro, smartText, setSmartText,
@@ -35,8 +37,16 @@ export default function InventarioScreen() {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, startListening, handleCaitlynInvoice, tomarFotoFactura
+        pickDocument, startListening, handleCaitlynInvoice, tomarFotoFactura, handleConfirmInvoiceItems
     } = useInventario();
+
+    // Mapa de colores por estado de item de factura
+    const statusColors: Record<string, { bg: string; border: string; text: string; label: string; icon: string }> = {
+        coincide: { bg: 'rgba(16, 185, 129, 0.10)', border: '#10b981', text: '#059669', label: 'Coincide', icon: 'checkmark-circle' },
+        similar: { bg: 'rgba(245, 158, 11, 0.10)', border: '#f59e0b', text: '#d97706', label: 'Similar', icon: 'help-circle' },
+        nuevo: { bg: colors.card, border: colors.border, text: colors.textMuted, label: 'Nuevo', icon: 'add-circle' },
+        incompleto: { bg: 'rgba(239, 68, 68, 0.10)', border: '#ef4444', text: '#dc2626', label: 'Incompleto', icon: 'alert-circle' },
+    };
 
     React.useEffect(() => {
         if (error) {
@@ -295,6 +305,215 @@ export default function InventarioScreen() {
                         <TouchableOpacity onPress={() => setShowScanner(false)} style={{ backgroundColor: colors.primary, paddingVertical: 15, paddingHorizontal: 40, borderRadius: 30 }}>
                             <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16 }}>Cancelar</Text>
                         </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+            {/* Modal de Revisión de Factura (IA) */}
+            <Modal visible={showInvoiceReview} animationType="slide">
+                <View style={{ flex: 1, backgroundColor: colors.background }}>
+                    <KitchyToolbar title="Revisión de Factura" />
+
+                    <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>
+                            Caitlyn detectó {invoiceItems.length} productos
+                        </Text>
+                        <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4 }}>
+                            Verifica la información. Los colores indican el estado de cada producto.
+                        </Text>
+
+                        {/* Leyenda rápida */}
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, gap: 8 }}>
+                            {[
+                                { color: '#10b981', label: 'Coincide' },
+                                { color: '#f59e0b', label: 'Similar' },
+                                { color: colors.textMuted, label: 'Nuevo' },
+                                { color: '#ef4444', label: 'Incompleto' },
+                            ].map(l => (
+                                <View key={l.label} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: l.color, marginRight: 4 }} />
+                                    <Text style={{ fontSize: 11, color: colors.textMuted }}>{l.label}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+
+                    {/* Chips de filtro por estado */}
+                    <View style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                            {(['todos', 'coincide', 'similar', 'nuevo', 'incompleto'] as const).map(estado => {
+                                const isActive = invoiceFiltro === estado;
+                                const count = invoiceStatusCounts[estado];
+                                const chipColor = estado === 'todos' ? colors.primary
+                                    : estado === 'coincide' ? '#10b981'
+                                        : estado === 'similar' ? '#f59e0b'
+                                            : estado === 'incompleto' ? '#ef4444'
+                                                : colors.textMuted;
+                                const label = estado === 'todos' ? 'Todos'
+                                    : estado === 'coincide' ? 'Coinciden'
+                                        : estado === 'similar' ? 'Similares'
+                                            : estado === 'nuevo' ? 'Nuevos'
+                                                : 'Incompletos';
+
+                                return (
+                                    <TouchableOpacity
+                                        key={estado}
+                                        onPress={() => setInvoiceFiltro(estado)}
+                                        style={{
+                                            paddingHorizontal: 14,
+                                            paddingVertical: 8,
+                                            borderRadius: 20,
+                                            borderWidth: 1.5,
+                                            borderColor: isActive ? chipColor : colors.border,
+                                            backgroundColor: isActive ? chipColor : 'transparent',
+                                        }}
+                                    >
+                                        <Text style={{
+                                            fontSize: 12,
+                                            fontWeight: '700',
+                                            color: isActive ? '#fff' : chipColor,
+                                        }}>
+                                            {label} ({count})
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+
+                    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 12 }}>
+                        {invoiceItemsFiltrados.map((item: any, index: number) => {
+                            const status = getInvoiceItemStatus(item);
+                            const sc = statusColors[status];
+                            // Encontar el indice real en invoiceItems para poder editarlo
+                            const realIndex = invoiceItems.indexOf(item);
+
+                            return (
+                                <Animated.View
+                                    key={realIndex}
+                                    entering={FadeInDown.delay(index * 30)}
+                                    style={{
+                                        backgroundColor: sc.bg,
+                                        padding: 14,
+                                        borderRadius: 12,
+                                        marginBottom: 10,
+                                        borderWidth: 1.5,
+                                        borderColor: sc.border,
+                                    }}
+                                >
+                                    {/* Header: nombre + badge de estado + borrar */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                                        <View style={{ flex: 1, marginRight: 8 }}>
+                                            <TextInput
+                                                style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '700', paddingVertical: 2 }}
+                                                value={item.nombre}
+                                                onChangeText={(text) => {
+                                                    const newItems = [...invoiceItems];
+                                                    newItems[realIndex] = { ...newItems[realIndex], nombre: text };
+                                                    setInvoiceItems(newItems);
+                                                }}
+                                            />
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                            {/* Badge de estado */}
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                backgroundColor: sc.border,
+                                                paddingHorizontal: 8,
+                                                paddingVertical: 3,
+                                                borderRadius: 10,
+                                            }}>
+                                                <Ionicons name={sc.icon as any} size={12} color="#fff" style={{ marginRight: 3 }} />
+                                                <Text style={{ fontSize: 10, fontWeight: '800', color: '#fff' }}>{sc.label}</Text>
+                                            </View>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    const newItems = invoiceItems.filter((_, i) => i !== realIndex);
+                                                    setInvoiceItems(newItems);
+                                                }}
+                                            >
+                                                <Ionicons name="close-circle" size={22} color={colors.error} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+
+                                    {/* Campos editables */}
+                                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: sc.text, fontWeight: '600' }}>Cantidad</Text>
+                                            <TextInput
+                                                style={{ color: colors.textPrimary, fontSize: 15, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: sc.border }}
+                                                value={String(item.cantidad)}
+                                                keyboardType="numeric"
+                                                onChangeText={(text) => {
+                                                    const newItems = [...invoiceItems];
+                                                    newItems[realIndex] = { ...newItems[realIndex], cantidad: parseFloat(text) || 0 };
+                                                    setInvoiceItems(newItems);
+                                                }}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: sc.text, fontWeight: '600' }}>Unidad</Text>
+                                            <TextInput
+                                                style={{ color: colors.textPrimary, fontSize: 15, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: sc.border }}
+                                                value={item.unidad}
+                                                onChangeText={(text) => {
+                                                    const newItems = [...invoiceItems];
+                                                    newItems[realIndex] = { ...newItems[realIndex], unidad: text };
+                                                    setInvoiceItems(newItems);
+                                                }}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: sc.text, fontWeight: '600' }}>Precio Ud.</Text>
+                                            <TextInput
+                                                style={{ color: colors.textPrimary, fontSize: 15, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: sc.border }}
+                                                value={String(item.precioUnitario || '')}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                                placeholderTextColor={colors.textMuted}
+                                                onChangeText={(text) => {
+                                                    const newItems = [...invoiceItems];
+                                                    newItems[realIndex] = { ...newItems[realIndex], precioUnitario: parseFloat(text) || 0 };
+                                                    setInvoiceItems(newItems);
+                                                }}
+                                            />
+                                        </View>
+                                    </View>
+                                </Animated.View>
+                            );
+                        })}
+                        {invoiceItemsFiltrados.length === 0 && (
+                            <View style={{ alignItems: 'center', marginTop: 40, opacity: 0.6 }}>
+                                <Ionicons name="filter-outline" size={48} color={colors.textMuted} />
+                                <Text style={{ color: colors.textMuted, marginTop: 10 }}>No hay productos con este filtro</Text>
+                            </View>
+                        )}
+                    </ScrollView>
+
+                    {/* Footer con botones */}
+                    <View style={{ padding: 16, backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border }}>
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <TouchableOpacity
+                                style={{ flex: 1, height: 52, backgroundColor: colors.surface, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                                onPress={() => { setShowInvoiceReview(false); setInvoiceFiltro('todos'); }}
+                            >
+                                <Text style={{ color: colors.textPrimary, fontWeight: 'bold' }}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ flex: 2, height: 52, backgroundColor: colors.primary, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }}
+                                onPress={() => handleConfirmInvoiceItems(invoiceItems)}
+                            >
+                                {loading ? (
+                                    <ActivityIndicator color={colors.white} />
+                                ) : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Ionicons name="checkmark-circle-outline" size={20} color={colors.white} style={{ marginRight: 8 }} />
+                                        <Text style={{ color: colors.white, fontWeight: 'bold', fontSize: 16 }}>Importar ({invoiceItems.length})</Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>

@@ -15,7 +15,8 @@ import {
     obtenerStockBajo,
     obtenerResumenInventario,
     importarInventarioCsv,
-    buscarProductoGlobal
+    buscarProductoGlobal,
+    procesarLoteInventario
 } from '../controllers/inventarioController';
 
 const router = Router();
@@ -29,6 +30,7 @@ router.get('/resumen', obtenerResumenInventario);
 router.get('/stock-bajo', obtenerStockBajo);
 router.get('/lookup/:codigo', buscarProductoGlobal);
 router.post('/importar', upload.single('archivo'), importarInventarioCsv);
+router.post('/lote', procesarLoteInventario);
 router.post('/', crearInventario);
 router.get('/', obtenerInventario);
 router.get('/:id', obtenerInventarioPorId);

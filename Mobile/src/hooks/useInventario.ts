@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, registrarMerma, importarInventario, lookupProducto, procesarFacturaCaitlyn } from '../services/api';
+import { getInventario, createInventario, updateInventario, deleteInventario, registrarEntrada, registrarSalida, registrarMerma, importarInventario, lookupProducto, procesarFacturaCaitlyn, procesarLoteInventario } from '../services/api';
 import { Camera } from 'expo-camera';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -47,6 +47,57 @@ export const useInventario = () => {
 
     // Filters & Search
     const [filtro, setFiltro] = useState('todos');
+
+    // Invoice Review
+    const [invoiceItems, setInvoiceItems] = useState<any[]>([]);
+    const [showInvoiceReview, setShowInvoiceReview] = useState(false);
+    const [invoiceFiltro, setInvoiceFiltro] = useState('todos');
+
+    // Función para clasificar cada item de la factura vs el inventario existente
+    const getInvoiceItemStatus = useCallback((item: any): 'coincide' | 'similar' | 'nuevo' | 'incompleto' => {
+        // Incompleto: falta nombre o cantidad es 0/undefined
+        if (!item.nombre || item.nombre.trim() === '' || !item.cantidad || item.cantidad <= 0) {
+            return 'incompleto';
+        }
+
+        const nombreLower = item.nombre.toLowerCase().trim();
+        const nombreBase = nombreLower.replace(/s$|es$/, '');
+
+        // Coincide: nombre exacto (case insensitive)
+        const exacto = items.find(inv => inv.nombre.toLowerCase().trim() === nombreLower);
+        if (exacto) return 'coincide';
+
+        // Similar: fuzzy match (contiene, o raíz similar)
+        const similar = items.find(inv => {
+            const invLower = inv.nombre.toLowerCase().trim();
+            const invBase = invLower.replace(/s$|es$/, '');
+            return (
+                invLower.includes(nombreBase) ||
+                nombreBase.includes(invBase) ||
+                invBase.includes(nombreLower) ||
+                nombreLower.includes(invLower)
+            );
+        });
+        if (similar) return 'similar';
+
+        return 'nuevo';
+    }, [items]);
+
+    // Items de factura filtrados por estado
+    const invoiceItemsFiltrados = useMemo(() => {
+        if (invoiceFiltro === 'todos') return invoiceItems;
+        return invoiceItems.filter(item => getInvoiceItemStatus(item) === invoiceFiltro);
+    }, [invoiceItems, invoiceFiltro, getInvoiceItemStatus]);
+
+    // Conteo por estado para mostrar en los chips
+    const invoiceStatusCounts = useMemo(() => {
+        const counts = { todos: invoiceItems.length, coincide: 0, similar: 0, nuevo: 0, incompleto: 0 };
+        invoiceItems.forEach(item => {
+            const status = getInvoiceItemStatus(item);
+            counts[status]++;
+        });
+        return counts;
+    }, [invoiceItems, getInvoiceItemStatus]);
 
     // Form State (Main Item)
     const [nombre, setNombre] = useState('');
@@ -371,12 +422,34 @@ export const useInventario = () => {
         setLoading(true);
         try {
             const response = await procesarFacturaCaitlyn(base64);
-            setSuccess('Factura guardada. Caitlyn está analizando los productos...');
+            const { items: detectedItems } = response.data;
+
+            if (detectedItems && detectedItems.length > 0) {
+                setInvoiceItems(detectedItems);
+                setShowInvoiceReview(true);
+                setSuccess(`Caitlyn detectó ${detectedItems.length} productos. Por favor júralos.`);
+            } else {
+                setSuccess('Factura guardada, pero no se detectaron productos automáticos.');
+            }
             console.log('Factura procesada:', response.data);
-            // Podríamos cargar el inventario si la IA ya hizo cambios, 
-            // pero como es revisión, por ahora solo confirmamos.
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al procesar factura');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleConfirmInvoiceItems = async (itemsToRegister: any[]) => {
+        setLoading(true);
+        try {
+            const response = await procesarLoteInventario(itemsToRegister);
+            const { creados, actualizados, errores } = response.data.detalles;
+
+            setSuccess(`Carga completada. ${creados} nuevos, ${actualizados} actualizados.${errores && errores.length > 0 ? ` ${errores.length} errores.` : ''}`);
+            setShowInvoiceReview(false);
+            cargarInventario();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al cargar items al inventario');
         } finally {
             setLoading(false);
         }
@@ -539,6 +612,8 @@ export const useInventario = () => {
     return {
         items, loading, refreshing, error, success, clearError, clearSuccess, itemsFiltrados,
         showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
+        showInvoiceReview, setShowInvoiceReview, invoiceItems, setInvoiceItems,
+        invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,
         editItem, selectedItem, movTipo, setMovTipo, movCantidad, setMovCantidad,
         movMotivo, setMovMotivo, movCosto, setMovCosto,
         filtro, setFiltro, smartText, setSmartText,
@@ -552,6 +627,6 @@ export const useInventario = () => {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleImportCsv, handleCaitlynInvoice, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, tomarFotoFactura, startListening, setIsListening
+        pickDocument, tomarFotoFactura, startListening, setIsListening, handleConfirmInvoiceItems
     };
 };
