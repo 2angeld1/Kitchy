@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import Venta from '../models/Venta';
 import Inventario from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
+import Producto from '../models/Producto';
 import User from '../models/User';
 import Gasto from '../models/Gasto';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
@@ -73,15 +74,58 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
         // Ganancia estimada del mes
         const gananciaMes = totalVentasMes - costosMes;
 
+        // --- MÉTRICAS MES PASADO ---
+        const costosMovimientosPasado = await MovimientoInventario.find({
+            negocioId: req.negocioId,
+            tipo: 'entrada',
+            createdAt: { $gte: inicioMesPasado, $lte: finMesPasado }
+        });
+        const costosInsumosMesPasado = costosMovimientosPasado.reduce((sum: number, m: any) => sum + (m.costoTotal || 0), 0);
+
+        const gastosOperativosPasado = await Gasto.find({
+            negocioId: req.negocioId,
+            fecha: { $gte: inicioMesPasado, $lte: finMesPasado }
+        });
+        const totalGastosOperativosMesPasado = gastosOperativosPasado.reduce((sum: number, g: any) => sum + g.monto, 0);
+
+        const gananciaMesPasado = totalVentasMesPasado - (costosInsumosMesPasado + totalGastosOperativosMesPasado);
+        const crecimientoGanancia = gananciaMesPasado > 0
+            ? ((gananciaMes - gananciaMesPasado) / gananciaMesPasado) * 100
+            : 0;
+
         // Merma del mes (desperdicio)
         const movimientosMerma = await MovimientoInventario.find({
             negocioId: req.negocioId,
             tipo: 'merma',
             createdAt: { $gte: inicioMes, $lte: finMes }
         }).populate('inventario');
+        // 2.5 Productos con ingredientes escasos (RECETAS EN RIESGO)
+        const productos = await Producto.find({ negocioId: req.negocioId, disponible: true });
+        const productosEnRiesgo: { id: string, nombre: string, ingredientesFaltantes: string[] }[] = [];
+
+        // Identificar qué ingredientes de qué producto están bajos
+        for (const prod of (productos as any[])) {
+            if (prod.ingredientes && prod.ingredientes.length > 0) {
+                const faltantes: string[] = [];
+                for (const ing of (prod.ingredientes as any[])) {
+                    const invItem = (inventario as any[]).find((i: any) => i._id.toString() === (ing.inventario as any).toString());
+                    if (invItem && invItem.cantidad <= invItem.cantidadMinima) {
+                        faltantes.push(invItem.nombre);
+                    }
+                }
+                if (faltantes.length > 0) {
+                    productosEnRiesgo.push({
+                        id: String((prod as any)._id),
+                        nombre: prod.nombre,
+                        ingredientesFaltantes: faltantes
+                    });
+                }
+            }
+        }
+
         const mermaMes = movimientosMerma.reduce((sum, m: any) => {
             const costo = m.inventario?.costoUnitario || 0;
-            return sum + (m.cantidad * costo);
+            return sum + (Math.abs(m.cantidad) * costo);
         }, 0);
 
         // Vencimientos (próximos 7 días)
@@ -158,6 +202,18 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             };
         }
 
+        // --- MÉTRICAS DE AHORRO KITCHY ✨ ---
+        const totalVentasAnio = await Venta.countDocuments({ negocioId: req.negocioId });
+        const totalMovsAnio = await MovimientoInventario.countDocuments({ negocioId: req.negocioId });
+        const facturasIA = await Gasto.countDocuments({ negocioId: req.negocioId, comprobante: { $ne: null } });
+
+        const minutosAhorrados = (totalVentasAnio * 0.5) + (totalMovsAnio * 1) + (facturasIA * 10);
+        const hojasAhorradas = totalVentasAnio + Math.ceil(totalMovsAnio / 10);
+
+        const crecimientoMes = totalVentasMesPasado > 0
+            ? ((totalVentasMes - totalVentasMesPasado) / totalVentasMesPasado) * 100
+            : 0;
+
         // Ventas recientes (para notificaciones)
         const ventasRecientes = await Venta.find({ negocioId: req.negocioId })
             .sort({ createdAt: -1 })
@@ -169,20 +225,29 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                 semana: { total: totalVentasSemana, cantidad: ventasSemana.length },
                 mes: { total: totalVentasMes, cantidad: ventasMes.length },
                 mesPasado: { total: totalVentasMesPasado, cantidad: ventasMesPasado.length },
+                crecimiento: crecimientoMes.toFixed(1),
                 recientes: ventasRecientes
             },
             inventario: {
                 valorTotal: valorInventario.toFixed(2),
                 itemsStockBajo,
                 itemsVenciendo,
-                totalItems: inventario.length
+                totalItems: inventario.length,
+                productosEnRiesgo: productosEnRiesgo.slice(0, 5)
             },
             finanzas: {
                 ingresosMes: totalVentasMes.toFixed(2),
                 costosMes: costosInsumosMes.toFixed(2),
                 gastosMes: totalGastosOperativosMes.toFixed(2),
                 mermaMes: mermaMes.toFixed(2),
-                gananciaMes: gananciaMes.toFixed(2)
+                gananciaMes: gananciaMes.toFixed(2),
+                gananciaMesPasado: gananciaMesPasado.toFixed(2),
+                crecimientoGanancia: crecimientoGanancia.toFixed(1)
+            },
+            ahorro: {
+                tiempoHoras: (minutosAhorrados / 60).toFixed(1),
+                hojasPapel: hojasAhorradas,
+                calificacion: minutosAhorrados > 500 ? 'Pro' : minutosAhorrados > 100 ? 'Eficiente' : 'Iniciado'
             },
             historico,
             productosMasVendidos,

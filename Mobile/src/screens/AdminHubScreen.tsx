@@ -32,9 +32,10 @@ export default function AdminHubScreen() {
         {
             id: 'menu',
             title: 'Menú Público',
-            desc: 'QR para clientes',
+            desc: 'Próximamente',
             icon: 'qr-code-outline',
-            color: '#f59e0b'
+            color: '#f59e0b',
+            disabled: true
         },
         {
             id: 'soporte',
@@ -55,7 +56,17 @@ export default function AdminHubScreen() {
     const { isDark, toggleTheme } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 
-    const handlePress = (id: string, title: string) => {
+    const handlePress = (id: string, title: string, disabled?: boolean) => {
+        if (disabled) {
+            Toast.show({
+                type: 'info',
+                text1: 'Módulo en desarrollo',
+                text2: 'Estará disponible muy pronto 🚀',
+                position: 'top'
+            });
+            return;
+        }
+
         if (id === 'productos') {
             navigation.navigate('Productos');
             return;
@@ -64,20 +75,14 @@ export default function AdminHubScreen() {
             navigation.navigate('Usuarios');
             return;
         }
-        if (id === 'menu') {
-            navigation.navigate('ConfiguracionMenu');
-            return;
-        }
         if (id === 'gastos') {
             navigation.navigate('Gastos');
             return;
         }
-        Toast.show({
-            type: 'info',
-            text1: 'Módulo en desarrollo',
-            text2: `Accediendo a: ${title}`,
-            position: 'top'
-        });
+        if (id === 'soporte') {
+            navigation.navigate('Soporte');
+            return;
+        }
     };
 
     return (
@@ -116,9 +121,13 @@ export default function AdminHubScreen() {
                             entering={FadeInDown.duration(500).delay(200 + (index * 100))}
                         >
                             <TouchableOpacity
-                                style={[styles.hubCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                                onPress={() => handlePress(item.id, item.title)}
-                                activeOpacity={0.7}
+                                style={[
+                                    styles.hubCard,
+                                    { backgroundColor: colors.card, borderColor: colors.border },
+                                    item.disabled && { opacity: 0.5 }
+                                ]}
+                                onPress={() => handlePress(item.id, item.title, item.disabled)}
+                                activeOpacity={item.disabled ? 1 : 0.7}
                             >
                                 <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
                                     <Ionicons name={item.icon as any} size={28} color={item.color} />

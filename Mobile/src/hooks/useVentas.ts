@@ -11,6 +11,8 @@ export interface Producto {
     categoria: string;
     disponible: boolean;
     imagen?: string;
+    insuficiente?: boolean;
+    faltantes?: string[];
 }
 
 export interface ItemCarrito {

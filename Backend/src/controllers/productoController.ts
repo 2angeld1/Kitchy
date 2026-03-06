@@ -58,9 +58,35 @@ export const obtenerProductos = async (req: AuthRequest, res: Response) => {
         }
 
         const productos = await Producto.find(filtro)
-            .populate('ingredientes.inventario', 'nombre unidad')
+            .populate('ingredientes.inventario', 'nombre unidad cantidad cantidadMinima')
             .sort({ categoria: 1, nombre: 1 });
-        res.json(productos);
+
+        // Verificar disponibilidad real basada en ingredientes
+        const productosConEstado = productos.map(p => {
+            const prodObj = p.toObject();
+            let insuficiente = false;
+            let faltantes: string[] = [];
+
+            if (prodObj.ingredientes && prodObj.ingredientes.length > 0) {
+                for (const ing of prodObj.ingredientes) {
+                    if (ing.inventario && typeof ing.inventario === 'object') {
+                        const inv: any = ing.inventario;
+                        if (inv.cantidad < ing.cantidad) {
+                            insuficiente = true;
+                            faltantes.push(inv.nombre);
+                        }
+                    }
+                }
+            }
+
+            return {
+                ...prodObj,
+                insuficiente,
+                faltantes
+            };
+        });
+
+        res.json(productosConEstado);
     } catch (error: any) {
         console.error('Error al obtener productos:', error);
         res.status(500).json({ message: 'Error al obtener productos', error: error.message });

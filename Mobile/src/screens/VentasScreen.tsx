@@ -41,10 +41,28 @@ export default function VentasScreen() {
             key={producto._id}
         >
             <TouchableOpacity
-                style={[styles.productCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={[
+                    styles.productCard,
+                    { backgroundColor: colors.card, borderColor: colors.border },
+                    producto.insuficiente && { opacity: 0.7, borderColor: '#ef4444' }
+                ]}
                 onPress={() => agregarAlCarrito(producto)}
                 activeOpacity={0.7}
             >
+                {producto.insuficiente && (
+                    <View style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 10,
+                        backgroundColor: '#ef4444',
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        borderRadius: 6
+                    }}>
+                        <Text style={{ color: 'white', fontSize: 8, fontWeight: 'bold' }}>SIN STOCK</Text>
+                    </View>
+                )}
                 <View style={[styles.imagePlaceholder, { backgroundColor: colors.background, overflow: 'hidden' }]}>
                     {producto.imagen ? (
                         <Image
@@ -62,6 +80,13 @@ export default function VentasScreen() {
                     )}
                 </View>
                 <Text style={[styles.productName, { color: colors.textPrimary }]} numberOfLines={2}>{producto.nombre}</Text>
+
+                {producto.insuficiente && producto.faltantes && (
+                    <Text style={{ color: '#ef4444', fontSize: 8, marginTop: 2 }} numberOfLines={1}>
+                        Falta: {producto.faltantes.join(', ')}
+                    </Text>
+                )}
+
                 <Text style={[styles.productPrice, { color: colors.primary }]}>${producto.precio.toFixed(2)}</Text>
             </TouchableOpacity>
         </Animated.View>

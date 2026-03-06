@@ -127,59 +127,77 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                     <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Ventas Mes</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                         <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
-                                        {data.ventas.mesPasado.total > 0 && (
-                                            <View style={{
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                backgroundColor: (Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total) ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                                paddingHorizontal: 4,
-                                                borderRadius: 4
+                                        <View style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            backgroundColor: Number(data.ventas.crecimiento) >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                            paddingHorizontal: 4,
+                                            borderRadius: 4
+                                        }}>
+                                            <Ionicons
+                                                name={Number(data.ventas.crecimiento) >= 0 ? "arrow-up" : "arrow-down"}
+                                                size={10}
+                                                color={Number(data.ventas.crecimiento) >= 0 ? "#10b981" : "#ef4444"}
+                                            />
+                                            <Text style={{
+                                                fontSize: 8,
+                                                fontWeight: 'bold',
+                                                color: Number(data.ventas.crecimiento) >= 0 ? "#10b981" : "#ef4444"
                                             }}>
-                                                <Ionicons
-                                                    name={Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total ? "arrow-up" : "arrow-down"}
-                                                    size={10}
-                                                    color={Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total ? "#10b981" : "#ef4444"}
-                                                />
-                                                <Text style={{
-                                                    fontSize: 8,
-                                                    fontWeight: 'bold',
-                                                    color: Number(data.finanzas.ingresosMes) >= data.ventas.mesPasado.total ? "#10b981" : "#ef4444"
-                                                }}>
-                                                    {Math.abs(((Number(data.finanzas.ingresosMes) - data.ventas.mesPasado.total) / data.ventas.mesPasado.total) * 100).toFixed(0)}%
-                                                </Text>
-                                            </View>
-                                        )}
+                                                {Math.abs(Number(data.ventas.crecimiento))}%
+                                            </Text>
+                                        </View>
                                     </View>
                                     <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>{data.ventas.mes.cantidad} ventas</Text>
                                 </View>
                             </Animated.View>
 
-                            <Animated.View entering={FadeInDown.springify().damping(15).delay(450)}>
+                            <Animated.View entering={FadeInDown.springify().damping(15).delay(400)}>
                                 <View style={[styles.glassCardGrid, { width: cardWidth, backgroundColor: colors.card, borderColor: colors.border }]}>
-                                    <View style={[styles.glassIconContainerWarning, { backgroundColor: isDark ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)' }]}>
-                                        <Ionicons name="cube-outline" size={20} color="#f59e0b" />
+                                    <View style={[styles.glassIconContainerPrimary, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+                                        <Ionicons name="sparkles-outline" size={20} color="#10b981" />
                                     </View>
-                                    <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Inventario</Text>
-                                    <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>{data.inventario.totalItems}</Text>
-
-                                    <View style={{ gap: 2 }}>
-                                        {data.inventario.itemsStockBajo > 0 && (
-                                            <View style={styles.badgeWarning}>
-                                                <Text style={styles.badgeWarningText}>{data.inventario.itemsStockBajo} BAJO STOCK</Text>
-                                            </View>
-                                        )}
-                                        {data.inventario.itemsVenciendo > 0 && (
-                                            <View style={[styles.badgeWarning, { backgroundColor: 'rgba(225, 29, 72, 0.1)' }]}>
-                                                <Text style={[styles.badgeWarningText, { color: colors.primary }]}>{data.inventario.itemsVenciendo} X VENCER</Text>
-                                            </View>
-                                        )}
-                                        {data.inventario.itemsStockBajo === 0 && data.inventario.itemsVenciendo === 0 && (
-                                            <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>Todo en orden</Text>
-                                        )}
-                                    </View>
+                                    <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Ahorro Kitchy</Text>
+                                    <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>{data.ahorro.tiempoHoras}h</Text>
+                                    <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>{data.ahorro.hojasPapel} hojas papel 📝</Text>
                                 </View>
                             </Animated.View>
                         </View>
+
+                        {/* 2.2 Inventario & Recetas en Riesgo */}
+                        <Animated.View entering={FadeInDown.springify().damping(15).delay(450)}>
+                            <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border, padding: 16 }]}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                        <Ionicons name="cube-outline" size={20} color="#f59e0b" />
+                                        <Text style={[styles.sectionTitle, { color: colors.textPrimary, marginBottom: 0, fontSize: 16 }]}>Control de Inventario</Text>
+                                    </View>
+                                    <Text style={{ color: colors.textMuted, fontSize: 12 }}>{data.inventario.totalItems} insumos</Text>
+                                </View>
+
+                                {data.inventario.productosEnRiesgo.length > 0 ? (
+                                    <View style={{ marginBottom: 10 }}>
+                                        <Text style={{ color: colors.primary, fontSize: 11, fontWeight: 'bold', marginBottom: 8, textTransform: 'uppercase' }}>⚠️ Recetas con ingredientes escasos</Text>
+                                        {data.inventario.productosEnRiesgo.map((prod, idx) => (
+                                            <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, opacity: 0.9 }}>
+                                                <Text style={{ color: colors.textPrimary, fontSize: 14 }}>{prod.nombre}</Text>
+                                                <View style={{ flexDirection: 'row', gap: 4 }}>
+                                                    {prod.ingredientesFaltantes.map((ing, iIdx) => (
+                                                        <View key={iIdx} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                                            <Text style={{ color: '#ef4444', fontSize: 10 }}>{ing}</Text>
+                                                        </View>
+                                                    ))}
+                                                </View>
+                                            </View>
+                                        ))}
+                                    </View>
+                                ) : (
+                                    <View style={{ padding: 10, alignItems: 'center' }}>
+                                        <Text style={{ color: colors.textMuted, fontSize: 12 }}>Todas tus recetas tienen insumos completos ✅</Text>
+                                    </View>
+                                )}
+                            </View>
+                        </Animated.View>
 
                         {/* 2.5 Nueva Sección: Salud Financiera del Mes */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(480)}>
@@ -205,23 +223,28 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                     <View style={{ alignItems: 'center', flex: 1 }}>
-                                        <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Ventas</Text>
-                                        <Text style={{ fontSize: 14, fontWeight: '800', color: '#10b981' }}>${Number(data.finanzas.ingresosMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Ganancia</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                            <Text style={{ fontSize: 13, fontWeight: '800', color: '#10b981' }}>${Number(data.finanzas.gananciaMes).toFixed(0)}</Text>
+                                            <View style={{ backgroundColor: Number(data.finanzas.crecimientoGanancia) >= 0 ? '#10b981' : '#ef4444', paddingHorizontal: 3, borderRadius: 2 }}>
+                                                <Text style={{ fontSize: 7, color: 'white', fontWeight: 'bold' }}>{Number(data.finanzas.crecimientoGanancia) >= 0 ? '+' : ''}{data.finanzas.crecimientoGanancia}%</Text>
+                                            </View>
+                                        </View>
                                     </View>
                                     <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
                                     <View style={{ alignItems: 'center', flex: 1 }}>
                                         <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Insumos</Text>
-                                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.costosMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.costosMes).toFixed(0)}</Text>
                                     </View>
                                     <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
                                     <View style={{ alignItems: 'center', flex: 1 }}>
                                         <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Gastos</Text>
-                                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.gastosMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary }}>${Number(data.finanzas.gastosMes).toFixed(0)}</Text>
                                     </View>
                                     <View style={{ width: 1, height: '100%', backgroundColor: colors.border }} />
                                     <View style={{ alignItems: 'center', flex: 1 }}>
                                         <Text style={{ fontSize: 9, color: colors.textMuted, textTransform: 'uppercase' }}>Merma</Text>
-                                        <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary }}>${Number(data.finanzas.mermaMes).toFixed(0)}</Text>
+                                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>${Number(data.finanzas.mermaMes).toFixed(0)}</Text>
                                     </View>
                                 </View>
                             </View>

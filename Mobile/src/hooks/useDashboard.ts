@@ -9,6 +9,7 @@ export interface DashboardData {
         semana: { total: number; cantidad: number };
         mes: { total: number; cantidad: number };
         mesPasado: { total: number; cantidad: number };
+        crecimiento: string;
         recientes: any[];
     };
     inventario: {
@@ -16,6 +17,7 @@ export interface DashboardData {
         itemsStockBajo: number;
         itemsVenciendo: number;
         totalItems: number;
+        productosEnRiesgo: { id: string; nombre: string; ingredientesFaltantes: string[] }[];
     };
     finanzas: {
         ingresosMes: string;
@@ -23,6 +25,13 @@ export interface DashboardData {
         gastosMes: string;
         mermaMes: string;
         gananciaMes: string;
+        gananciaMesPasado: string;
+        crecimientoGanancia: string;
+    };
+    ahorro: {
+        tiempoHoras: string;
+        hojasPapel: number;
+        calificacion: string;
     };
     historico?: {
         ventasTotal: string;
