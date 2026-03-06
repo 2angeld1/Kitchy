@@ -650,7 +650,7 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
                         cantidad: qty,
                         unidad: unidad || 'unidades',
                         costoUnitario: price,
-                        categoria: categoria || 'comida',
+                        categoria: categoria || 'ingrediente',
                         cantidadMinima: 1,
                         usuario: userId,
                         negocioId
