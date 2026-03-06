@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IGasto extends Document {
     descripcion: string;
-    categoria: 'servicios' | 'renta' | 'personal' | 'mantenimiento' | 'impuestos' | 'otro';
+    categoria: 'servicios' | 'renta' | 'personal' | 'mantenimiento' | 'impuestos' | 'insumos' | 'compras' | 'otro';
     monto: number;
     fecha: Date;
     comprobante?: string; // URL de la imagen si se desea
@@ -20,7 +20,7 @@ const GastoSchema: Schema = new Schema({
     },
     categoria: {
         type: String,
-        enum: ['servicios', 'renta', 'personal', 'mantenimiento', 'impuestos', 'otro'],
+        enum: ['servicios', 'renta', 'personal', 'mantenimiento', 'impuestos', 'insumos', 'compras', 'otro'],
         default: 'servicios'
     },
     monto: {

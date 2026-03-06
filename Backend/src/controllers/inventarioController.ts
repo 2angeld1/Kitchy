@@ -2,8 +2,10 @@ import { Response } from 'express';
 import Inventario, { IInventario } from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
 import { AuthRequest } from '../middleware/auth';
-import csvParser from 'csv-parser';
 import fs from 'fs';
+import csvParser from 'csv-parser';
+import { uploadImage } from '../utils/imageUpload';
+import Gasto from '../models/Gasto';
 
 // ==================== INVENTARIO ====================
 
@@ -589,7 +591,7 @@ export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
 // Procesar un lote de productos (usado por Caitlyn / Importaciones rápidas)
 export const procesarLoteInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { items } = req.body;
+        const { items, imagen } = req.body;
         const userId = req.userId;
         const negocioId = req.negocioId;
 
@@ -600,6 +602,33 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
         let creados = 0;
         let actualizados = 0;
         const errores: any[] = [];
+
+        let imageUrl = null;
+        let nuevoGasto: any = null;
+
+        // Subir imagen a Cloudinary y Gasto solo si viene la imagen
+        if (imagen) {
+            console.log('📸 Subiendo factura a Cloudinary (Lote)...');
+            try {
+                imageUrl = await uploadImage(imagen, 'facturas_caitlyn');
+                const montoTotal = items.reduce((sum: number, p: any) => sum + ((parseFloat(p.precioUnitario) || 0) * (parseFloat(p.cantidad) || 0)), 0);
+                nuevoGasto = new Gasto({
+                    descripcion: `Factura: ${items.length} productos ingresados`,
+                    categoria: 'compras',
+                    monto: montoTotal,
+                    fecha: new Date(),
+                    comprobante: imageUrl,
+                    usuario: userId,
+                    negocioId: negocioId
+                });
+                await nuevoGasto.save();
+                console.log('✅ Gasto creado con imagen:', imageUrl);
+            } catch (imgError: any) {
+                console.error('Error al subir imagen o crear registro de gasto:', imgError);
+                // Si la imagen falla no petamos todo, pero lo avisamos.
+                errores.push({ item: 'Imagen/Gasto', error: imgError.message || 'Error desconocido' });
+            }
+        }
 
         for (const item of items) {
             try {
@@ -676,7 +705,8 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
 
         res.json({
             message: 'Procesamiento de lote finalizado',
-            detalles: { creados, actualizados, errores }
+            detalles: { creados, actualizados, errores },
+            gastoId: nuevoGasto ? nuevoGasto._id : null
         });
 
     } catch (error: any) {

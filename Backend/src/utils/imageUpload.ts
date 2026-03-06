@@ -8,16 +8,22 @@ import cloudinary from '../config/cloudinary';
  */
 export const uploadImage = async (imageContent: string | null | undefined, folder: string = 'yappy_proofs'): Promise<string | null> => {
     if (!imageContent) return null;
-    
+
     // Si ya es una URL de Cloudinary o externa, no hacemos nada
     if (imageContent.startsWith('http')) {
         return imageContent;
     }
 
-    // Si es base64, la subimos
-    if (imageContent.startsWith('data:image')) {
+    // Normalizar base64: si no tiene el prefijo data:image, se lo ponemos (asumiendo jpeg por defecto)
+    let finalContent = imageContent;
+    if (!imageContent.startsWith('data:image') && imageContent.length > 100) {
+        finalContent = `data:image/jpeg;base64,${imageContent}`;
+    }
+
+    // Si es base64 (o lo hemos normalizado como tal), lo subimos
+    if (finalContent.startsWith('data:image')) {
         try {
-            const uploadResponse = await cloudinary.uploader.upload(imageContent, {
+            const uploadResponse = await cloudinary.uploader.upload(finalContent, {
                 folder: folder,
                 resource_type: 'auto',
             });

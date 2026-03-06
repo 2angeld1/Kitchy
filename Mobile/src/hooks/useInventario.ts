@@ -44,12 +44,14 @@ export const useInventario = () => {
     // Feedback
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     // Filters & Search
     const [filtro, setFiltro] = useState('todos');
 
     // Invoice Review
     const [invoiceItems, setInvoiceItems] = useState<any[]>([]);
+    const [invoiceBase64, setInvoiceBase64] = useState<string | null>(null);
     const [showInvoiceReview, setShowInvoiceReview] = useState(false);
     const [invoiceFiltro, setInvoiceFiltro] = useState('todos');
 
@@ -419,8 +421,9 @@ export const useInventario = () => {
     };
 
     const handleCaitlynInvoice = async (base64: string) => {
-        setLoading(true);
+        setIsAnalyzing(true);
         try {
+            setInvoiceBase64(base64); // Guardamos la imagen en base64 para el paso final
             const response = await procesarFacturaCaitlyn(base64);
             const { items: detectedItems } = response.data;
 
@@ -429,24 +432,25 @@ export const useInventario = () => {
                 setShowInvoiceReview(true);
                 setSuccess(`Caitlyn detectó ${detectedItems.length} productos. Por favor júralos.`);
             } else {
-                setSuccess('Factura guardada, pero no se detectaron productos automáticos.');
+                setSuccess('El IA no ha detectado productos automáticamente.');
             }
             console.log('Factura procesada:', response.data);
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al procesar factura');
         } finally {
-            setLoading(false);
+            setIsAnalyzing(false);
         }
     };
 
     const handleConfirmInvoiceItems = async (itemsToRegister: any[]) => {
         setLoading(true);
         try {
-            const response = await procesarLoteInventario(itemsToRegister);
+            const response = await procesarLoteInventario({ items: itemsToRegister, imagen: invoiceBase64 || undefined });
             const { creados, actualizados, errores } = response.data.detalles;
 
             setSuccess(`Carga completada. ${creados} nuevos, ${actualizados} actualizados.${errores && errores.length > 0 ? ` ${errores.length} errores.` : ''}`);
             setShowInvoiceReview(false);
+            setInvoiceBase64(null); // Limpiamos la imagen
             cargarInventario();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al cargar items al inventario');
@@ -610,7 +614,7 @@ export const useInventario = () => {
     const clearSuccess = () => setSuccess('');
 
     return {
-        items, loading, refreshing, error, success, clearError, clearSuccess, itemsFiltrados,
+        items, loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
         showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
         showInvoiceReview, setShowInvoiceReview, invoiceItems, setInvoiceItems,
         invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,

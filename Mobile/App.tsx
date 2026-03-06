@@ -8,6 +8,7 @@ import ProductosScreen from './src/screens/ProductosScreen';
 import UsuariosScreen from './src/screens/UsuariosScreen';
 import MenuAppScreen from './src/screens/MenuAppScreen';
 import ConfiguracionMenuScreen from './src/screens/ConfiguracionMenuScreen';
+import GastosScreen from './src/screens/GastosScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -47,6 +48,7 @@ export type RootStackParamList = {
   Usuarios: undefined;
   MenuApp: undefined;
   ConfiguracionMenu: undefined;
+  Gastos: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -75,6 +77,7 @@ function RootNavigator() {
             <Stack.Screen name="Usuarios" component={UsuariosScreen} />
             <Stack.Screen name="MenuApp" component={MenuAppScreen} />
             <Stack.Screen name="ConfiguracionMenu" component={ConfiguracionMenuScreen} />
+            <Stack.Screen name="Gastos" component={GastosScreen} />
           </>
         ) : (
           <>

@@ -42,6 +42,13 @@ export default function AdminHubScreen() {
             desc: 'Ayuda técnica',
             icon: 'headset-outline',
             color: '#6366f1'
+        },
+        {
+            id: 'gastos',
+            title: 'Facturas',
+            desc: 'Ver Gastos',
+            icon: 'receipt-outline',
+            color: '#10b981'
         }
     ];
 
@@ -59,6 +66,10 @@ export default function AdminHubScreen() {
         }
         if (id === 'menu') {
             navigation.navigate('ConfiguracionMenu');
+            return;
+        }
+        if (id === 'gastos') {
+            navigation.navigate('Gastos');
             return;
         }
         Toast.show({

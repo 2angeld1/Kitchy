@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import Animated, { FadeInDown, SlideInDown, FadeIn } from 'react-native-reanimated';
 import { lightTheme, darkTheme, spacing } from '../theme';
 import { styles } from '../styles/InventarioScreen.styles';
@@ -21,7 +22,7 @@ export default function InventarioScreen() {
     const colors = isDark ? darkTheme : lightTheme;
 
     const {
-        loading, refreshing, error, success, clearError, clearSuccess, itemsFiltrados,
+        loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
         showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
         showInvoiceReview, setShowInvoiceReview, invoiceItems, setInvoiceItems,
         invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,
@@ -517,6 +518,67 @@ export default function InventarioScreen() {
                     </View>
                 </View>
             </Modal>
+
+            {/* Overlay de Análisis de Caitlyn */}
+            {isAnalyzing && (
+                <View style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 9999,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <BlurView
+                        intensity={40}
+                        tint={isDark ? "dark" : "light"}
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0
+                        }}
+                    />
+                    <Animated.View
+                        entering={FadeIn}
+                        style={{
+                            backgroundColor: colors.card,
+                            padding: 30,
+                            borderRadius: 24,
+                            alignItems: 'center',
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 10 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 20,
+                            elevation: 10,
+                            borderWidth: 1,
+                            borderColor: colors.border
+                        }}
+                    >
+                        <View style={{ marginBottom: 20 }}>
+                            <Ionicons name="sparkles" size={50} color={colors.primary} />
+                        </View>
+                        <Text style={{
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            color: colors.textPrimary,
+                            marginBottom: 8
+                        }}>
+                            Caitlyn está analizando...
+                        </Text>
+                        <Text style={{
+                            fontSize: 14,
+                            color: colors.textSecondary,
+                            textAlign: 'center'
+                        }}>
+                            Extrayendo productos de tu factura
+                        </Text>
+                    </Animated.View>
+                </View>
+            )}
         </View>
     );
 }
