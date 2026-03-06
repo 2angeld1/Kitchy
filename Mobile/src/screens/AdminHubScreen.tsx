@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -50,13 +50,6 @@ export default function AdminHubScreen() {
             desc: 'Ver Gastos',
             icon: 'receipt-outline',
             color: '#10b981'
-        },
-        {
-            id: 'dashboard_web',
-            title: 'Gosen Tech',
-            desc: 'Gestión de Productos',
-            icon: 'business-outline',
-            color: '#3b82f6'
         }
     ];
 
@@ -88,10 +81,6 @@ export default function AdminHubScreen() {
         }
         if (id === 'soporte') {
             navigation.navigate('Soporte');
-            return;
-        }
-        if (id === 'dashboard_web') {
-            Linking.openURL('https://agrolinkxbk.vercel.app/login');
             return;
         }
     };
