@@ -8,7 +8,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 // Conseguir los negocios del usuario actual
 export const getUserNegocios = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo config');
+        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo config pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart');
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }

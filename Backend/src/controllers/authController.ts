@@ -4,6 +4,32 @@ import User from '../models/User';
 import Negocio from '../models/Negocio';
 import { enviarEmailRecuperacion } from '../services/emailService';
 import { uploadImage } from '../utils/imageUpload';
+import { AuthRequest } from '../middleware/auth';
+
+export const getProfile = async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+        }
+        res.json({
+            success: true,
+            data: {
+                id: user._id,
+                email: user.email,
+                name: user.nombre,
+                nombre: user.nombre, // para compatibilidad con ambos
+                role: user.rol,
+                rol: user.rol,
+                negocioIds: user.negocioIds,
+                negocioActivo: user.negocioActivo
+            }
+        });
+    } catch (error) {
+        console.error('Error en getProfile:', error);
+        res.status(500).json({ success: false, message: 'Error del servidor' });
+    }
+};
 
 export const login = async (req: Request, res: Response) => {
     try {

@@ -12,6 +12,19 @@ export interface INegocio extends Document {
     direccion?: string;
     telefono?: string;
     propietario: mongoose.Types.ObjectId;
+    pilotStatus: 'active' | 'graduated' | 'paused';
+    pilotStartDate: Date;
+    accumulatedSalesMonth: number;
+    billingCycleStart: Date;
+    billing: {
+        balance: number;
+        lastPaymentDate?: Date;
+        lastPaymentAmount?: number;
+        paymentStatus: 'al_dia' | 'pendiente' | 'moroso';
+        notes?: string;
+    };
+    totalSalesLifetime: number;
+    totalCommissionLifetime: number;
 }
 
 const negocioSchema = new Schema({
@@ -48,7 +61,37 @@ const negocioSchema = new Schema({
     telefono: {
         type: String,
         trim: true
-    }
+    },
+    pilotStatus: {
+        type: String,
+        enum: ['active', 'graduated', 'paused'],
+        default: 'active'
+    },
+    pilotStartDate: {
+        type: Date,
+        default: Date.now
+    },
+    accumulatedSalesMonth: {
+        type: Number,
+        default: 0
+    },
+    billingCycleStart: {
+        type: Date,
+        default: Date.now
+    },
+    billing: {
+        balance: { type: Number, default: 0 },
+        lastPaymentDate: { type: Date },
+        lastPaymentAmount: { type: Number },
+        paymentStatus: {
+            type: String,
+            enum: ['al_dia', 'pendiente', 'moroso'],
+            default: 'al_dia'
+        },
+        notes: { type: String, trim: true }
+    },
+    totalSalesLifetime: { type: Number, default: 0 },
+    totalCommissionLifetime: { type: Number, default: 0 }
 }, {
     timestamps: true
 });

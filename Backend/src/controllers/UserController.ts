@@ -1,6 +1,78 @@
 import { Response } from 'express';
 import User from '../models/User';
+import Negocio from '../models/Negocio';
+import Venta from '../models/Venta';
 import { AuthRequest } from '../middleware/auth';
+
+// Obtener resumen de facturación para el panel administrativo global
+export const getBillingSummary = async (req: AuthRequest, res: Response) => {
+    try {
+        // En una app real, esto debería estar protegido por un rol 'superadmin'
+        // Por ahora lo dejamos para admin
+
+        const negocios = await Negocio.find().populate('propietario', 'nombre email');
+        const ventasGlobales = await Venta.find();
+
+        const totalPlatformSales = ventasGlobales.reduce((sum, v) => sum + v.total, 0);
+        const totalPlatformRevenue = negocios.reduce((sum, n) => sum + n.totalCommissionLifetime, 0);
+
+        const platformStats = {
+            totalRequests: ventasGlobales.length,
+            completedRequests: ventasGlobales.length,
+            activeRequests: 0,
+            totalPlatformSales,
+            totalPlatformRevenue,
+            totalAdminShare: totalPlatformRevenue * 0.4 // 40% de la comisión es para el dueño de la infraestructura
+        };
+
+        const totalProducers = negocios.length;
+        const totalDebt = negocios.reduce((sum, n) => sum + n.billing.balance, 0);
+        const morosos = negocios.filter(n => n.billing.paymentStatus === 'moroso').length;
+        const pendientes = negocios.filter(n => n.billing.paymentStatus === 'pendiente').length;
+        const alDia = negocios.filter(n => n.billing.paymentStatus === 'al_dia').length;
+
+        const billingStats = {
+            totalProducers,
+            totalDebt,
+            morosos,
+            pendientes,
+            alDia
+        };
+
+        const producers = negocios.map(n => ({
+            _id: n._id,
+            name: n.nombre,
+            businessName: n.nombre,
+            email: (n.propietario as any)?.email || 'N/A',
+            phone: n.telefono || 'N/A',
+            ruc: n.ruc || 'N/A',
+            dv: '0', // DV ficticio si no existe
+            avatar: n.logo,
+            isActive: n.pilotStatus === 'active',
+            billing: {
+                balance: n.billing.balance,
+                lastPaymentDate: n.billing.lastPaymentDate,
+                lastPaymentAmount: n.billing.lastPaymentAmount,
+                paymentStatus: n.billing.paymentStatus,
+                notes: n.billing.notes
+            },
+            totalSales: n.totalSalesLifetime,
+            totalCommission: n.totalCommissionLifetime
+        }));
+
+        res.json({
+            success: true,
+            data: {
+                platformStats,
+                billingStats,
+                producers
+            }
+        });
+    } catch (error: any) {
+        console.error('Error fetching billing summary:', error);
+        res.status(500).json({ message: 'Error al obtener resumen de facturación', error: error.message });
+    }
+};
 
 // Obtener usuarios del mismo negocio
 export const getUsers = async (req: AuthRequest, res: Response) => {

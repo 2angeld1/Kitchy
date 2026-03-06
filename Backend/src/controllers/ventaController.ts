@@ -2,6 +2,7 @@ import { Response } from 'express';
 import Venta, { IVenta } from '../models/Venta';
 import Producto from '../models/Producto';
 import Inventario from '../models/Inventario';
+import Negocio from '../models/Negocio';
 import { AuthRequest } from '../middleware/auth';
 
 // Crear una nueva venta
@@ -62,6 +63,45 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
         });
 
         await venta.save();
+
+        // Actualizar ventas acumuladas del negocio para el pilotaje/facturación
+        const negocio = await Negocio.findById(req.negocioId);
+        if (negocio) {
+            const ahora = new Date();
+            const fechaLimite = new Date(negocio.billingCycleStart);
+            fechaLimite.setMonth(fechaLimite.getMonth() + 1);
+
+            if (ahora > fechaLimite) {
+                // Reiniciar ciclo si pasó un mes
+                negocio.accumulatedSalesMonth = total;
+                negocio.billingCycleStart = ahora;
+            } else {
+                negocio.accumulatedSalesMonth += total;
+            }
+
+            // Calcular comisión de esta venta basada en el acumulado mensual
+            // Tiers: <700: 5%, 701-2000: 3%, >2000: 2%
+            let porcentajeComision = 0.05;
+            if (negocio.accumulatedSalesMonth > 2000) {
+                porcentajeComision = 0.02;
+            } else if (negocio.accumulatedSalesMonth > 700) {
+                porcentajeComision = 0.03;
+            }
+
+            const comisionEstaVenta = total * porcentajeComision;
+
+            // Actualizar balance y estadísticas de vida
+            negocio.billing.balance += comisionEstaVenta;
+            negocio.totalSalesLifetime += total;
+            negocio.totalCommissionLifetime += comisionEstaVenta;
+
+            // Actualizar estado de pago si tiene deuda considerable
+            if (negocio.billing.balance > 50 && negocio.billing.paymentStatus === 'al_dia') {
+                negocio.billing.paymentStatus = 'pendiente';
+            }
+
+            await negocio.save();
+        }
 
         // Aplicar todas las deducciones del inventario (FILTRADO POR NEGOCIO)
         for (const deduccion of deduccionesInventario) {

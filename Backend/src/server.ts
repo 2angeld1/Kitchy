@@ -13,6 +13,7 @@ import menuConfigRoutes from './routes/menuConfig';
 import negocioRoutes from './routes/negocios';
 import gastoRoutes from './routes/gastos';
 import agenteRoutes from './routes/agente';
+import statsRoutes from './routes/stats';
 
 dotenv.config();
 
@@ -28,7 +29,8 @@ app.use(cors({
         'https://kitchy-one.vercel.app',
         'capacitor://localhost',
         'ionic://localhost',
-        'http://localhost:8081'
+        'http://localhost:8081',
+        'http://localhost:3001'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -59,6 +61,7 @@ app.use('/api/menu-config', menuConfigRoutes);
 app.use('/api/negocios', negocioRoutes);
 app.use('/api/gastos', gastoRoutes);
 app.use('/api/agente', agenteRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
