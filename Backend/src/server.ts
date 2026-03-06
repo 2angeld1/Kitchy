@@ -30,7 +30,8 @@ app.use(cors({
         'capacitor://localhost',
         'ionic://localhost',
         'http://localhost:8081',
-        'http://localhost:3001'
+        'http://localhost:3001',
+        'https://agrolinkxbk.vercel.app'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
