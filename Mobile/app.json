@@ -4,13 +4,13 @@
     "slug": "Kitchy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/kitchy-logo-v2.png",
+    "icon": "./assets/logo-premium.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/kitchy-logo-v2.png",
+      "image": "./assets/logo-premium.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "ios": {
       "supportsTablet": true,
@@ -26,19 +26,19 @@
         "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/kitchy-logo-v2.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/logo-premium.png",
+        "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/kitchy-logo-v2.png",
+      "favicon": "./assets/logo-premium.png",
       "name": "Kitchy",
       "shortName": "Kitchy",
       "display": "standalone",
-      "themeColor": "#ffffff",
-      "backgroundColor": "#ffffff"
+      "themeColor": "#000000",
+      "backgroundColor": "#000000"
     },
     "plugins": [
       "expo-speech-recognition",
