@@ -5,6 +5,8 @@ import { uploadImage } from '../utils/imageUpload';
 import csvParser from 'csv-parser';
 import fs from 'fs';
 import { AuthRequest } from '../middleware/auth';
+import { parseCsvFile } from '../utils/csvAdapter';
+import { procesarProductosImportados, CSVProductoRow } from '../services/productoService';
 
 // Crear un nuevo producto
 export const crearProducto = async (req: AuthRequest, res: Response) => {
@@ -194,124 +196,34 @@ export const importarProductosCsv = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ message: 'No se subió ningún archivo CSV.' });
         }
 
-        const results: any[] = [];
-        const errores: string[] = [];
-        let creados = 0;
-        let actualizados = 0;
+        if (!req.userId || !req.negocioId) {
+            if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.status(401).json({ message: 'Usuario o negocio no autenticado correctamente.' });
+        }
 
-        fs.createReadStream(req.file.path)
-            .pipe(csvParser())
-            .on('data', (data) => results.push(data))
-            .on('end', async () => {
-                try {
-                    for (const row of results) {
-                        const { nombre, descripcion, precio, categoria, disponible, receta } = row;
+        try {
+            // 1. Adapter: Parsear CSV a Array
+            const filas = await parseCsvFile<CSVProductoRow>(req.file.path);
+            
+            // 2. Service: Procesar reglas de negocio
+            const resultado = await procesarProductosImportados(filas, req.userId, req.negocioId);
 
-                        if (!nombre || precio === undefined) {
-                            errores.push(`Fila ignorada: Faltan campos requeridos (nombre o precio) en la fila: ${JSON.stringify(row)}`);
-                            continue;
-                        }
+            // 3. Limpieza
+            fs.unlinkSync(req.file.path);
 
-                        const parsedPrecio = parseFloat(precio) || 0;
-                        const parsedDisponible = disponible ? String(disponible).toLowerCase() === 'true' : true;
-
-                        let ingredientesParsed: any[] = [];
-
-                        if (receta && typeof receta === 'string' && receta.trim() !== '') {
-                            // Example format: "Pan:1|Tomate:0.5|Queso:2"
-                            const parts = receta.split('|');
-                            for (const part of parts) {
-                                const [ingName, ingQtyStr] = part.split(':');
-                                if (ingName && ingQtyStr) {
-                                    const qty = parseFloat(ingQtyStr);
-                                    if (!isNaN(qty) && qty > 0 && req.userId) {
-                                        const cleanIngName = ingName.trim();
-
-                                        // Buscar o crear en el inventario
-                                        let invItem = await Inventario.findOne({
-                                            nombre: { $regex: new RegExp(`^${cleanIngName}$`, 'i') },
-                                            negocioId: req.negocioId
-                                        });
-
-                                        if (!invItem) {
-                                            invItem = new Inventario({
-                                                nombre: cleanIngName,
-                                                cantidad: 0,
-                                                unidad: 'unidades', // default simple
-                                                costoUnitario: 0,
-                                                categoria: 'ingrediente',
-                                                usuario: req.userId,
-                                                negocioId: req.negocioId
-                                            });
-                                            await invItem.save();
-                                        }
-
-                                        ingredientesParsed.push({
-                                            inventario: invItem._id,
-                                            cantidad: qty
-                                        });
-                                    }
-                                }
-                            }
-                        }
-
-                        // Buscar si el producto ya existe en ESTE negocio
-                        const productoExistente = await Producto.findOne({
-                            nombre: { $regex: new RegExp(`^${nombre}$`, 'i') },
-                            negocioId: req.negocioId
-                        });
-
-                        if (productoExistente) {
-                            // Actualizar
-                            productoExistente.precio = parsedPrecio;
-                            productoExistente.descripcion = descripcion || productoExistente.descripcion;
-                            productoExistente.categoria = categoria || productoExistente.categoria;
-                            productoExistente.disponible = parsedDisponible;
-
-                            if (ingredientesParsed.length > 0) {
-                                // Sobrescribir receta si se proveyó una en el CSV
-                                productoExistente.ingredientes = ingredientesParsed;
-                            }
-
-                            await productoExistente.save();
-                            actualizados++;
-                        } else {
-                            // Crear nuevo
-                            const nuevoProducto = new Producto({
-                                nombre,
-                                descripcion,
-                                precio: parsedPrecio,
-                                categoria: categoria || 'comida',
-                                disponible: parsedDisponible,
-                                ingredientes: ingredientesParsed,
-                                negocioId: req.negocioId as any
-                            });
-
-                            await nuevoProducto.save();
-                            creados++;
-                        }
-                    }
-
-                    // Eliminar el archivo temporal
-                    fs.unlinkSync(req.file!.path);
-
-                    res.status(200).json({
-                        message: 'Importación finalizada',
-                        detalles: {
-                            creados,
-                            actualizados,
-                            errores
-                        }
-                    });
-
-                } catch (error: any) {
-                    if (fs.existsSync(req.file!.path)) {
-                        fs.unlinkSync(req.file!.path);
-                    }
-                    console.error('Error procesando CSV de productos:', error);
-                    res.status(500).json({ message: 'Error procesando los datos del CSV', error: error.message });
-                }
+            // 4. Response
+            res.status(200).json({
+                message: 'Importación finalizada',
+                detalles: resultado
             });
+
+        } catch (error: any) {
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            console.error('Error procesando CSV de productos:', error);
+            res.status(500).json({ message: 'Error procesando los datos del CSV', error: error.message });
+        }
 
     } catch (error: any) {
         console.error('Error al importar CSV de productos:', error);
