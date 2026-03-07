@@ -4,11 +4,11 @@
     "slug": "Kitchy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo-premium.png",
+    "icon": "./assets/logo-realistic.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logo-premium.png",
+      "image": "./assets/logo-realistic.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -26,14 +26,14 @@
         "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-premium.png",
+        "foregroundImage": "./assets/logo-realistic.png",
         "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/logo-premium.png",
+      "favicon": "./assets/logo-realistic.png",
       "name": "Kitchy",
       "shortName": "Kitchy",
       "display": "standalone",
