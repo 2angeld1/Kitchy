@@ -28,6 +28,13 @@ export default function VentasScreen() {
         cliente,
         setCliente,
         metodoPago,
+        setMetodoPago,
+        ordenes,
+        activeOrderId,
+        activeOrder,
+        nuevaOrden,
+        seleccionarOrden,
+        eliminarOrden
     } = useVentas();
 
     const { isDark } = useTheme();
@@ -113,6 +120,64 @@ export default function VentasScreen() {
                 }
             />
 
+            {/* Selector de Pedidos / Agrupamiento */}
+            <View style={{ backgroundColor: colors.card, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
+                    {ordenes.map(o => (
+                        <TouchableOpacity
+                            key={o.id}
+                            onPress={() => seleccionarOrden(o.id)}
+                            onLongPress={() => eliminarOrden(o.id)}
+                            style={{
+                                paddingHorizontal: 14,
+                                paddingVertical: 8,
+                                borderRadius: 12,
+                                backgroundColor: activeOrderId === o.id ? colors.primary : colors.surface,
+                                borderWidth: 1.5,
+                                borderColor: activeOrderId === o.id ? colors.primary : colors.border,
+                                minWidth: 80,
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <Text style={{ 
+                                color: activeOrderId === o.id ? colors.white : colors.textPrimary,
+                                fontWeight: '800',
+                                fontSize: 13
+                            }}>
+                                {o.nombre}
+                            </Text>
+                            {o.items.length > 0 && (
+                                <Text style={{ 
+                                    color: activeOrderId === o.id ? 'rgba(255,255,255,0.8)' : colors.textMuted,
+                                    fontSize: 10,
+                                    fontWeight: '600',
+                                    marginTop: 2
+                                }}>
+                                    {o.items.length} items
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    ))}
+                    <TouchableOpacity
+                        onPress={() => nuevaOrden()}
+                        style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: 12,
+                            backgroundColor: colors.surface,
+                            borderWidth: 1.5,
+                            borderColor: colors.border,
+                            borderStyle: 'dashed',
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <Ionicons name="add" size={24} color={colors.primary} />
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
+
             {/* Buscador */}
             <View style={styles.searchContainer}>
                 <View style={[styles.searchInputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -195,7 +260,7 @@ export default function VentasScreen() {
                     >
                         <View style={styles.modalHeader}>
                             <View>
-                                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Tu Pedido</Text>
+                                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{activeOrder.nombre}</Text>
                                 <Text style={[styles.modalSubtitle, { color: colors.textMuted }]}>{carrito.length} Items seleccionados</Text>
                             </View>
                             <TouchableOpacity onPress={() => setShowModal(false)}>
@@ -261,11 +326,14 @@ export default function VentasScreen() {
                                         value={cliente}
                                         onChangeText={setCliente}
                                     />
-                                    <View style={[styles.selectSmall, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                                    <TouchableOpacity 
+                                        onPress={() => setMetodoPago(metodoPago === 'efectivo' ? 'yappy' : 'efectivo')}
+                                        style={[styles.selectSmall, { backgroundColor: colors.background, borderColor: colors.border }]}
+                                    >
                                         <Text style={[styles.selectText, { color: colors.textPrimary }]}>
                                             {metodoPago === 'efectivo' ? '💵 Efectivo' : '💸 Yappy'}
                                         </Text>
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
 
                                 <View style={styles.totalRow}>

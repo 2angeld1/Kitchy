@@ -484,6 +484,31 @@ export const useInventario = () => {
         }
     };
 
+    const seleccionarImagenGaleria = async () => {
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                setError('Necesitamos permiso para acceder a la galería');
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true,
+            });
+
+            if (!result.canceled && result.assets[0].base64) {
+                const base64String = `data:image/jpeg;base64,${result.assets[0].base64}`;
+                handleCaitlynInvoice(base64String);
+            }
+        } catch (err) {
+            console.error('Error al seleccionar imagen:', err);
+            setError('Error al abrir la galería');
+        }
+    };
+
     const startListening = async () => {
         if (isListening) {
             ExpoSpeechRecognitionModule.stop();
@@ -631,6 +656,6 @@ export const useInventario = () => {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleImportCsv, handleCaitlynInvoice, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, tomarFotoFactura, startListening, setIsListening, handleConfirmInvoiceItems
+        pickDocument, tomarFotoFactura, seleccionarImagenGaleria, startListening, setIsListening, handleConfirmInvoiceItems
     };
 };

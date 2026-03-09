@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { getProductos, createVenta, getVentas } from '../services/api';
 import Toast from 'react-native-toast-message';
@@ -29,25 +30,74 @@ export interface Venta {
     createdAt: string;
 }
 
+export interface Orden {
+    id: string;
+    nombre: string;
+    items: ItemCarrito[];
+    cliente: string;
+    metodoPago: string;
+}
+
 export const useVentas = () => {
     const { user } = useAuth();
     const [productos, setProductos] = useState<Producto[]>([]);
-    const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
+    const [ordenes, setOrdenes] = useState<Orden[]>([
+        { id: Date.now().toString(), nombre: 'Pedido 1', items: [], cliente: '', metodoPago: 'efectivo' }
+    ]);
+    const [activeOrderId, setActiveOrderId] = useState<string>(ordenes[0].id);
     const [ventas, setVentas] = useState<Venta[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    // Get current order and cart
+    const activeOrder = useMemo(() => 
+        ordenes.find(o => o.id === activeOrderId) || ordenes[0]
+    , [ordenes, activeOrderId]);
+
+    const carrito = activeOrder.items;
+    const metodoPago = activeOrder.metodoPago;
+    const cliente = activeOrder.cliente;
+
     // UI State
     const [showModal, setShowModal] = useState(false);
     const [showHistorial, setShowHistorial] = useState(false);
-
-    // Form State
-    const [metodoPago, setMetodoPago] = useState('efectivo');
-    const [cliente, setCliente] = useState('');
+    const [showOrderSelector, setShowOrderSelector] = useState(false);
 
     // Filters
     const [busqueda, setBusqueda] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState('');
+
+    // Persistencia de Ordenes
+    useEffect(() => {
+        const cargarOrdenesPersistidas = async () => {
+            try {
+                const storedValue = await AsyncStorage.getItem('kitchy_ordenes_pendientes');
+                const storedActiveId = await AsyncStorage.getItem('kitchy_active_order_id');
+                if (storedValue) {
+                    const parsed = JSON.parse(storedValue);
+                    if (parsed.length > 0) {
+                        setOrdenes(parsed);
+                        if (storedActiveId) setActiveOrderId(storedActiveId);
+                    }
+                }
+            } catch (err) {
+                console.error('Error al cargar ordenes persistidas', err);
+            }
+        };
+        cargarOrdenesPersistidas();
+    }, []);
+
+    useEffect(() => {
+        const guardarOrdenes = async () => {
+            try {
+                await AsyncStorage.setItem('kitchy_ordenes_pendientes', JSON.stringify(ordenes));
+                await AsyncStorage.setItem('kitchy_active_order_id', activeOrderId);
+            } catch (err) {
+                console.error('Error al guardar ordenes', err);
+            }
+        };
+        guardarOrdenes();
+    }, [ordenes, activeOrderId]);
 
     useEffect(() => {
         cargarProductos();
@@ -84,17 +134,66 @@ export const useVentas = () => {
         setRefreshing(false);
     };
 
-    const agregarAlCarrito = (producto: Producto) => {
-        const existe = carrito.find(item => item.producto._id === producto._id);
-        if (existe) {
-            setCarrito(carrito.map(item =>
-                item.producto._id === producto._id
-                    ? { ...item, cantidad: item.cantidad + 1 }
-                    : item
-            ));
-        } else {
-            setCarrito([...carrito, { producto, cantidad: 1 }]);
+    const setMetodoPago = (metodo: string) => {
+        setOrdenes(ordenes.map(o => o.id === activeOrderId ? { ...o, metodoPago: metodo } : o));
+    };
+
+    const setCliente = (nombre: string) => {
+        setOrdenes(ordenes.map(o => o.id === activeOrderId ? { ...o, cliente: nombre } : o));
+    };
+
+    const nuevaOrden = (nombre: string = '') => {
+        const id = Date.now().toString();
+        const nueva: Orden = {
+            id,
+            nombre: nombre || `Pedido ${ordenes.length + 1}`,
+            items: [],
+            cliente: '',
+            metodoPago: 'efectivo'
+        };
+        setOrdenes([...ordenes, nueva]);
+        setActiveOrderId(id);
+        Toast.show({ type: 'success', text1: 'Nueva Orden', text2: `Creado: ${nueva.nombre}` });
+    };
+
+    const seleccionarOrden = (id: string) => {
+        setActiveOrderId(id);
+        setShowOrderSelector(false);
+    };
+
+    const eliminarOrden = (id: string) => {
+        if (ordenes.length === 1) {
+            Toast.show({ type: 'info', text1: 'No se puede eliminar', text2: 'Al menos debe haber una orden activa' });
+            return;
         }
+        const nuevas = ordenes.filter(o => o.id !== id);
+        setOrdenes(nuevas);
+        if (activeOrderId === id) {
+            setActiveOrderId(nuevas[0].id);
+        }
+    };
+
+    const agregarAlCarrito = (producto: Producto) => {
+        setOrdenes(ordenes.map(o => {
+            if (o.id !== activeOrderId) return o;
+            
+            const existe = o.items.find(item => item.producto._id === producto._id);
+            if (existe) {
+                return {
+                    ...o,
+                    items: o.items.map(item =>
+                        item.producto._id === producto._id
+                            ? { ...item, cantidad: item.cantidad + 1 }
+                            : item
+                    )
+                };
+            } else {
+                return {
+                    ...o,
+                    items: [...o.items, { producto, cantidad: 1 }]
+                };
+            }
+        }));
 
         // Mini feedback
         Toast.show({
@@ -107,20 +206,34 @@ export const useVentas = () => {
     };
 
     const quitarDelCarrito = (productoId: string) => {
-        const existe = carrito.find(item => item.producto._id === productoId);
-        if (existe && existe.cantidad > 1) {
-            setCarrito(carrito.map(item =>
-                item.producto._id === productoId
-                    ? { ...item, cantidad: item.cantidad - 1 }
-                    : item
-            ));
-        } else {
-            setCarrito(carrito.filter(item => item.producto._id !== productoId));
-        }
+        setOrdenes(ordenes.map(o => {
+            if (o.id !== activeOrderId) return o;
+
+            const existe = o.items.find(item => item.producto._id === productoId);
+            if (existe && existe.cantidad > 1) {
+                return {
+                    ...o,
+                    items: o.items.map(item =>
+                        item.producto._id === productoId
+                            ? { ...item, cantidad: item.cantidad - 1 }
+                            : item
+                    )
+                };
+            } else {
+                return {
+                    ...o,
+                    items: o.items.filter(item => item.producto._id !== productoId)
+                };
+            }
+        }));
     };
 
     const eliminarDelCarrito = (productoId: string) => {
-        setCarrito(carrito.filter(item => item.producto._id !== productoId));
+        setOrdenes(ordenes.map(o => 
+            o.id === activeOrderId 
+                ? { ...o, items: o.items.filter(item => item.producto._id !== productoId) }
+                : o
+        ));
     };
 
     const calcularTotal = () => {
@@ -147,9 +260,14 @@ export const useVentas = () => {
                 text2: response.data.message || 'La orden se procesó con éxito'
             });
 
-            setCarrito([]);
-            setCliente('');
-            setMetodoPago('efectivo');
+            // Limpiar la orden procesada
+            if (ordenes.length > 1) {
+                setOrdenes(ordenes.filter(o => o.id !== activeOrderId));
+                setActiveOrderId(ordenes.filter(o => o.id !== activeOrderId)[0].id);
+            } else {
+                setOrdenes([{ ...ordenes[0], items: [], cliente: '', metodoPago: 'efectivo' }]);
+            }
+            
             setShowModal(false);
         } catch (err: any) {
             const msg = err.response?.data?.message || 'Error al procesar venta';
@@ -189,6 +307,14 @@ export const useVentas = () => {
         calcularTotal,
         procesarVenta,
         abrirHistorial,
-        productosFiltrados
+        productosFiltrados,
+        ordenes,
+        activeOrderId,
+        activeOrder,
+        nuevaOrden,
+        seleccionarOrden,
+        eliminarOrden,
+        showOrderSelector,
+        setShowOrderSelector
     };
 };

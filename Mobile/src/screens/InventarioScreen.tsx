@@ -38,7 +38,7 @@ export default function InventarioScreen() {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, startListening, handleCaitlynInvoice, tomarFotoFactura, handleConfirmInvoiceItems
+        pickDocument, startListening, handleCaitlynInvoice, tomarFotoFactura, seleccionarImagenGaleria, handleConfirmInvoiceItems
     } = useInventario();
 
     // Mapa de colores por estado de item de factura
@@ -181,6 +181,13 @@ export default function InventarioScreen() {
                     onPress={tomarFotoFactura}
                 >
                     <Ionicons name="camera" size={24} color={colors.white} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.fab, { backgroundColor: '#6366f1', position: 'relative', right: 0, bottom: 0 }]}
+                    onPress={seleccionarImagenGaleria}
+                >
+                    <Ionicons name="images" size={24} color={colors.white} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface, position: 'relative', right: 0, bottom: 0, borderWidth: 1, borderColor: colors.border }]} onPress={openScanner}>
