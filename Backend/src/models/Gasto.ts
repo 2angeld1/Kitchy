@@ -4,7 +4,13 @@ export interface IGasto extends Document {
     descripcion: string;
     categoria: 'servicios' | 'renta' | 'personal' | 'mantenimiento' | 'impuestos' | 'insumos' | 'compras' | 'otro';
     monto: number;
+    subtotal?: number;
+    itbms?: number;
     fecha: Date;
+    proveedor?: string;
+    ruc?: string;
+    dv?: string;
+    nroFactura?: string;
     comprobante?: string; // URL de la imagen si se desea
     usuario: mongoose.Types.ObjectId;
     negocioId: mongoose.Types.ObjectId;
@@ -28,9 +34,33 @@ const GastoSchema: Schema = new Schema({
         required: true,
         min: 0
     },
+    subtotal: {
+        type: Number,
+        default: 0
+    },
+    itbms: {
+        type: Number,
+        default: 0
+    },
     fecha: {
         type: Date,
         default: Date.now
+    },
+    proveedor: {
+        type: String,
+        trim: true
+    },
+    ruc: {
+        type: String,
+        trim: true
+    },
+    dv: {
+        type: String,
+        trim: true
+    },
+    nroFactura: {
+        type: String,
+        trim: true
     },
     comprobante: {
         type: String

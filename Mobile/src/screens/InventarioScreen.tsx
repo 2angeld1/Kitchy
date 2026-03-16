@@ -25,6 +25,7 @@ export default function InventarioScreen() {
         loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
         showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
         showInvoiceReview, setShowInvoiceReview, invoiceItems, setInvoiceItems,
+        invoiceMetadata, setInvoiceMetadata,
         invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,
         editItem, selectedItem, movTipo, setMovTipo, movCantidad, setMovCantidad,
         movMotivo, setMovMotivo, movCosto, setMovCosto,
@@ -389,6 +390,116 @@ export default function InventarioScreen() {
                     </View>
 
                     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 12 }}>
+                        {/* Card de Datos Fiscales (Metadata) */}
+                        {invoiceMetadata && (
+                            <Animated.View 
+                                entering={FadeInDown}
+                                style={{
+                                    backgroundColor: colors.surface,
+                                    padding: 16,
+                                    borderRadius: 16,
+                                    marginBottom: 20,
+                                    borderWidth: 1.5,
+                                    borderColor: colors.primary,
+                                }}
+                            >
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15 }}>
+                                    <Ionicons name="business-outline" size={20} color={colors.primary} />
+                                    <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary, marginLeft: 8 }}>
+                                        DATOS FISCALES (CONTABILIDAD)
+                                    </Text>
+                                </View>
+
+                                <View style={{ gap: 12 }}>
+                                    <View>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>PROVEEDOR</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.proveedor}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, proveedor: text })}
+                                            placeholder="Nombre del comercio"
+                                            placeholderTextColor={colors.textMuted}
+                                        />
+                                    </View>
+
+                                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                                        <View style={{ flex: 2 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RUC</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.ruc}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, ruc: text })}
+                                                placeholder="RUC"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>DV</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.dv}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, dv: text })}
+                                                placeholder="DV"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 2 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>NO. FACTURA</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.nroFactura}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, nroFactura: text })}
+                                                placeholder="000-000-000"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>SUBTOTAL</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={String(invoiceMetadata.subtotal || '')}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, subtotal: parseFloat(text) || 0 })}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>ITBMS (7%)</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={String(invoiceMetadata.itbms || '')}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, itbms: parseFloat(text) || 0 })}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', marginBottom: 4 }}>TOTAL</Text>
+                                            <TextInput 
+                                                style={{ color: colors.primary, fontSize: 16, fontWeight: 'bold', paddingVertical: 4, borderBottomWidth: 2, borderBottomColor: colors.primary }}
+                                                value={String(invoiceMetadata.total || '')}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, total: parseFloat(text) || 0 })}
+                                                keyboardType="numeric"
+                                                placeholder="0.00"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+                            </Animated.View>
+                        )}
+
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 15, paddingHorizontal: 4 }}>
+                            <Ionicons name="list" size={20} color={colors.textMuted} />
+                            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textMuted, marginLeft: 8 }}>
+                                DETALLE DE PRODUCTOS
+                            </Text>
+                        </View>
                         {invoiceItemsFiltrados.map((item: any, index: number) => {
                             const status = getInvoiceItemStatus(item);
                             const sc = statusColors[status];

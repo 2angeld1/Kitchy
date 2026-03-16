@@ -51,6 +51,7 @@ export const useInventario = () => {
 
     // Invoice Review
     const [invoiceItems, setInvoiceItems] = useState<any[]>([]);
+    const [invoiceMetadata, setInvoiceMetadata] = useState<any>(null);
     const [invoiceBase64, setInvoiceBase64] = useState<string | null>(null);
     const [showInvoiceReview, setShowInvoiceReview] = useState(false);
     const [invoiceFiltro, setInvoiceFiltro] = useState('todos');
@@ -425,14 +426,19 @@ export const useInventario = () => {
         try {
             setInvoiceBase64(base64); // Guardamos la imagen en base64 para el paso final
             const response = await procesarFacturaCaitlyn(base64);
-            const { items: detectedItems } = response.data;
+            const { items: detectedItems, metadata } = response.data;
 
-            if (detectedItems && detectedItems.length > 0) {
-                setInvoiceItems(detectedItems);
+            if ((detectedItems && detectedItems.length > 0) || metadata) {
+                setInvoiceItems(detectedItems || []);
+                setInvoiceMetadata(metadata || null);
                 setShowInvoiceReview(true);
-                setSuccess(`Caitlyn detectó ${detectedItems.length} productos. Por favor júralos.`);
+                setSuccess(metadata?.proveedor 
+                    ? `Caitlyn detectó factura de ${metadata.proveedor}` 
+                    : detectedItems?.length > 0 
+                        ? `Caitlyn detectó ${detectedItems.length} productos.` 
+                        : 'Factura detectada.');
             } else {
-                setSuccess('El IA no ha detectado productos automáticamente.');
+                setSuccess('El IA no ha detectado información automáticamente.');
             }
             console.log('Factura procesada:', response.data);
         } catch (err: any) {
@@ -445,12 +451,17 @@ export const useInventario = () => {
     const handleConfirmInvoiceItems = async (itemsToRegister: any[]) => {
         setLoading(true);
         try {
-            const response = await procesarLoteInventario({ items: itemsToRegister, imagen: invoiceBase64 || undefined });
+            const response = await procesarLoteInventario({ 
+                items: itemsToRegister, 
+                imagen: invoiceBase64 || undefined,
+                metadata: invoiceMetadata 
+            });
             const { creados, actualizados, errores } = response.data.detalles;
 
             setSuccess(`Carga completada. ${creados} nuevos, ${actualizados} actualizados.${errores && errores.length > 0 ? ` ${errores.length} errores.` : ''}`);
             setShowInvoiceReview(false);
             setInvoiceBase64(null); // Limpiamos la imagen
+            setInvoiceMetadata(null); // Limpiamos metadata
             cargarInventario();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al cargar items al inventario');
@@ -642,6 +653,7 @@ export const useInventario = () => {
         items, loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
         showModal, setShowModal, showMovModal, setShowMovModal, showScanner, setShowScanner,
         showInvoiceReview, setShowInvoiceReview, invoiceItems, setInvoiceItems,
+        invoiceMetadata, setInvoiceMetadata,
         invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,
         editItem, selectedItem, movTipo, setMovTipo, movCantidad, setMovCantidad,
         movMotivo, setMovMotivo, movCosto, setMovCosto,

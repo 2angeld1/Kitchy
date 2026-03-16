@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, Image, Modal, ActivityIndicator, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -9,47 +9,51 @@ import { lightTheme, darkTheme } from '../theme';
 import Toast from 'react-native-toast-message';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
-import { getGastos, deleteGasto } from '../services/api';
+import { useGastos } from '../hooks/useGastos';
 
 export default function GastosScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 
-    const [gastos, setGastos] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const {
+        gastos,
+        loading,
+        success,
+        error,
+        cargarGastos,
+        eliminarGastoItem,
+        exportarReporte,
+        clearStatus
+    } = useGastos();
 
-    const cargarGastos = async () => {
-        try {
-            const response = await getGastos();
-            setGastos(response.data);
-        } catch (error: any) {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudieron cargar los factores/gastos' });
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     useEffect(() => {
         cargarGastos();
-    }, []);
+    }, [cargarGastos]);
 
     const onRefresh = () => {
-        setRefreshing(true);
         cargarGastos();
     };
 
     const handleDelete = async (id: string) => {
-        try {
-            await deleteGasto(id);
-            Toast.show({ type: 'success', text1: 'Gasto eliminado', text2: 'Se eliminó correctamente.' });
-            cargarGastos();
-        } catch (error: any) {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo eliminar el gasto' });
+        await eliminarGastoItem(id);
+    };
+
+    useEffect(() => {
+        if (success) {
+            Toast.show({ type: 'success', text1: 'Éxito', text2: success });
+            clearStatus();
         }
+        if (error) {
+            Toast.show({ type: 'error', text1: 'Error', text2: error });
+            clearStatus();
+        }
+    }, [success, error]);
+
+    const handleExport = async () => {
+        await exportarReporte();
     };
 
     const renderItem = ({ item, index }: { item: any; index: number }) => {
@@ -82,27 +86,59 @@ export default function GastosScreen() {
                 )}
 
                 <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textPrimary, marginBottom: 4 }} numberOfLines={2}>
-                        {item.descripcion}
-                    </Text>
-                    <Text style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 4 }}>
-                        {new Date(item.fecha).toLocaleDateString()}
-                    </Text>
-                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.primary }}>
-                        ${item.monto?.toFixed(2) || '0.00'}
-                    </Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textPrimary, flex: 1 }} numberOfLines={1}>
+                            {item.proveedor || item.descripcion}
+                        </Text>
+                        <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary, marginLeft: 8 }}>
+                            ${item.monto?.toFixed(2) || '0.00'}
+                        </Text>
+                    </View>
+
+                    {item.nroFactura && (
+                        <Text style={{ fontSize: 11, color: colors.textSecondary, marginTop: 2 }}>
+                            Factura: <Text style={{ fontWeight: '600' }}>#{item.nroFactura}</Text>
+                        </Text>
+                    )}
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
+                        {item.ruc && (
+                            <View style={{ backgroundColor: colors.surface, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: colors.border }}>
+                                <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700' }}>RUC: {item.ruc}-{item.dv || '0'}</Text>
+                            </View>
+                        )}
+                        <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                            {new Date(item.fecha).toLocaleDateString()}
+                        </Text>
+                    </View>
+
+                    {item.itbms > 0 && (
+                        <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 4 }}>
+                            Incluye $ {item.itbms.toFixed(2)} de ITBMS (7%)
+                        </Text>
+                    )}
                 </View>
 
-                <TouchableOpacity onPress={() => handleDelete(item._id)} style={{ padding: 8 }}>
-                    <Ionicons name="trash-outline" size={22} color={colors.error} />
+                <TouchableOpacity onPress={() => handleDelete(item._id)} style={{ padding: 8, marginLeft: 8 }}>
+                    <Ionicons name="trash-outline" size={20} color={colors.error} />
                 </TouchableOpacity>
             </Animated.View>
         );
     };
 
+
+
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar title="Facturas y Gastos" onBack={() => navigation.goBack()} />
+            <KitchyToolbar 
+                title="Facturas y Gastos" 
+                onBack={() => navigation.goBack()} 
+                extraButtons={
+                    <TouchableOpacity onPress={handleExport} style={{ padding: 8 }}>
+                        <Ionicons name="download-outline" size={24} color={colors.primary} />
+                    </TouchableOpacity>
+                }
+            />
 
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -114,7 +150,7 @@ export default function GastosScreen() {
                     keyExtractor={(item) => item._id}
                     renderItem={renderItem}
                     contentContainerStyle={{ paddingVertical: 16 }}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+                    refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} tintColor={colors.primary} />}
                     ListEmptyComponent={
                         <View style={{ alignItems: 'center', marginTop: 50, paddingHorizontal: 30 }}>
                             <Ionicons name="receipt-outline" size={64} color={colors.textMuted} />

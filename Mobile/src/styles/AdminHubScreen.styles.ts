@@ -84,5 +84,27 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: colors.border,
+    },
+    // Modals
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        padding: spacing.xl,
+        maxHeight: '90%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.xl,
+    },
+    modalTitle: {
+        fontSize: typography.fontSize.lg,
+        fontFamily: typography.fontFamily.black,
     }
 });

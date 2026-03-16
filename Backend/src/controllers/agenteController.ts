@@ -32,25 +32,36 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
             );
 
             if (caitlynResponse.data.success) {
-                productosDetectados = caitlynResponse.data.productos;
-                console.log(`✅ Caitlyn detectó ${productosDetectados.length} productos`);
+                productosDetectados = caitlynResponse.data.productos || [];
+                const metadata = {
+                    proveedor: caitlynResponse.data.proveedor,
+                    ruc: caitlynResponse.data.ruc,
+                    dv: caitlynResponse.data.dv,
+                    fecha: caitlynResponse.data.fecha,
+                    nroFactura: caitlynResponse.data.nroFactura,
+                    subtotal: caitlynResponse.data.subtotal,
+                    itbms: caitlynResponse.data.itbms,
+                    total: caitlynResponse.data.total
+                };
+                console.log(`✅ Caitlyn detectó ${productosDetectados.length} productos y metadata de ${metadata.proveedor || 'proveedor desconocido'}`);
+                
+                return res.json({
+                    message: productosDetectados.length > 0
+                        ? `Caitlyn detectó ${productosDetectados.length} productos en tu factura`
+                        : 'Caitlyn detectó la factura pero no productos específicos.',
+                    items: productosDetectados,
+                    metadata
+                });
             } else {
                 caitlynError = caitlynResponse.data.error || 'Caitlyn no pudo procesar la factura';
                 console.warn('⚠️ Caitlyn respondió sin éxito:', caitlynError);
-                return res.status(400).json({ message: caitlynError }); // Fallar rapido si hay error
+                return res.status(400).json({ message: caitlynError });
             }
         } catch (caitlynErr: any) {
             caitlynError = caitlynErr.message || 'No se pudo contactar a Caitlyn';
             console.warn('⚠️ Error contactando a Caitlyn:', caitlynError);
             return res.status(500).json({ message: 'Error de conexión con IA', error: caitlynError });
         }
-
-        res.json({
-            message: productosDetectados.length > 0
-                ? `Caitlyn detectó ${productosDetectados.length} productos en tu factura`
-                : 'Caitlyn no detectó productos válidos.',
-            items: productosDetectados
-        });
 
     } catch (error: any) {
         console.error('Error al procesar factura con Caitlyn:', error);

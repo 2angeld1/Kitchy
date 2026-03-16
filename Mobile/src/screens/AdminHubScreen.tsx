@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Platform, Modal, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
@@ -11,8 +11,16 @@ import Toast from 'react-native-toast-message';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 
+import { useGastos } from '../hooks/useGastos';
+
 export default function AdminHubScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { exportarReporte } = useGastos();
+    
+    // States para reportes
+    const [showRangeModal, setShowRangeModal] = useState(false);
+    const [fechaDesde, setFechaDesde] = useState('');
+    const [fechaHasta, setFechaHasta] = useState('');
 
     const menuItems = [
         {
@@ -50,6 +58,20 @@ export default function AdminHubScreen() {
             desc: 'Ver Gastos',
             icon: 'receipt-outline',
             color: '#10b981'
+        },
+        {
+            id: 'finanzas',
+            title: 'Salud Financiera',
+            desc: 'Ingresos vs Gastos',
+            icon: 'analytics-outline',
+            color: '#f59e0b'
+        },
+        {
+            id: 'reportes',
+            title: 'Reportes CSV',
+            desc: 'Exportar para contador',
+            icon: 'cloud-download-outline',
+            color: '#6366f1'
         }
     ];
 
@@ -79,10 +101,19 @@ export default function AdminHubScreen() {
             navigation.navigate('Gastos');
             return;
         }
-        if (id === 'soporte') {
-            navigation.navigate('Soporte');
+        if (id === 'reportes') {
+            setShowRangeModal(true);
             return;
         }
+        if (id === 'finanzas') {
+            navigation.navigate('Finanzas');
+            return;
+        }
+    };
+
+    const handleExport = async (startDate?: string, endDate?: string) => {
+        setShowRangeModal(false);
+        await exportarReporte(startDate, endDate);
     };
 
     return (
@@ -159,6 +190,66 @@ export default function AdminHubScreen() {
                     </Animated.View>
                 </View>
             </ScrollView>
+            {/* Modal de Rango de Fechas para Reportes */}
+            <Modal visible={showRangeModal} transparent animationType="fade">
+                <View style={styles.modalOverlay}>
+                    <Animated.View entering={FadeInDown} style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Reporte Contable</Text>
+                            <TouchableOpacity onPress={() => setShowRangeModal(false)}>
+                                <Ionicons name="close-circle" size={32} color={colors.textMuted} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={{ color: colors.textSecondary, marginBottom: 20 }}>
+                            Selecciona el rango de fechas para el reporte CSV.
+                        </Text>
+
+                        <View style={{ gap: 16, marginBottom: 24 }}>
+                            <View>
+                                <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 8, fontWeight: '700' }}>DESDE (AAAA-MM-DD)</Text>
+                                <View style={{ backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: colors.border }}>
+                                    <TextInput 
+                                        style={{ color: colors.textPrimary, height: 50 }}
+                                        placeholder="2024-01-01"
+                                        placeholderTextColor={colors.textMuted}
+                                        value={fechaDesde}
+                                        onChangeText={setFechaDesde}
+                                    />
+                                </View>
+                            </View>
+
+                            <View>
+                                <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 8, fontWeight: '700' }}>HASTA (AAAA-MM-DD)</Text>
+                                <View style={{ backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: colors.border }}>
+                                    <TextInput 
+                                        style={{ color: colors.textPrimary, height: 50 }}
+                                        placeholder="2024-12-31"
+                                        placeholderTextColor={colors.textMuted}
+                                        value={fechaHasta}
+                                        onChangeText={setFechaHasta}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={{ gap: 10 }}>
+                            <TouchableOpacity 
+                                style={{ backgroundColor: colors.primary, height: 54, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }}
+                                onPress={() => handleExport(fechaDesde, fechaHasta)}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Generar Reporte Excel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={{ height: 54, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
+                                onPress={() => handleExport()}
+                            >
+                                <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Descargar Todo el Historial</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                </View>
+            </Modal>
         </View>
     );
 }

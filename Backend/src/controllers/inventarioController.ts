@@ -591,7 +591,7 @@ export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
 // Procesar un lote de productos (usado por Caitlyn / Importaciones rápidas)
 export const procesarLoteInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { items, imagen } = req.body;
+        const { items, imagen, metadata } = req.body;
         const userId = req.userId;
         const negocioId = req.negocioId;
 
@@ -611,18 +611,27 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
             console.log('📸 Subiendo factura a Cloudinary (Lote)...');
             try {
                 imageUrl = await uploadImage(imagen, 'facturas_caitlyn');
-                const montoTotal = items.reduce((sum: number, p: any) => sum + ((parseFloat(p.precioUnitario) || 0) * (parseFloat(p.cantidad) || 0)), 0);
+                
+                // Si hay metadata la usamos, si no calculamos del lote
+                const montoTotal = metadata?.total || items.reduce((sum: number, p: any) => sum + ((parseFloat(p.precioUnitario) || 0) * (parseFloat(p.cantidad) || 0)), 0);
+                
                 nuevoGasto = new Gasto({
-                    descripcion: `Factura: ${items.length} productos ingresados`,
+                    descripcion: metadata?.proveedor ? `Compra en ${metadata.proveedor}` : `Factura: ${items.length} productos ingresados`,
                     categoria: 'compras',
                     monto: montoTotal,
-                    fecha: new Date(),
+                    subtotal: metadata?.subtotal || montoTotal,
+                    itbms: metadata?.itbms || 0,
+                    proveedor: metadata?.proveedor,
+                    ruc: metadata?.ruc,
+                    dv: metadata?.dv,
+                    nroFactura: metadata?.nroFactura,
+                    fecha: metadata?.fecha ? new Date(metadata.fecha) : new Date(),
                     comprobante: imageUrl,
                     usuario: userId,
                     negocioId: negocioId
                 });
                 await nuevoGasto.save();
-                console.log('✅ Gasto creado con imagen:', imageUrl);
+                console.log('✅ Gasto creado con metadata:', metadata?.proveedor || 'Sin proveedor');
             } catch (imgError: any) {
                 console.error('Error al subir imagen o crear registro de gasto:', imgError);
                 // Si la imagen falla no petamos todo, pero lo avisamos.

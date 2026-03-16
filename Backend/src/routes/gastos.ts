@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { crearGasto, obtenerGastos, eliminarGasto } from '../controllers/gastoController';
+import { crearGasto, obtenerGastos, eliminarGasto, exportarGastosCsv } from '../controllers/gastoController';
 import { auth } from '../middleware/auth';
 
 const router = Router();
@@ -9,6 +9,7 @@ router.use(auth);
 
 // Rutas de Gastos
 router.get('/', obtenerGastos);
+router.get('/export', exportarGastosCsv);
 router.post('/', crearGasto);
 router.delete('/:id', eliminarGasto);
 

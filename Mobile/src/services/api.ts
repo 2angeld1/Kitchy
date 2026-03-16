@@ -52,6 +52,8 @@ export const register = (data: {
 }) => api.post('/auth/register', data);
 
 export const getDashboard = () => api.get('/dashboard');
+export const getSalesReport = (params?: any) => api.get('/dashboard/ventas', { params });
+export const getFinancialReport = (params?: any) => api.get('/dashboard/ganancias', { params });
 
 // Productos
 export const getProductos = (params?: any) => api.get('/productos', { params });
@@ -78,7 +80,7 @@ export const registrarMerma = (id: string, data: any) => api.post(`/inventario/$
 export const importarInventario = (data: any) => api.post('/inventario/importar', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
-export const procesarLoteInventario = (payload: { items: any[], imagen?: string }) => api.post('/inventario/lote', payload);
+export const procesarLoteInventario = (payload: { items: any[], imagen?: string, metadata?: any }) => api.post('/inventario/lote', payload);
 export const lookupProducto = (codigo: string) => api.get(`/inventario/lookup/${codigo}`);
 
 // Users
@@ -91,6 +93,7 @@ export const deleteUser = (id: string) => api.delete(`/users/${id}`);
 export const getGastos = (params?: any) => api.get('/gastos', { params });
 export const createGasto = (data: any) => api.post('/gastos', data);
 export const deleteGasto = (id: string) => api.delete(`/gastos/${id}`);
+export const exportGastosCsv = (params?: any) => api.get('/gastos/export', { params, responseType: 'blob' });
 
 // Negocios
 export const getNegocios = () => api.get('/negocios');
