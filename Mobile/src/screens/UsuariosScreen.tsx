@@ -40,6 +40,7 @@ export default function UsuariosScreen() {
 
     // Formulario de nuevo negocio
     const [newNegocioNombre, setNewNegocioNombre] = useState('');
+    const [newNegocioCategoria, setNewNegocioCategoria] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
 
     useEffect(() => {
         if (error) {
@@ -94,7 +95,10 @@ export default function UsuariosScreen() {
 
         setIsSubmittingNegocio(true);
         try {
-            const res = await createNegocio({ nombre: newNegocioNombre });
+            const res = await createNegocio({ 
+                nombre: newNegocioNombre,
+                categoria: newNegocioCategoria
+            });
             Toast.show({ type: 'success', text1: 'Éxito', text2: 'Negocio creado correctamente' });
             setShowCreateNegocioModal(false);
             setNewNegocioNombre('');
@@ -382,6 +386,34 @@ export default function UsuariosScreen() {
                                     value={newNegocioNombre}
                                     onChangeText={setNewNegocioNombre}
                                 />
+
+                                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 12, marginTop: 10 }}>¿Qué tipo de negocio es?</Text>
+                                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                                    <TouchableOpacity
+                                        onPress={() => setNewNegocioCategoria('COMIDA')}
+                                        style={{
+                                            flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center',
+                                            backgroundColor: newNegocioCategoria === 'COMIDA' ? 'rgba(225, 29, 72, 0.1)' : colors.surface,
+                                            borderWidth: 2,
+                                            borderColor: newNegocioCategoria === 'COMIDA' ? colors.primary : colors.border
+                                        }}
+                                    >
+                                        <Ionicons name="restaurant-outline" size={24} color={newNegocioCategoria === 'COMIDA' ? colors.primary : colors.textMuted} />
+                                        <Text style={{ color: newNegocioCategoria === 'COMIDA' ? colors.primary : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 12 }}>Comida</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => setNewNegocioCategoria('BELLEZA')}
+                                        style={{
+                                            flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center',
+                                            backgroundColor: newNegocioCategoria === 'BELLEZA' ? 'rgba(139, 92, 246, 0.1)' : colors.surface,
+                                            borderWidth: 2,
+                                            borderColor: newNegocioCategoria === 'BELLEZA' ? '#8b5cf6' : colors.border
+                                        }}
+                                    >
+                                        <Ionicons name="cut-outline" size={24} color={newNegocioCategoria === 'BELLEZA' ? '#8b5cf6' : colors.textMuted} />
+                                        <Text style={{ color: newNegocioCategoria === 'BELLEZA' ? '#8b5cf6' : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 12 }}>Belleza</Text>
+                                    </TouchableOpacity>
+                                </View>
                                 <Text style={[styles.inputHelper, { color: colors.textMuted }]}>
                                     * Este nuevo negocio tendrá inventario y ventas 100% independientes.
                                 </Text>

@@ -10,6 +10,7 @@ import MenuAppScreen from './src/screens/MenuAppScreen';
 import ConfiguracionMenuScreen from './src/screens/ConfiguracionMenuScreen';
 import GastosScreen from './src/screens/GastosScreen';
 import FinanzasScreen from './src/screens/FinanzasScreen';
+import ComisionesScreen from './src/screens/ComisionesScreen';
 import SoporteScreen from './src/screens/SoporteScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
@@ -52,6 +53,7 @@ export type RootStackParamList = {
   ConfiguracionMenu: undefined;
   Gastos: undefined;
   Finanzas: undefined;
+  Comisiones: undefined;
   Soporte: undefined;
 };
 
@@ -83,6 +85,7 @@ function RootNavigator() {
             <Stack.Screen name="ConfiguracionMenu" component={ConfiguracionMenuScreen} />
             <Stack.Screen name="Gastos" component={GastosScreen} />
             <Stack.Screen name="Finanzas" component={FinanzasScreen} />
+            <Stack.Screen name="Comisiones" component={ComisionesScreen} />
             <Stack.Screen name="Soporte" component={SoporteScreen} />
           </>
         ) : (

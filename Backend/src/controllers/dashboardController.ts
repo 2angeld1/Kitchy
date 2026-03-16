@@ -6,18 +6,46 @@ import MovimientoInventario from '../models/MovimientoInventario';
 import Producto from '../models/Producto';
 import User from '../models/User';
 import Gasto from '../models/Gasto';
+import Negocio from '../models/Negocio';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 
 // Dashboard general
 export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
     try {
+        const { periodo = 'mes' } = req.query;
         const hoy = new Date();
+        
+        // Rangos para métricas generales (se mantienen para el resto del dashboard)
         const inicioHoy = startOfDay(hoy);
         const finHoy = endOfDay(hoy);
         const inicioSemana = startOfWeek(hoy, { weekStartsOn: 1 });
         const finSemana = endOfWeek(hoy, { weekStartsOn: 1 });
         const inicioMes = startOfMonth(hoy);
         const finMes = endOfMonth(hoy);
+
+        // Dinamismo para el rango del dashboard/comisiones
+        let inicioFiltro = inicioMes;
+        let finFiltro = finMes;
+
+        switch(periodo) {
+            case 'hoy':
+                inicioFiltro = inicioHoy;
+                finFiltro = finHoy;
+                break;
+            case 'semana':
+                inicioFiltro = inicioSemana;
+                finFiltro = finSemana;
+                break;
+            case 'quincena':
+                // Últimos 15 días para ser prácticos
+                inicioFiltro = subDays(hoy, 15);
+                finFiltro = finHoy;
+                break;
+            case 'mes':
+                inicioFiltro = inicioMes;
+                finFiltro = finMes;
+                break;
+        }
 
         // Ventas del día
         const ventasHoy = await Venta.find({
@@ -219,6 +247,65 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             .sort({ createdAt: -1 })
             .limit(5);
 
+        // --- DASHBOARD ESPECÍFICO DE BELLEZA (COMISIONES) ---
+        let comisionesResumen = undefined;
+        const negocio = await Negocio.findById(req.negocioId);
+        
+        if (negocio?.categoria === 'BELLEZA') {
+            const config = negocio.comisionConfig || { porcentajeBarbero: 50, porcentajeDueno: 50, cortesPorCiclo: 5 };
+            
+            // Agrupar ventas por especialista del rango seleccionado
+            const comisionesData = await Venta.aggregate([
+                { 
+                    $match: { 
+                        negocioId: req.negocioId, 
+                        createdAt: { $gte: inicioFiltro, $lte: finFiltro },
+                        especialista: { $ne: null }
+                    } 
+                },
+                {
+                    $group: {
+                        _id: "$especialista",
+                        totalGenerado: { $sum: "$total" },
+                        cantidadServicios: { $sum: 1 }
+                    }
+                }
+            ]);
+
+            let totalEspecialistas = 0;
+            let totalDueno = 0;
+            let totalFacturadoRango = 0;
+
+            const especialistasDetalle = await Promise.all(comisionesData.map(async (item) => {
+                const espUser = await User.findById(item._id).select('nombre');
+                
+                const montoEspecialista = item.totalGenerado * (config.porcentajeBarbero / 100);
+                const montoDueno = item.totalGenerado * (config.porcentajeDueno / 100);
+
+                totalEspecialistas += montoEspecialista;
+                totalDueno += montoDueno;
+                totalFacturadoRango += item.totalGenerado;
+
+                return {
+                    id: item._id,
+                    nombre: espUser?.nombre || 'Desconocido',
+                    servicios: item.cantidadServicios,
+                    generado: item.totalGenerado,
+                    pago: montoEspecialista,
+                    eficiencia: (item.cantidadServicios / (periodo === 'hoy' ? 1 : periodo === 'semana' ? 7 : 15)).toFixed(1)
+                };
+            }));
+
+            comisionesResumen = {
+                periodo: periodo,
+                totalGenerado: totalFacturadoRango,
+                pagoEspecialistas: totalEspecialistas,
+                pagoDueno: totalDueno,
+                totalServicios: comisionesData.reduce((sum: number, d: any) => sum + d.cantidadServicios, 0),
+                especialistas: especialistasDetalle
+            };
+        }
+
         res.json({
             ventas: {
                 hoy: { total: totalVentasHoy, cantidad: ventasHoy.length },
@@ -250,6 +337,7 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                 calificacion: minutosAhorrados > 500 ? 'Pro' : minutosAhorrados > 100 ? 'Eficiente' : 'Iniciado'
             },
             historico,
+            comisiones: comisionesResumen,
             productosMasVendidos,
             ventasUltimos7Dias
         });

@@ -39,7 +39,7 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Por favor ingresa usuario y contraseña' });
         }
 
-        const user = await User.findOne({ email }).populate('negocioIds', 'nombre logo tipo');
+        const user = await User.findOne({ email }).populate('negocioIds', 'nombre logo tipo categoria');
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
@@ -58,7 +58,7 @@ export const login = async (req: Request, res: Response) => {
         );
 
         // Populate para que el frontend tenga los nombres de los negocios
-        await user.populate('negocioIds', 'nombre logo tipo');
+        await user.populate('negocioIds', 'nombre logo tipo categoria');
 
         res.json({
             success: true,
@@ -80,7 +80,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { email, password, nombre, negocioNombre, tipoNegocio, direccion, telefono, logo } = req.body;
+        const { email, password, nombre, negocioNombre, tipoNegocio, categoriaNegocio, direccion, telefono, logo } = req.body;
 
         if (!email || !password || !nombre || !negocioNombre) {
             return res.status(400).json({ message: 'Nombre, email, contraseña y nombre del negocio son obligatorios' });
@@ -111,6 +111,7 @@ export const register = async (req: Request, res: Response) => {
         const negocio = new Negocio({
             nombre: negocioNombre,
             tipo: tipoNegocio || 'comida',
+            categoria: categoriaNegocio || 'COMIDA',
             propietario: savedUser._id,
             direccion,
             telefono,
@@ -132,7 +133,7 @@ export const register = async (req: Request, res: Response) => {
             { expiresIn: '30d' } as SignOptions
         );
 
-        await savedUser.populate('negocioIds', 'nombre logo tipo');
+        await savedUser.populate('negocioIds', 'nombre logo tipo categoria');
 
         res.status(201).json({
             success: true,

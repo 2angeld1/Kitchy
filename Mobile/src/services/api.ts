@@ -49,9 +49,10 @@ export const register = (data: {
     direccion?: string;
     telefono?: string;
     logo?: string;
+    categoriaNegocio?: string;
 }) => api.post('/auth/register', data);
 
-export const getDashboard = () => api.get('/dashboard');
+export const getDashboard = (params?: { periodo?: string }) => api.get('/dashboard', { params });
 export const getSalesReport = (params?: any) => api.get('/dashboard/ventas', { params });
 export const getFinancialReport = (params?: any) => api.get('/dashboard/ganancias', { params });
 
@@ -99,6 +100,11 @@ export const exportGastosCsv = (params?: any) => api.get('/gastos/export', { par
 export const getNegocios = () => api.get('/negocios');
 export const createNegocio = (data: any) => api.post('/negocios', data);
 export const switchNegocio = (negocioId: string) => api.put(`/negocios/switch/${negocioId}`);
+
+// Comisiones (Belleza)
+export const getComisiones = (params?: any) => api.get('/comisiones', { params });
+export const updateComisionConfig = (data: { porcentajeBarbero: number, porcentajeDueno: number, cortesPorCiclo: number }) => 
+    api.put('/negocios/config-comisiones', data);
 
 // Configuración Pública
 export const getMenuConfig = () => api.get('/menu-config');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Platform, Modal, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,70 +10,90 @@ import { styles } from '../styles/AdminHubScreen.styles';
 import Toast from 'react-native-toast-message';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 import { useGastos } from '../hooks/useGastos';
 
 export default function AdminHubScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { exportarReporte } = useGastos();
+    const { user } = useAuth();
+
+    // Detectar categoría del negocio activo
+    const categoriaNegocio = useMemo(() => {
+        const negocios = (user as any)?.negocioIds || [];
+        const activo = negocios.find((n: any) => n._id === user?.negocioActivo) || negocios[0];
+        return activo?.categoria || 'COMIDA';
+    }, [user]);
     
     // States para reportes
     const [showRangeModal, setShowRangeModal] = useState(false);
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
 
-    const menuItems = [
-        {
-            id: 'productos',
-            title: 'Productos',
-            desc: 'Gestionar catálogo',
-            icon: 'fast-food-outline',
-            color: lightTheme.primary
-        },
-        {
-            id: 'usuarios',
-            title: 'Usuarios',
-            desc: 'Cajeros y Meseros',
-            icon: 'people-outline',
-            color: '#3b82f6'
-        },
-        {
-            id: 'menu',
-            title: 'Menú Público',
-            desc: 'Próximamente',
-            icon: 'qr-code-outline',
-            color: '#f59e0b',
-            disabled: true
-        },
-        {
-            id: 'soporte',
-            title: 'Soporte',
-            desc: 'Ayuda técnica',
-            icon: 'headset-outline',
-            color: '#6366f1'
-        },
-        {
-            id: 'gastos',
-            title: 'Facturas',
-            desc: 'Ver Gastos',
-            icon: 'receipt-outline',
-            color: '#10b981'
-        },
-        {
-            id: 'finanzas',
-            title: 'Salud Financiera',
-            desc: 'Ingresos vs Gastos',
-            icon: 'analytics-outline',
-            color: '#f59e0b'
-        },
-        {
-            id: 'reportes',
-            title: 'Reportes CSV',
-            desc: 'Exportar para contador',
-            icon: 'cloud-download-outline',
-            color: '#6366f1'
+    const menuItems = useMemo(() => {
+        const esBelleza = categoriaNegocio === 'BELLEZA';
+        const items = [
+            {
+                id: 'productos',
+                title: esBelleza ? 'Especialistas' : 'Productos',
+                desc: esBelleza ? 'Barberos y Estilistas' : 'Gestionar catálogo',
+                icon: esBelleza ? 'people-circle-outline' : 'fast-food-outline',
+                color: lightTheme.primary
+            },
+            {
+                id: 'usuarios',
+                title: 'Usuarios',
+                desc: esBelleza ? 'Recepcionistas' : 'Cajeros y Meseros',
+                icon: 'people-outline',
+                color: '#3b82f6'
+            },
+            {
+                id: 'gastos',
+                title: 'Facturas',
+                desc: 'Ver Gastos',
+                icon: 'receipt-outline',
+                color: '#10b981'
+            },
+            {
+                id: 'finanzas',
+                title: 'Salud Financiera',
+                desc: 'Ingresos vs Gastos',
+                icon: 'analytics-outline',
+                color: '#f59e0b'
+            },
+        ];
+
+        // Solo para BELLEZA: Comisiones
+        if (esBelleza) {
+            items.push({
+                id: 'comisiones',
+                title: 'Comisiones',
+                desc: 'Reparto 50/50',
+                icon: 'cash-outline',
+                color: '#8b5cf6'
+            });
         }
-    ];
+
+        items.push(
+            {
+                id: 'reportes',
+                title: 'Reportes CSV',
+                desc: 'Exportar para contador',
+                icon: 'cloud-download-outline',
+                color: '#6366f1'
+            },
+            {
+                id: 'soporte',
+                title: 'Soporte',
+                desc: 'Ayuda técnica',
+                icon: 'headset-outline',
+                color: '#6366f1'
+            }
+        );
+
+        return items;
+    }, [categoriaNegocio]);
 
     const { isDark, toggleTheme } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
@@ -107,6 +127,10 @@ export default function AdminHubScreen() {
         }
         if (id === 'finanzas') {
             navigation.navigate('Finanzas');
+            return;
+        }
+        if (id === 'comisiones') {
+            navigation.navigate('Comisiones');
             return;
         }
     };
@@ -154,11 +178,10 @@ export default function AdminHubScreen() {
                             <TouchableOpacity
                                 style={[
                                     styles.hubCard,
-                                    { backgroundColor: colors.card, borderColor: colors.border },
-                                    item.disabled && { opacity: 0.5 }
+                                    { backgroundColor: colors.card, borderColor: colors.border }
                                 ]}
-                                onPress={() => handlePress(item.id, item.title, item.disabled)}
-                                activeOpacity={item.disabled ? 1 : 0.7}
+                                onPress={() => handlePress(item.id, item.title)}
+                                activeOpacity={0.7}
                             >
                                 <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
                                     <Ionicons name={item.icon as any} size={28} color={item.color} />

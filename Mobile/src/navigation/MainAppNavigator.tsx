@@ -2,6 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/DashboardScreen';
+import BellezaDashboardScreen from '../screens/BellezaDashboardScreen';
 import AdminHubScreen from '../screens/AdminHubScreen';
 import VentasScreen from '../screens/VentasScreen';
 import InventarioScreen from '../screens/InventarioScreen';
@@ -20,8 +21,10 @@ export type MainTabParamList = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainAppNavigator() {
-    const { isAdmin } = useAuth();
+    const { isAdmin, user } = useAuth();
     const { isDark } = useTheme();
+
+    const categoria = typeof user?.negocioActivo === 'object' ? user?.negocioActivo?.categoria : 'COMIDA';
 
     // Explicit theme colors based on context
     const colors = isDark ? darkTheme : lightTheme;
@@ -67,7 +70,7 @@ export default function MainAppNavigator() {
         >
             <Tab.Screen
                 name="Dashboard"
-                component={DashboardScreen}
+                component={categoria === 'BELLEZA' ? BellezaDashboardScreen : DashboardScreen}
                 options={{ tabBarLabel: 'Inicio' }}
             />
             <Tab.Screen

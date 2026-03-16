@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, Negocio } from '../context/AuthContext';
 import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/KitchyToolbar.styles';
 import { NotificationModal } from './NotificationModal';
@@ -30,6 +30,9 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     const [showNotif, setShowNotif] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+    // Helper to get active business data safely
+    const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo as Negocio : null;
 
     // Explicit theme colors based on context
     const colors = isDark ? darkTheme : lightTheme;
@@ -94,7 +97,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
                     {user?.negocioActivo && title === 'Dashboard' && (
                         <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: -2, textTransform: 'uppercase' }}>
-                            Mi Sucursal
+                            {negocioActual?.categoria === 'BELLEZA' ? 'Mi Local' : 'Mi Sucursal'}
                         </Text>
                     )}
                 </View>
@@ -153,7 +156,9 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     <View style={{ width: 200, backgroundColor: colors.card, borderRadius: 16, padding: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 8, borderWidth: 1, borderColor: colors.border }}>
                         <View style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.border, marginBottom: 4 }}>
                             <Text style={{ fontSize: 14, fontWeight: '900', color: colors.textPrimary }}>Mi Cuenta</Text>
-                            <Text style={{ fontSize: 11, fontWeight: '500', color: colors.textSecondary, marginTop: 2 }}>{isDark ? 'Administrador' : 'Administrador'}</Text>
+                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary, marginTop: 2, textTransform: 'uppercase' }}>
+                                {negocioActual?.nombre || 'Administrador'}
+                            </Text>
                         </View>
 
                         <TouchableOpacity
@@ -187,7 +192,9 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
                         <View style={{ width: '100%', backgroundColor: colors.card, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 15 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                                <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary }}>Mis Negocios</Text>
+                                <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary }}>
+                                    {negocioActual?.categoria === 'BELLEZA' ? 'Mis Locales' : 'Mis Negocios'}
+                                </Text>
                                 <TouchableOpacity onPress={() => setShowSwitchModal(false)}>
                                     <Ionicons name="close-circle" size={28} color={colors.textMuted} />
                                 </TouchableOpacity>

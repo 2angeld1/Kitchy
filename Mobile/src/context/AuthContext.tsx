@@ -2,13 +2,21 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api, { login as apiLogin, register as apiRegister } from '../services/api';
 
+export interface Negocio {
+    _id: string;
+    nombre: string;
+    logo?: string;
+    tipo: string;
+    categoria: 'COMIDA' | 'BELLEZA';
+}
+
 interface User {
     id: string;
     email: string;
     nombre: string;
     rol: 'admin' | 'usuario';
-    negocioIds?: string[];
-    negocioActivo?: string;
+    negocioIds?: (string | Negocio)[];
+    negocioActivo?: string | Negocio;
 }
 
 interface AuthContextType {
@@ -25,6 +33,7 @@ interface AuthContextType {
         direccion?: string;
         telefono?: string;
         logo?: string;
+        categoriaNegocio?: string;
     }) => Promise<void>;
     logout: () => void;
     switchNegocioContext: (newUserContext: User, newToken: string) => Promise<void>;
@@ -78,6 +87,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         direccion?: string;
         telefono?: string;
         logo?: string;
+        categoriaNegocio?: string;
     }) => {
         const response = await apiRegister(data);
         const { token: newToken, user: userData } = response.data;

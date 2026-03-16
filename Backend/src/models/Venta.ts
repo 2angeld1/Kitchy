@@ -14,6 +14,7 @@ export interface IVenta extends Document {
     metodoPago: 'efectivo' | 'tarjeta' | 'yappy' | 'otro';
     usuario: mongoose.Types.ObjectId;
     negocioId: mongoose.Types.ObjectId;
+    especialista?: mongoose.Types.ObjectId;
     cliente?: string;
     notas?: string;
     createdAt?: Date;
@@ -85,6 +86,10 @@ const VentaSchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Negocio',
         required: true
+    },
+    especialista: {
+        type: Schema.Types.ObjectId,
+        ref: 'Producto'
     }
 }, {
     timestamps: true

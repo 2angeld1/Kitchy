@@ -40,9 +40,23 @@ export interface DashboardData {
     };
     productosMasVendidos: { nombre: string; cantidad: number; total: number }[];
     ventasUltimos7Dias: { fecha: string; total: number; cantidad: number }[];
+    comisiones?: {
+        totalGenerado: number;
+        pagoEspecialistas: number;
+        pagoDueno: number;
+        totalServicios: number;
+        especialistas: {
+            id: string;
+            nombre: string;
+            servicios: number;
+            generado: number;
+            pago: number;
+            eficiencia: string;
+        }[];
+    };
 }
 
-export const useDashboard = () => {
+export const useDashboard = (periodo = 'mes') => {
     const { user } = useAuth();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(false);
@@ -57,7 +71,7 @@ export const useDashboard = () => {
         }
 
         try {
-            const response = await getDashboard();
+            const response = await getDashboard({ periodo });
             setData(response.data);
             setError('');
         } catch (err: any) {
@@ -74,7 +88,7 @@ export const useDashboard = () => {
             cargarDashboard();
             const interval = setInterval(() => cargarDashboard(true), 15000); // 15 seg es más que suficiente
             return () => clearInterval(interval);
-        }, [user?.negocioActivo])
+        }, [user?.negocioActivo, periodo])
     );
 
     const onRefresh = useCallback(async () => {

@@ -5,9 +5,15 @@ export interface INegocio extends Document {
     ruc?: string;
     logo?: string;
     tipo: 'comida' | 'bebida' | 'postre' | 'otro';
+    categoria: 'COMIDA' | 'BELLEZA';
     config: {
         moneda: string;
         impuesto: number;
+    };
+    comisionConfig?: {
+        porcentajeBarbero: number;
+        porcentajeDueno: number;
+        cortesPorCiclo: number;
     };
     direccion?: string;
     telefono?: string;
@@ -45,9 +51,19 @@ const negocioSchema = new Schema({
         enum: ['comida', 'bebida', 'postre', 'otro'],
         default: 'comida'
     },
+    categoria: {
+        type: String,
+        enum: ['COMIDA', 'BELLEZA'],
+        default: 'COMIDA'
+    },
     config: {
         moneda: { type: String, default: 'USD' },
         impuesto: { type: Number, default: 0.07 }
+    },
+    comisionConfig: {
+        porcentajeBarbero: { type: Number, default: 50 },
+        porcentajeDueno: { type: Number, default: 50 },
+        cortesPorCiclo: { type: Number, default: 5 }
     },
     propietario: {
         type: Schema.Types.ObjectId,

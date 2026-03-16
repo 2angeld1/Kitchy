@@ -15,6 +15,7 @@ export const useRegister = () => {
     const [direccion, setDireccion] = useState('');
     const [telefono, setTelefono] = useState('');
     const [logo, setLogo] = useState('');
+    const [categoriaNegocio, setCategoriaNegocio] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
     const [loading, setLoading] = useState(false);
     const [gpsLoading, setGpsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -194,7 +195,8 @@ export const useRegister = () => {
                 negocioNombre,
                 direccion,
                 telefono,
-                logo
+                logo,
+                categoriaNegocio
             });
             Toast.show({
                 type: 'success',
@@ -237,6 +239,8 @@ export const useRegister = () => {
         seleccionarImagen,
         obtenerUbicacionGps,
         gpsLoading,
+        categoriaNegocio,
+        setCategoriaNegocio,
         loading,
         error,
         setError,

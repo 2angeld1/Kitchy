@@ -8,7 +8,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 // Conseguir los negocios del usuario actual
 export const getUserNegocios = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo config pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart');
+        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart');
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -22,7 +22,7 @@ export const getUserNegocios = async (req: AuthRequest, res: Response) => {
 // Crear un nuevo negocio (solo admin)
 export const createNegocio = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, tipo, direccion, telefono, logo } = req.body;
+        const { nombre, tipo, categoria, direccion, telefono, logo } = req.body;
 
         if (!nombre) {
             return res.status(400).json({ message: 'El nombre del negocio es obligatorio' });
@@ -42,6 +42,7 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
         const nuevoNegocio = new Negocio({
             nombre,
             tipo: tipo || 'comida',
+            categoria: categoria || 'COMIDA',
             propietario: user._id,
             direccion,
             telefono,
@@ -64,7 +65,7 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
         );
 
         // Populate para que el usuario tenga los objetos negocio completos
-        await user.populate('negocioIds', 'nombre logo tipo');
+        await user.populate('negocioIds', 'nombre logo tipo categoria');
 
         res.status(201).json({
             success: true,
@@ -113,7 +114,7 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
 
         // Retornamos el user completo con los negocios parseados si es necesario, 
         // pero basta con actualizar token y context allá
-        await user.populate('negocioIds', 'nombre logo tipo');
+        await user.populate('negocioIds', 'nombre logo tipo categoria');
 
         res.json({
             success: true,
@@ -131,5 +132,34 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
     } catch (error) {
         console.error('Error switching negocio:', error);
         res.status(500).json({ message: 'Error al cambiar de negocio' });
+    }
+};
+
+// Actualizar configuración de comisiones (solo para BELLEZA)
+export const updateComisionConfig = async (req: AuthRequest, res: Response) => {
+    try {
+        const { porcentajeBarbero, porcentajeDueno, cortesPorCiclo } = req.body;
+
+        const negocio = await Negocio.findById(req.negocioId);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+
+        negocio.comisionConfig = {
+            porcentajeBarbero: Number(porcentajeBarbero),
+            porcentajeDueno: Number(porcentajeDueno),
+            cortesPorCiclo: Number(cortesPorCiclo)
+        };
+
+        await negocio.save();
+
+        res.json({
+            success: true,
+            message: 'Configuración de comisiones actualizada',
+            config: negocio.comisionConfig
+        });
+    } catch (error) {
+        console.error('Error updating comision config:', error);
+        res.status(500).json({ message: 'Error al actualizar configuración' });
     }
 };
