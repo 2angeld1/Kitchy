@@ -34,15 +34,17 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
 
             if (caitlynResponse.data.success) {
                 productosDetectados = caitlynResponse.data.productos || [];
+                const fiscal = caitlynResponse.data.fiscal || {};
                 const metadata = {
-                    proveedor: caitlynResponse.data.proveedor,
-                    ruc: caitlynResponse.data.ruc,
-                    dv: caitlynResponse.data.dv,
-                    fecha: caitlynResponse.data.fecha,
-                    nroFactura: caitlynResponse.data.nroFactura,
-                    subtotal: caitlynResponse.data.subtotal,
-                    itbms: caitlynResponse.data.itbms,
-                    total: caitlynResponse.data.total
+                    proveedor: fiscal.proveedor,
+                    ruc: fiscal.ruc,
+                    dv: fiscal.dv,
+                    fecha: fiscal.fecha,
+                    receptor: fiscal.receptor,
+                    nroFactura: fiscal.nroFactura,
+                    subtotal: fiscal.subtotal,
+                    itbms: fiscal.itbms,
+                    total: fiscal.total
                 };
                 console.log(`✅ Caitlyn detectó ${productosDetectados.length} productos y metadata de ${metadata.proveedor || 'proveedor desconocido'}`);
                 

@@ -462,7 +462,7 @@ export default function InventarioScreen() {
 
                                     <View style={{ flexDirection: 'row', gap: 10 }}>
                                         <View style={{ flex: 2 }}>
-                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RUC</Text>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RUC EMISOR</Text>
                                             <TextInput 
                                                 style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
                                                 value={invoiceMetadata.ruc}
@@ -487,7 +487,30 @@ export default function InventarioScreen() {
                                                 style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
                                                 value={invoiceMetadata.nroFactura}
                                                 onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, nroFactura: text })}
-                                                placeholder="000-000-000"
+                                                placeholder="000"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>FECHA EMISIÓN</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.fecha}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, fecha: text })}
+                                                placeholder="YYYY-MM-DD"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 2 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RECEPTOR (CLIENTE)</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.receptor}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, receptor: text })}
+                                                placeholder="Consumidor Final"
                                                 placeholderTextColor={colors.textMuted}
                                             />
                                         </View>
