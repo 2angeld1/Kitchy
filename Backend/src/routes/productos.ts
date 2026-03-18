@@ -9,7 +9,9 @@ import {
     eliminarProducto,
     toggleDisponibilidad,
     obtenerCategorias,
-    importarProductosCsv
+    importarProductosCsv,
+    obtenerCosteoProducto,
+    autoAdjustMargin
 } from '../controllers/productoController';
 
 const router = Router();
@@ -28,5 +30,7 @@ router.post('/', crearProducto);
 router.put('/:id', actualizarProducto);
 router.delete('/:id', eliminarProducto);
 router.patch('/:id/disponibilidad', toggleDisponibilidad);
+router.get('/:id/costeo', obtenerCosteoProducto);
+router.patch('/:id/auto-ajustar-precio', autoAdjustMargin);
 
 export default router;

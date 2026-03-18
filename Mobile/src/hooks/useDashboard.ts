@@ -18,6 +18,15 @@ export interface DashboardData {
         itemsVenciendo: number;
         totalItems: number;
         productosEnRiesgo: { id: string; nombre: string; ingredientesFaltantes: string[] }[];
+        alertasRentabilidad: {
+            id: string;
+            nombre: string;
+            margenActual: string;
+            margenObjetivo: number;
+            precioActual: number;
+            precioSugerido: string;
+            costoTotal: string;
+        }[];
     };
     finanzas: {
         ingresosMes: string;
@@ -42,7 +51,7 @@ export interface DashboardData {
     ventasUltimos7Dias: { fecha: string; total: number; cantidad: number }[];
 }
 
-export const useDashboard = () => {
+export const useDashboard = (caitlynAdvice?: string | null) => {
     const { user } = useAuth();
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(false);
@@ -115,8 +124,18 @@ export const useDashboard = () => {
             });
         }
 
+        if (caitlynAdvice) {
+            notifs.unshift({
+                id: 'caitlyn-ai-insight',
+                title: 'Caitlyn AI',
+                message: caitlynAdvice,
+                time: 'Ahora',
+                type: 'ai'
+            });
+        }
+
         return notifs;
-    }, [data]);
+    }, [data, caitlynAdvice]);
 
     return {
         data,

@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { uploadImage } from '../utils/imageUpload';
+import Producto from '../models/Producto';
 import Gasto from '../models/Gasto';
 import axios from 'axios';
 
@@ -66,5 +67,63 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
     } catch (error: any) {
         console.error('Error al procesar factura con Caitlyn:', error);
         res.status(500).json({ message: 'Error interno al procesar la factura', error: error.message });
+    }
+};
+
+/**
+ * Endpoint para que Caitlyn consulte el costeo de un producto por nombre
+ */
+export const consultarCosteoPorNombre = async (req: AuthRequest, res: Response) => {
+    try {
+        const { nombre } = req.params;
+        const negocioId = req.negocioId;
+
+        // Buscar producto por nombre (regex para flexibilidad)
+        const producto = await Producto.findOne({ 
+            nombre: new RegExp(nombre, 'i'), 
+            negocioId 
+        }).populate('ingredientes.inventario');
+
+        if (!producto) {
+            return res.status(404).json({ message: 'No encontré ese producto en tu menú.' });
+        }
+
+        // Lógica de cálculo (reutilizando la del productoController)
+        let costoTotal = 0;
+        const desglose = [];
+
+        if (producto.ingredientes && producto.ingredientes.length > 0) {
+            for (const ing of producto.ingredientes) {
+                const inv = ing.inventario as any;
+                if (inv) {
+                    const costoIngrediente = inv.costoUnitario * ing.cantidad;
+                    costoTotal += costoIngrediente;
+                    desglose.push({
+                        insumo: inv.nombre,
+                        cantidad: ing.cantidad,
+                        unidad: inv.unidad,
+                        subtotal: costoIngrediente
+                    });
+                }
+            }
+        }
+
+        const margenActual = producto.precio > 0 ? ((producto.precio - costoTotal) / producto.precio) * 100 : 0;
+
+        res.json({
+            nombre: producto.nombre,
+            precioActual: producto.precio,
+            costoTotal: costoTotal.toFixed(2),
+            margenActual: margenActual.toFixed(1) + '%',
+            desglose,
+            sugerencias: {
+                ideal: (costoTotal / 0.35).toFixed(2), // 65% margen
+                competitivo: (costoTotal / 0.40).toFixed(2) // 60% margen
+            }
+        });
+
+    } catch (error: any) {
+        console.error('Error en consulta de costeo para Caitlyn:', error);
+        res.status(500).json({ message: 'Error al obtener costeo del producto', error: error.message });
     }
 };

@@ -133,3 +133,27 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error al cambiar de negocio' });
     }
 };
+
+// Actualizar configuración del negocio (como el margen objetivo)
+export const updateConfig = async (req: AuthRequest, res: Response) => {
+    try {
+        const { margenObjetivo, impuesto, moneda } = req.body;
+        const negocioId = req.negocioId;
+
+        const negocio = await Negocio.findById(negocioId);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+
+        if (margenObjetivo !== undefined) negocio.config.margenObjetivo = margenObjetivo;
+        if (impuesto !== undefined) negocio.config.impuesto = impuesto;
+        if (moneda !== undefined) negocio.config.moneda = moneda;
+
+        await negocio.save();
+
+        res.json({ message: 'Configuración actualizada', config: negocio.config });
+    } catch (error) {
+        console.error('Error updating config:', error);
+        res.status(500).json({ message: 'Error al actualizar configuración del negocio' });
+    }
+};

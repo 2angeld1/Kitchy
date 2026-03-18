@@ -4,10 +4,11 @@ export interface INegocio extends Document {
     nombre: string;
     ruc?: string;
     logo?: string;
-    tipo: 'comida' | 'bebida' | 'postre' | 'otro';
+    categoria: 'COMIDA' | 'BELLEZA';
     config: {
         moneda: string;
         impuesto: number;
+        margenObjetivo: number;
     };
     direccion?: string;
     telefono?: string;
@@ -40,14 +41,15 @@ const negocioSchema = new Schema({
     logo: {
         type: String
     },
-    tipo: {
+    categoria: {
         type: String,
-        enum: ['comida', 'bebida', 'postre', 'otro'],
-        default: 'comida'
+        enum: ['COMIDA', 'BELLEZA'],
+        default: 'COMIDA'
     },
     config: {
         moneda: { type: String, default: 'USD' },
-        impuesto: { type: Number, default: 0.07 }
+        impuesto: { type: Number, default: 0.07 },
+        margenObjetivo: { type: Number, default: 65 }
     },
     propietario: {
         type: Schema.Types.ObjectId,

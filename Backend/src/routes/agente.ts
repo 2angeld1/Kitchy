@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import { procesarFactura } from '../controllers/agenteController';
+import { procesarFactura, consultarCosteoPorNombre } from '../controllers/agenteController';
 
 const router = Router();
 
@@ -12,5 +12,6 @@ router.use(auth);
  * @desc Sube una foto de factura para que Caitlyn la analice
  */
 router.post('/factura', procesarFactura);
+router.get('/costeo/:nombre', consultarCosteoPorNombre);
 
 export default router;

@@ -57,10 +57,12 @@ export const getFinancialReport = (params?: any) => api.get('/dashboard/ganancia
 
 // Productos
 export const getProductos = (params?: any) => api.get('/productos', { params });
+export const getProductCosting = (id: string) => api.get(`/productos/${id}/costeo`);
 export const createProducto = (data: any) => api.post('/productos', data);
 export const updateProducto = (id: string, data: any) => api.put(`/productos/${id}`, data);
 export const deleteProducto = (id: string) => api.delete(`/productos/${id}`);
 export const toggleDisponibilidad = (id: string) => api.patch(`/productos/${id}/disponibilidad`);
+export const autoAjustarPrecio = (id: string) => api.patch(`/productos/${id}/auto-ajustar-precio`);
 export const importarProductos = (data: any) => api.post('/productos/importar', data, {
     headers: { 'Content-Type': 'multipart/form-data' }
 });
@@ -99,6 +101,7 @@ export const exportGastosCsv = (params?: any) => api.get('/gastos/export', { par
 export const getNegocios = () => api.get('/negocios');
 export const createNegocio = (data: any) => api.post('/negocios', data);
 export const switchNegocio = (negocioId: string) => api.put(`/negocios/switch/${negocioId}`);
+export const updateNegocioConfig = (data: any) => api.put('/negocios/config', data);
 
 // Configuración Pública
 export const getMenuConfig = () => api.get('/menu-config');
