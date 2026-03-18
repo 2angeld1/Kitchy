@@ -26,8 +26,12 @@ export const useCaitlyn = () => {
                 setError(response.data.message || 'Caitlyn no pudo analizar este producto.');
             }
         } catch (err: any) {
-            console.error('Error consultando a Caitlyn:', err);
-            setError('No se pudo conectar con el cerebro de Caitlyn.');
+            if (err.message === 'Network Error') {
+                setError('Caitlyn está fuera de línea temporalmente. (Servicio no disponible)');
+            } else {
+                console.error('Error consultando a Caitlyn:', err);
+                setError('No se pudo conectar con el cerebro de Caitlyn.');
+            }
         } finally {
             setLoading(false);
         }
@@ -51,8 +55,12 @@ export const useCaitlyn = () => {
                 setError(response.data.message || 'Caitlyn no pudo analizar las alertas.');
             }
         } catch (err: any) {
-            console.error('Error enviando alertas a Caitlyn:', err);
-            setError('No se pudo conectar con el cerebro de Caitlyn.');
+            if (err.message === 'Network Error') {
+                setError('IA no disponible en este momento. Caitlyn está en un descanso.');
+            } else {
+                console.error('Error enviando alertas a Caitlyn:', err);
+                setError('Caitlyn está teniendo dificultades técnicas.');
+            }
         } finally {
             setLoading(false);
         }

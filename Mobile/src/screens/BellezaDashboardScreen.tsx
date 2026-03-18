@@ -7,7 +7,7 @@ import { useDashboard } from '../hooks/useDashboard';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
-import { styles, cardWidth } from '../styles/DashboardScreen.styles';
+import { createStyles, cardWidth } from '../styles/DashboardScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 import Toast from 'react-native-toast-message';
@@ -34,6 +34,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
 
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+    const styles = React.useMemo(() => createStyles(colors), [colors]);
 
     const periodos = [
         { id: 'hoy', label: 'Hoy' },
@@ -173,25 +174,33 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
 
                                 <View style={styles.listContainer}>
                                     {data.comisiones?.especialistas && data.comisiones.especialistas.length > 0 ? (
-                                        data.comisiones.especialistas.sort((a,b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => (
-                                            <View key={esp.id} style={[styles.glassListItem, { borderBottomColor: idx === data.comisiones!.especialistas.length - 1 ? 'transparent' : colors.border }]}>
-                                                <View style={[styles.listItemRank, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-                                                    <Text style={[styles.listItemRankText, { color: colors.textPrimary }]}>{idx + 1}</Text>
+                                        data.comisiones.especialistas.sort((a,b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => {
+                                            const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+                                            const isTop3 = idx < 3;
+                                            const rankColor = isTop3 ? rankColors[idx] : colors.textPrimary;
+
+                                            return (
+                                                <View key={esp.id} style={[styles.glassListItem, { borderBottomColor: idx === data.comisiones!.especialistas.length - 1 ? 'transparent' : colors.border }]}>
+                                                    <View style={[styles.listItemRank, isTop3 && { borderColor: rankColor, backgroundColor: rankColor + '10' }]}>
+                                                        <Text style={[styles.listItemRankText, { color: isTop3 ? rankColor : colors.textPrimary }]}>{idx + 1}</Text>
+                                                    </View>
+                                                    <View style={styles.listItemInfo}>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                            <Text style={[styles.listItemTitle, { color: colors.textPrimary }]}>{esp.nombre}</Text>
+                                                            {idx === 0 && <Ionicons name="medal" size={14} color="#FFD700" />}
+                                                        </View>
+                                                        <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>
+                                                            {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día
+                                                        </Text>
+                                                    </View>
+                                                    <View 
+                                                        style={[styles.listItemRightBadge, { backgroundColor: isTop3 ? rankColor + '15' : 'rgba(139, 92, 246, 0.1)' }]}
+                                                    >
+                                                        <Text style={[styles.listItemRightBadgeText, { color: isTop3 ? rankColor : '#8b5cf6' }]}>${esp.pago.toFixed(0)}</Text>
+                                                    </View>
                                                 </View>
-                                                <View style={styles.listItemInfo}>
-                                                    <Text style={[styles.listItemTitle, { color: colors.textPrimary }]}>{esp.nombre}</Text>
-                                                    <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>
-                                                        {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día
-                                                    </Text>
-                                                </View>
-                                                <TouchableOpacity 
-                                                    style={[styles.listItemRightBadge, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}
-                                                    onPress={() => navigation.navigate('Comisiones' as any)}
-                                                >
-                                                    <Text style={[styles.listItemRightBadgeText, { color: '#8b5cf6' }]}>${esp.pago.toFixed(0)}</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        ))
+                                            );
+                                        })
                                     ) : (
                                         <Text style={[styles.emptyText, { color: colors.textMuted }]}>No hay servicios en este rango.</Text>
                                     )}

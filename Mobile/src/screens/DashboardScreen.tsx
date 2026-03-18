@@ -36,7 +36,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const colors = isDark ? darkTheme : lightTheme;
     const styles = useMemo(() => createStyles(colors), [colors]);
 
-    const { getDashboardAlertsAnalysis, advice, loading: analyzingAlerts } = useCaitlyn();
+    const { getDashboardAlertsAnalysis, advice, loading: analyzingAlerts, error: caitlynError } = useCaitlyn();
     const {
         data, loading, refreshing, error, success, notifications, onRefresh, handleAjustarPrecio, clearError, clearSuccess
     } = useDashboard('mes', advice);
@@ -47,10 +47,11 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const [showCaitlynAlerts, setShowCaitlynAlerts] = useState(false);
 
     useEffect(() => {
-        if (data?.inventario?.alertasRentabilidad && data.inventario.alertasRentabilidad.length > 0 && !advice && !analyzingAlerts) {
+        // Solo intentamos analizar si hay alertas, no hay consejo previo, no estamos cargando Y no hay un error previo de conexión
+        if (data?.inventario?.alertasRentabilidad && data.inventario.alertasRentabilidad.length > 0 && !advice && !analyzingAlerts && !caitlynError) {
             getDashboardAlertsAnalysis(data.inventario.alertasRentabilidad);
         }
-    }, [data?.inventario?.alertasRentabilidad, advice, analyzingAlerts]);
+    }, [data?.inventario?.alertasRentabilidad, advice, analyzingAlerts, caitlynError]);
 
     useEffect(() => {
         if (error) {
@@ -163,23 +164,36 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Gr\u00e1fico Hist\u00f3rico Admin */}
+                        {/* Gráfico Histórico Admin */}
                         {user?.rol === 'admin' && data.ventasUltimos7Dias?.length > 0 && (
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(500)} style={styles.glassSection}>
-                                <Text style={styles.cardLabel}>\u00daltimos 7 D\u00edas</Text>
-                                <LineChart
-                                    data={{
-                                        labels: data.ventasUltimos7Dias.map((v: any) => v.fecha.split('-').slice(1).reverse().join('/')),
-                                        datasets: [{ data: data.ventasUltimos7Dias.map((v: any) => v.total) }]
-                                    }}
-                                    width={width - 50} height={180} yAxisLabel="$" yAxisInterval={1}
-                                    chartConfig={{
-                                        backgroundColor: colors.card, backgroundGradientFrom: colors.card, backgroundGradientTo: colors.card,
-                                        decimalPlaces: 0, color: () => colors.primary, labelColor: () => colors.textMuted,
-                                        propsForDots: { r: "4", strokeWidth: "2", stroke: colors.primary }
-                                    }}
-                                    bezier style={{ marginVertical: 8, borderRadius: 16 }}
-                                />
+                                <View style={styles.sectionHeader}>
+                                    <View style={styles.glassIconSmall}><Ionicons name="pulse-outline" size={18} color={colors.primary} /></View>
+                                    <Text style={styles.sectionTitle}>Tendencia de Ventas (7 días)</Text>
+                                </View>
+                                <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                                    <LineChart
+                                        data={{
+                                            labels: data.ventasUltimos7Dias.map((v: any) => v.fecha.split('-').slice(1).reverse().join('/')),
+                                            datasets: [{ data: data.ventasUltimos7Dias.map((v: any) => v.total) }]
+                                        }}
+                                        width={width - 64} // Ajustado para el padding de content (24*2) + borde (1*2) + margen seguro
+                                        height={180} 
+                                        yAxisLabel="$" 
+                                        yAxisInterval={1}
+                                        chartConfig={{
+                                            backgroundColor: colors.card,
+                                            backgroundGradientFrom: colors.card,
+                                            backgroundGradientTo: colors.card,
+                                            decimalPlaces: 0,
+                                            color: (opacity = 1) => `rgba(${parseInt(colors.primary.slice(1,3), 16)}, ${parseInt(colors.primary.slice(3,5), 16)}, ${parseInt(colors.primary.slice(5,7), 16)}, ${opacity})`,
+                                            labelColor: (opacity = 1) => colors.textMuted,
+                                            propsForDots: { r: "4", strokeWidth: "2", stroke: colors.primary }
+                                        }}
+                                        bezier 
+                                        style={{ marginVertical: 8, borderRadius: 16 }}
+                                    />
+                                </View>
                             </Animated.View>
                         )}
 
