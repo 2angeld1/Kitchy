@@ -7,38 +7,23 @@ import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/VentasScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth, Negocio } from '../context/AuthContext';
+import BellezaVentasScreen from './BellezaVentasScreen';
 
 export default function VentasScreen() {
-    const {
-        productosFiltrados,
-        carrito,
-        loading,
-        refreshing,
-        onRefresh,
-        showModal,
-        setShowModal,
-        busqueda,
-        setBusqueda,
-        categoriaFiltro,
-        setCategoriaFiltro,
-        agregarAlCarrito,
-        quitarDelCarrito,
-        calcularTotal,
-        procesarVenta,
-        cliente,
-        setCliente,
-        metodoPago,
-        setMetodoPago,
-        ordenes,
-        activeOrderId,
-        activeOrder,
-        nuevaOrden,
-        seleccionarOrden,
-        eliminarOrden
-    } = useVentas();
-
+    const { productosFiltrados, carrito, loading, refreshing, onRefresh, showModal, setShowModal, busqueda, setBusqueda, categoriaFiltro, setCategoriaFiltro, agregarAlCarrito, quitarDelCarrito, calcularTotal, procesarVenta, cliente, setCliente, metodoPago, setMetodoPago, ordenes, activeOrderId, activeOrder, nuevaOrden, seleccionarOrden, eliminarOrden } = useVentas();
+    const { user } = useAuth();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+
+    const negocioActual = typeof user?.negocioActivo === 'object'
+        ? user.negocioActivo as Negocio
+        : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
+
+    // Si es un negocio de belleza, derivamos a su dashboard especializado
+    if (negocioActual?.categoria === 'BELLEZA') {
+        return <BellezaVentasScreen />;
+    }
 
     const categorias = ['comida', 'bebida', 'postre'];
 
@@ -140,7 +125,7 @@ export default function VentasScreen() {
                                 justifyContent: 'center'
                             }}
                         >
-                            <Text style={{ 
+                            <Text style={{
                                 color: activeOrderId === o.id ? colors.white : colors.textPrimary,
                                 fontWeight: '800',
                                 fontSize: 13
@@ -148,7 +133,7 @@ export default function VentasScreen() {
                                 {o.nombre}
                             </Text>
                             {o.items.length > 0 && (
-                                <Text style={{ 
+                                <Text style={{
                                     color: activeOrderId === o.id ? 'rgba(255,255,255,0.8)' : colors.textMuted,
                                     fontSize: 10,
                                     fontWeight: '600',
@@ -326,7 +311,7 @@ export default function VentasScreen() {
                                         value={cliente}
                                         onChangeText={setCliente}
                                     />
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         onPress={() => setMetodoPago(metodoPago === 'efectivo' ? 'yappy' : 'efectivo')}
                                         style={[styles.selectSmall, { backgroundColor: colors.background, borderColor: colors.border }]}
                                     >

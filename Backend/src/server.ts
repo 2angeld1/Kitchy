@@ -15,6 +15,7 @@ import gastoRoutes from './routes/gastos';
 import agenteRoutes from './routes/agente';
 import statsRoutes from './routes/stats';
 import comisionRoutes from './routes/comisiones';
+import especialistaRoutes from './routes/especialistas';
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ app.use('/api/gastos', gastoRoutes);
 app.use('/api/agente', agenteRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/comisiones', comisionRoutes);
+app.use('/api/especialistas', especialistaRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

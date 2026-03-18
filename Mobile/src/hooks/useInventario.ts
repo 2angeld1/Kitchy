@@ -18,6 +18,7 @@ export interface InventarioItem {
     proveedor?: string;
     codigoBarras?: string;
     fechaVencimiento?: string;
+    precioVenta?: number;
 }
 
 export const useInventario = () => {
@@ -109,7 +110,16 @@ export const useInventario = () => {
     const [unidad, setUnidad] = useState('unidades');
     const [cantidadMinima, setCantidadMinima] = useState('');
     const [costoUnitario, setCostoUnitario] = useState('');
-    const [categoria, setCategoria] = useState('ingrediente');
+    const [precioVenta, setPrecioVenta] = useState('');
+    
+    // Detectar categoría del negocio activo de forma robusta
+    const categoriaNegocio = useMemo(() => {
+        const negocios = (user as any)?.negocioIds || [];
+        const activo = negocios.find((n: any) => n._id === user?.negocioActivo || n === user?.negocioActivo) || negocios[0];
+        return (activo as any)?.categoria || 'COMIDA';
+    }, [user]);
+
+    const [categoria, setCategoria] = useState(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
     const [proveedor, setProveedor] = useState('');
     const [codigoBarras, setCodigoBarras] = useState('');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
@@ -184,11 +194,11 @@ export const useInventario = () => {
         setCantidad('');
         setUnidad('unidades');
         setCantidadMinima('');
-        setCostoUnitario('');
-        setCategoria('ingrediente');
+        setPrecioVenta('');
         setProveedor('');
         setCodigoBarras('');
         setFechaVencimiento('');
+        setCategoria(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
         setEditItem(null);
     };
 
@@ -200,6 +210,7 @@ export const useInventario = () => {
         setUnidad(item.unidad);
         setCantidadMinima(item.cantidadMinima.toString());
         setCostoUnitario(item.costoUnitario.toString());
+        setPrecioVenta(item.precioVenta?.toString() || '');
         setCategoria(item.categoria);
         setProveedor(item.proveedor || '');
         setCodigoBarras(item.codigoBarras || '');
@@ -295,6 +306,7 @@ export const useInventario = () => {
                 unidad,
                 cantidadMinima: parseFloat(cantidadMinima) || 0,
                 costoUnitario: parseFloat(costoUnitario),
+                precioVenta: precioVenta ? parseFloat(precioVenta) : undefined,
                 categoria,
                 proveedor,
                 codigoBarras,
@@ -661,6 +673,7 @@ export const useInventario = () => {
         nombre, setNombre, descripcion, setDescripcion,
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
+        precioVenta, setPrecioVenta,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings,

@@ -48,7 +48,7 @@ const ProductoSchema: Schema = new Schema({
     },
     categoria: {
         type: String,
-        enum: ['comida', 'bebida', 'postre', 'otro'],
+        enum: ['comida', 'bebida', 'postre', 'servicio', 'belleza', 'otro'],
         default: 'comida'
     },
     disponible: {

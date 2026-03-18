@@ -7,7 +7,8 @@ export interface IInventario extends Document {
     unidad: 'unidades' | 'kg' | 'lb' | 'litros' | 'gramos' | 'ml';
     cantidadMinima: number; // Alerta cuando baja de este nivel
     costoUnitario: number;
-    categoria: 'ingrediente' | 'insumo' | 'empaque' | 'otro';
+    precioVenta?: number; // Precio al que se vende al público (si aplica)
+    categoria: string;
     proveedor?: string;
     codigoBarras?: string;
     fechaVencimiento?: Date;
@@ -48,9 +49,12 @@ const InventarioSchema: Schema = new Schema({
         required: true,
         min: 0
     },
+    precioVenta: {
+        type: Number,
+        min: 0
+    },
     categoria: {
         type: String,
-        enum: ['ingrediente', 'insumo', 'empaque', 'otro'],
         default: 'ingrediente'
     },
     proveedor: {

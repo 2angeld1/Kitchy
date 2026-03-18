@@ -19,6 +19,8 @@ import { LineChart } from 'react-native-chart-kit';
 import { autoAjustarPrecio } from '../services/api';
 import { FinancialAlertCard } from '../components/FinancialAlertCard';
 import { CaitlynAlertsModal } from '../components/CaitlynAlertsModal';
+import BellezaDashboardScreen from './BellezaDashboardScreen';
+import { Negocio } from '../context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -37,7 +39,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
         notifications, // Consumimos la lógica de negocio procesada
         onRefresh,
         clearError
-    } = useDashboard(advice);
+    } = useDashboard('mes', advice);
 
     const { registrarGasto, loading: creatingGasto } = useGastos();
     const { isDark } = useTheme();
@@ -100,6 +102,15 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                 <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Cargando panel...</Text>
             </View>
         );
+    }
+
+    const negocioActual = typeof user?.negocioActivo === 'object' 
+        ? user.negocioActivo as Negocio 
+        : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
+    
+    // Si es un negocio de belleza, derivamos a su dashboard especializado
+    if (negocioActual?.categoria === 'BELLEZA') {
+        return <BellezaDashboardScreen navigation={navigation} />;
     }
 
     return (

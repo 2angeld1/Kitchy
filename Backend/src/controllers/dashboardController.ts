@@ -7,6 +7,7 @@ import Producto from '../models/Producto';
 import User from '../models/User';
 import Gasto from '../models/Gasto';
 import Negocio from '../models/Negocio';
+import Especialista from '../models/Especialista';
 import { calcularPrecioSugerido, calcularMargenActual } from '../utils/pricing';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 
@@ -278,12 +279,12 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
 
         // Ventas recientes (para notificaciones)
         const ventasRecientes = await Venta.find({ negocioId: req.negocioId })
+            .populate('especialista', 'nombre')
             .sort({ createdAt: -1 })
             .limit(5);
 
         // --- DASHBOARD ESPECÍFICO DE BELLEZA (COMISIONES) ---
         let comisionesResumen = undefined;
-        const negocio = await Negocio.findById(req.negocioId);
         
         if (negocio?.categoria === 'BELLEZA') {
             const config = negocio.comisionConfig || { porcentajeBarbero: 50, porcentajeDueno: 50, cortesPorCiclo: 5 };
@@ -311,7 +312,7 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             let totalFacturadoRango = 0;
 
             const especialistasDetalle = await Promise.all(comisionesData.map(async (item) => {
-                const espUser = await User.findById(item._id).select('nombre');
+                const espInfo = await Especialista.findById(item._id).select('nombre');
                 
                 const montoEspecialista = item.totalGenerado * (config.porcentajeBarbero / 100);
                 const montoDueno = item.totalGenerado * (config.porcentajeDueno / 100);
@@ -322,7 +323,7 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
 
                 return {
                     id: item._id,
-                    nombre: espUser?.nombre || 'Desconocido',
+                    nombre: espInfo?.nombre || 'Desconocido',
                     servicios: item.cantidadServicios,
                     generado: item.totalGenerado,
                     pago: montoEspecialista,
@@ -338,6 +339,34 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                 totalServicios: comisionesData.reduce((sum: number, d: any) => sum + d.cantidadServicios, 0),
                 especialistas: especialistasDetalle
             };
+        }
+
+        // --- NOTIFICACIONES ---
+        const notificaciones = [];
+        if (itemsStockBajo > 0) {
+            notificaciones.push({
+                id: 'stock',
+                titulo: 'Inventario Bajo',
+                mensaje: `Tienes ${itemsStockBajo} productos agotándose.`,
+                tipo: 'warning',
+                icon: 'cube-outline'
+            });
+        }
+        
+        if (negocio?.categoria === 'BELLEZA' && comisionesResumen) {
+            const config = negocio.comisionConfig || { cortesPorCiclo: 5 };
+            comisionesResumen.especialistas.forEach((esp: any) => {
+                const ciclos = Math.floor(esp.servicios / config.cortesPorCiclo);
+                if (ciclos > 0) {
+                    notificaciones.push({
+                        id: `ciclo-${esp.id}`,
+                        titulo: 'Meta Alcanzada',
+                        mensaje: `${esp.nombre} completó ${ciclos} ciclo(s) de meta.`,
+                        tipo: 'info',
+                        icon: 'ribbon-outline'
+                    });
+                }
+            });
         }
 
         res.json({
@@ -373,6 +402,7 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             },
             historico,
             comisiones: comisionesResumen,
+            notificaciones,
             productosMasVendidos,
             ventasUltimos7Dias
         });
@@ -400,6 +430,7 @@ export const reporteVentas = async (req: AuthRequest, res: Response) => {
         }
 
         const ventas = await Venta.find({
+            negocioId: req.negocioId,
             createdAt: { $gte: inicio, $lte: fin }
         }).sort({ createdAt: 1 });
 
@@ -468,12 +499,14 @@ export const reporteGanancias = async (req: AuthRequest, res: Response) => {
 
         // Ingresos (ventas)
         const ventas = await Venta.find({
+            negocioId: req.negocioId,
             createdAt: { $gte: inicio, $lte: fin }
         });
         const ingresos = ventas.reduce((sum, v) => sum + v.total, 0);
 
         // Egresos (compras de inventario)
         const movimientos = await MovimientoInventario.find({
+            negocioId: req.negocioId,
             tipo: 'entrada',
             createdAt: { $gte: inicio, $lte: fin }
         });

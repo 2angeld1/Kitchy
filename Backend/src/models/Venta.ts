@@ -89,7 +89,7 @@ const VentaSchema: Schema = new Schema({
     },
     especialista: {
         type: Schema.Types.ObjectId,
-        ref: 'Producto'
+        ref: 'Especialista'
     }
 }, {
     timestamps: true

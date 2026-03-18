@@ -132,7 +132,7 @@ export default function ComisionesScreen() {
                                 <Text style={{ color: '#8b5cf6', fontSize: 20, fontWeight: '800' }}>${data.resumen.totalEspecialistas}</Text>
                             </View>
                             <View style={{ flex: 1, backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: 12, borderRadius: 14 }}>
-                                <Text style={{ color: '#10b981', fontSize: 10, fontWeight: '700' }}>TU PARTE</Text>
+                                <Text style={{ color: '#10b981', fontSize: 10, fontWeight: '700' }}>GANANCIA LOCAL</Text>
                                 <Text style={{ color: '#10b981', fontSize: 20, fontWeight: '800' }}>${data.resumen.totalDueno}</Text>
                             </View>
                         </View>
@@ -141,7 +141,7 @@ export default function ComisionesScreen() {
                             <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                 <Ionicons name="settings-outline" size={14} color={colors.textMuted} />
                                 <Text style={{ color: colors.textMuted, fontSize: 11 }}>
-                                    Reparto: {data.config.porcentajeBarbero}% especialista / {data.config.porcentajeDueno}% local — Cada {data.config.cortesPorCiclo} servicios
+                                    Configuración: {data.config.porcentajeBarbero}% / {data.config.porcentajeDueno}% — Meta: {data.config.cortesPorCiclo} servicios
                                 </Text>
                             </View>
                         )}

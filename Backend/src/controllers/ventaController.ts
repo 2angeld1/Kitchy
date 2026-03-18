@@ -8,7 +8,7 @@ import { AuthRequest } from '../middleware/auth';
 // Crear una nueva venta
 export const crearVenta = async (req: AuthRequest, res: Response) => {
     try {
-        const { items, metodoPago, cliente, notas } = req.body;
+        const { items, metodoPago, cliente, notas, especialista } = req.body;
         const userId = req.userId;
 
         if (!items || items.length === 0) {
@@ -23,30 +23,51 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
         const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
 
         for (const item of items) {
-            const producto = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
-            if (!producto) {
-                return res.status(404).json({ message: `Producto no encontrado o no pertenece a tu negocio: ${item.productoId}` });
-            }
-            if (!producto.disponible) {
-                return res.status(400).json({ message: `Producto no disponible: ${producto.nombre}` });
-            }
+            let itemData = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
+            let nombreProducto = '';
+            let precioUnitario = 0;
+            let finalId = item.productoId;
 
-            // Si el producto tiene receta (ingredientes), los preparamos para descontar
-            if (producto.ingredientes && producto.ingredientes.length > 0) {
-                for (const ingrediente of producto.ingredientes) {
-                    deduccionesInventario.push({
-                        inventarioId: ingrediente.inventario,
-                        cantidadADescontar: ingrediente.cantidad * item.cantidad
-                    });
+            if (itemData) {
+                if (!itemData.disponible) {
+                    return res.status(400).json({ message: `Producto no disponible: ${itemData.nombre}` });
                 }
+                nombreProducto = itemData.nombre;
+                precioUnitario = itemData.precio;
+                finalId = itemData._id;
+
+                // Si tiene receta, descontar ingredientes
+                if (itemData.ingredientes && itemData.ingredientes.length > 0) {
+                    for (const ingrediente of itemData.ingredientes) {
+                        deduccionesInventario.push({
+                            inventarioId: ingrediente.inventario,
+                            cantidadADescontar: ingrediente.cantidad * item.cantidad
+                        });
+                    }
+                }
+            } else {
+                // Si no es un Producto, buscamos en Inventario directamente (para reventa)
+                const itemInv = await Inventario.findOne({ _id: item.productoId, negocioId: req.negocioId });
+                if (!itemInv) {
+                    return res.status(404).json({ message: `Producto o item de inventario no encontrado: ${item.productoId}` });
+                }
+                nombreProducto = itemInv.nombre;
+                precioUnitario = itemInv.precioVenta || itemInv.costoUnitario;
+                finalId = itemInv._id;
+                
+                // Descontar el item mismo del inventario
+                deduccionesInventario.push({
+                    inventarioId: itemInv._id,
+                    cantidadADescontar: item.cantidad
+                });
             }
 
-            const subtotal = producto.precio * item.cantidad;
+            const subtotal = precioUnitario * item.cantidad;
             itemsProcesados.push({
-                producto: producto._id,
-                nombreProducto: producto.nombre,
+                producto: finalId,
+                nombreProducto,
                 cantidad: item.cantidad,
-                precioUnitario: producto.precio,
+                precioUnitario,
                 subtotal
             });
             total += subtotal;
@@ -59,7 +80,8 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
             usuario: userId,
             negocioId: req.negocioId,
             cliente,
-            notas
+            notas,
+            especialista
         });
 
         await venta.save();

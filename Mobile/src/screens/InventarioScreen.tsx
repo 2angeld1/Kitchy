@@ -16,10 +16,20 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
 import { Platform } from 'react-native';
 import { WebScanner } from '../components/WebScanner';
+import { KitchySelect } from '../components/KitchySelect';
+import { useAuth } from '../context/AuthContext';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
+    const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
+
+    // Detectar categoría del negocio activo de forma robusta
+    const categoriaNegocio = React.useMemo(() => {
+        const negocios = (user as any)?.negocioIds || [];
+        const activo = negocios.find((n: any) => n._id === user?.negocioActivo || n === user?.negocioActivo) || negocios[0];
+        return (activo as any)?.categoria || 'COMIDA';
+    }, [user]);
 
     const {
         loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
@@ -33,6 +43,7 @@ export default function InventarioScreen() {
         nombre, setNombre, descripcion, setDescripcion,
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
+        precioVenta, setPrecioVenta,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening, searchingGlobal,
@@ -112,7 +123,17 @@ export default function InventarioScreen() {
                         activeOpacity={0.8}
                     >
                         <View style={[styles.itemIconBox, { backgroundColor: colors.card }]}>
-                            <Ionicons name={item.categoria === 'comida' ? 'restaurant-outline' : item.categoria === 'bebida' ? 'cafe-outline' : 'cube-outline'} size={24} color={colors.primary} />
+                            <Ionicons 
+                                name={
+                                    item.categoria === 'comida' || item.categoria === 'ingrediente' ? 'restaurant-outline' : 
+                                    item.categoria === 'bebida' ? 'cafe-outline' : 
+                                    item.categoria === 'insumo' ? 'flask-outline' :
+                                    item.categoria === 'herramienta' ? 'cut-outline' :
+                                    'cube-outline'
+                                } 
+                                size={24} 
+                                color={colors.primary} 
+                            />
                             {estaPorVencer && <View style={{ position: 'absolute', top: -4, right: -4 }}><Ionicons name="alert-circle" size={16} color={colors.primary} /></View>}
                         </View>
                         <View style={styles.itemInfo}>
@@ -159,19 +180,23 @@ export default function InventarioScreen() {
             </View>
 
             <Text style={{ paddingHorizontal: 24, fontSize: 12, color: isListening ? colors.primary : colors.textMuted, marginBottom: 8, fontStyle: 'italic' }}>
-                {isListening ? '🎙️ Te escucho... Ej: "Gasté 5 litros de leche"' : '💡 Escribe o dicta: "5 tomates a 10 dólares" o "usé 2 libras de carne"'}
+                {isListening 
+                    ? '🎙️ Te escucho... Ej: "Gasté 1 litro de shampoo"' 
+                    : `💡 Escribe o dicta: "${categoriaNegocio === 'BELLEZA' ? '5 tintes a 10 dólares' : '5 tomates a 10 dólares'}" o "${categoriaNegocio === 'BELLEZA' ? 'usé 1 pote de cera' : 'usé 2 libras de carne'}"`}
             </Text>
 
             <View style={styles.filterContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
-                    {['todos', 'stockBajo', 'ingrediente'].map(opcion => (
+                    {['todos', 'stockBajo', categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente'].map(opcion => (
                         <TouchableOpacity
                             key={opcion}
                             style={[styles.filterChip, { backgroundColor: colors.card, borderColor: colors.border }, filtro === opcion && { backgroundColor: colors.primary, borderColor: colors.primary }]}
                             onPress={() => setFiltro(opcion)}
                         >
                             <Text style={[styles.filterText, { color: colors.textSecondary }, filtro === opcion && { color: colors.white }]}>
-                                {opcion === 'stockBajo' ? 'Bajo Stock' : opcion === 'ingrediente' ? 'Insumos' : 'Todos'}
+                                {opcion === 'stockBajo' ? 'Bajo Stock' : 
+                                 opcion === 'insumo' ? 'Insumos' : 
+                                 opcion === 'ingrediente' ? 'Ingredientes' : 'Todos'}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -263,15 +288,51 @@ export default function InventarioScreen() {
                             <KitchyInput label="Descripción" value={descripcion} onChangeText={setDescripcion} />
                             <View style={styles.formRow}>
                                 <View style={styles.inputSmall}><KitchyInput label="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" /></View>
-                                <View style={styles.inputSmall}><KitchyInput label="Medida" value={unidad} onChangeText={setUnidad} /></View>
+                                <View style={styles.inputSmall}>
+                                    <KitchySelect 
+                                        label="Medida" 
+                                        value={unidad} 
+                                        onSelect={setUnidad} 
+                                        options={[
+                                            { label: 'Unidades', value: 'unidades' },
+                                            { label: 'Lts', value: 'litros' },
+                                            { label: 'ml', value: 'ml' },
+                                            { label: 'Gr', value: 'gramos' },
+                                            { label: 'Kg', value: 'kg' },
+                                            { label: 'Oz', value: 'onzas' },
+                                            { label: 'Paq', value: 'paquete' },
+                                        ]}
+                                    />
+                                </View>
                             </View>
                             <View style={styles.formRow}>
                                 <View style={styles.inputSmall}><KitchyInput label="Costo / Ud" value={costoUnitario} onChangeText={setCostoUnitario} keyboardType="numeric" /></View>
                                 <View style={styles.inputSmall}><KitchyInput label="Min Stock" value={cantidadMinima} onChangeText={setCantidadMinima} keyboardType="numeric" /></View>
                             </View>
-                            <KitchyInput label="Categoría" value={categoria} onChangeText={setCategoria} />
+                            <KitchySelect 
+                                label="Categoría" 
+                                value={categoria} 
+                                onSelect={setCategoria} 
+                                options={categoriaNegocio === 'BELLEZA' ? [
+                                    { label: 'Insumo (Shampoo, Tintes)', value: 'insumo' },
+                                    { label: 'Herramienta', value: 'herramienta' },
+                                    { label: 'Venta (Ceras, Aceites)', value: 'reventa' },
+                                    { label: 'Limpieza', value: 'limpieza' },
+                                    { label: 'Otro', value: 'otro' },
+                                ] : [
+                                    { label: 'Ingrediente', value: 'ingrediente' },
+                                    { label: 'Bebida', value: 'bebida' },
+                                    { label: 'Limpieza', value: 'limpieza' },
+                                    { label: 'Otro', value: 'otro' },
+                                ]}
+                            />
+                            {categoria === 'reventa' && (
+                                <Animated.View entering={FadeInDown}>
+                                    <KitchyInput label="Precio de Venta al Público" value={precioVenta} onChangeText={setPrecioVenta} keyboardType="numeric" placeholder="$0.00" />
+                                </Animated.View>
+                            )}
                             <KitchyInput label="Código de Barras" value={codigoBarras} onChangeText={setCodigoBarras} />
-                            <KitchyInput label="Fecha Vencimiento" value={fechaVencimiento} onChangeText={setFechaVencimiento} />
+                            <KitchyInput label="Fecha Vencimiento" value={fechaVencimiento} onChangeText={setFechaVencimiento} placeholder="YYYY-MM-DD" />
                             <KitchyButton title={editItem ? 'Actualizar' : 'Guardar'} onPress={handleSubmit} loading={loading} variant="primary" />
                         </ScrollView>
                     </Animated.View>
@@ -299,7 +360,7 @@ export default function InventarioScreen() {
                             <KitchyInput label="Costo Total de la Compra" value={movCosto} onChangeText={setMovCosto} keyboardType="numeric" placeholder="$0.00" />
                         )}
                         <KitchyInput label="Cantidad" value={movCantidad} onChangeText={setMovCantidad} keyboardType="numeric" placeholder="0" />
-                        <KitchyInput label="Motivo / Nota" value={movMotivo} onChangeText={setMovMotivo} placeholder={movTipo === 'merma' ? 'Ej. Producto vencido en estante' : 'Ej. Uso en cocina'} />
+                        <KitchyInput label="Motivo / Nota" value={movMotivo} onChangeText={setMovMotivo} placeholder={movTipo === 'merma' ? 'Ej. Producto vencido' : categoriaNegocio === 'BELLEZA' ? 'Ej. Uso en corte' : 'Ej. Uso en cocina'} />
 
                         <KitchyButton
                             title="Confirmar"

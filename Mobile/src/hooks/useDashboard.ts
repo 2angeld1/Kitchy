@@ -63,6 +63,7 @@ export interface DashboardData {
             eficiencia: string;
         }[];
     };
+    notificaciones?: { id: string; titulo: string; mensaje: string; tipo: string; icon: string }[];
 }
 
 export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => {
@@ -107,14 +108,17 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
     // Lógica de Negocio: Generar notificaciones basadas en la data
     const notifications = useMemo(() => {
         if (!data) return [];
-        const notifs = [];
+        const notifs: any[] = [];
 
         if (data.ventas.recientes) {
-            data.ventas.recientes.slice(0, 3).forEach((v: any) => {
+            data.ventas.recientes.forEach((v: any) => {
+                const nombreBarbero = v.especialista?.nombre?.split(' ')[0] || 'Alguien';
+                const detalle = v.cliente ? `a ${v.cliente}` : '';
+                
                 notifs.push({
                     id: v._id,
-                    title: 'Venta Nueva',
-                    message: `Se registró una venta por $${v.total.toFixed(2)}`,
+                    title: 'Nuevo Corte Pagado 💈',
+                    message: `${nombreBarbero} cobró $${v.total.toFixed(2)} ${detalle}`,
                     time: 'Hoy'
                 });
             });
@@ -145,6 +149,22 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
                 message: caitlynAdvice,
                 time: 'Ahora',
                 type: 'ai'
+            });
+        }
+
+        // Incorporar notificaciones enviadas por el servidor
+        if (data.notificaciones) {
+            data.notificaciones.forEach((n: any) => {
+                // Evitar duplicados si ya existen por lógica local
+                if (!notifs.find(existing => existing.id === n.id)) {
+                    notifs.push({
+                        id: n.id,
+                        title: n.titulo,
+                        message: n.mensaje,
+                        time: 'Alerta',
+                        type: n.tipo
+                    });
+                }
             });
         }
 

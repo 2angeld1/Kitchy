@@ -71,6 +71,7 @@ export const importarProductos = (data: any) => api.post('/productos/importar', 
 // Ventas
 export const createVenta = (data: any) => api.post('/ventas', data);
 export const getVentas = (params?: any) => api.get('/ventas', { params });
+export const deleteVenta = (id: string) => api.delete(`/ventas/${id}`);
 
 // Inventario
 export const getInventario = (params?: any) => api.get('/inventario', { params });
@@ -108,6 +109,11 @@ export const updateNegocioConfig = (data: any) => api.put('/negocios/config', da
 export const getComisiones = (params?: any) => api.get('/comisiones', { params });
 export const updateComisionConfig = (data: { porcentajeBarbero: number, porcentajeDueno: number, cortesPorCiclo: number }) => 
     api.put('/negocios/config-comisiones', data);
+
+// Especialistas (Belleza)
+export const getEspecialistas = () => api.get('/especialistas');
+export const createEspecialista = (data: { nombre: string, comision?: number }) => api.post('/especialistas', data);
+export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${id}`);
 
 // Configuración Pública
 export const getMenuConfig = () => api.get('/menu-config');

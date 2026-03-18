@@ -35,17 +35,17 @@ export default function AdminHubScreen() {
         const esBelleza = categoriaNegocio === 'BELLEZA';
         const items = [
             {
-                id: 'productos',
+                id: esBelleza ? 'especialistas' : 'productos',
                 title: esBelleza ? 'Especialistas' : 'Productos',
                 desc: esBelleza ? 'Barberos y Estilistas' : 'Gestionar catálogo',
                 icon: esBelleza ? 'people-circle-outline' : 'fast-food-outline',
                 color: lightTheme.primary
             },
             {
-                id: 'usuarios',
-                title: 'Usuarios',
-                desc: esBelleza ? 'Recepcionistas' : 'Cajeros y Meseros',
-                icon: 'people-outline',
+                id: esBelleza ? 'productos' : 'usuarios',
+                title: esBelleza ? 'Servicios' : 'Usuarios',
+                desc: esBelleza ? 'Precios y Cortes' : 'Cajeros y Meseros',
+                icon: esBelleza ? 'cut-outline' : 'people-outline',
                 color: '#3b82f6'
             },
             {
@@ -69,7 +69,7 @@ export default function AdminHubScreen() {
             items.push({
                 id: 'comisiones',
                 title: 'Comisiones',
-                desc: 'Reparto 50/50',
+                desc: 'Reparto de Ganancias',
                 icon: 'cash-outline',
                 color: '#8b5cf6'
             });
@@ -109,8 +109,16 @@ export default function AdminHubScreen() {
             return;
         }
 
+        if (id === 'especialistas') {
+            navigation.navigate('Especialistas' as any);
+            return;
+        }
         if (id === 'productos') {
-            navigation.navigate('Productos');
+            if (categoriaNegocio === 'BELLEZA') {
+                navigation.navigate('Servicios' as any);
+            } else {
+                navigation.navigate('Productos');
+            }
             return;
         }
         if (id === 'usuarios') {

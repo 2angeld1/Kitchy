@@ -5,14 +5,16 @@ import DashboardScreen from '../screens/DashboardScreen';
 import BellezaDashboardScreen from '../screens/BellezaDashboardScreen';
 import AdminHubScreen from '../screens/AdminHubScreen';
 import VentasScreen from '../screens/VentasScreen';
+import BellezaReventaScreen from '../screens/BellezaReventaScreen';
 import InventarioScreen from '../screens/InventarioScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme, typography } from '../theme';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, Negocio } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 export type MainTabParamList = {
     Dashboard: undefined;
+    Reventa: undefined;
     Ventas: undefined;
     Inventario: undefined;
     Panel: undefined; // Pestaña que agrupa todas las opciones de admin
@@ -24,7 +26,11 @@ export default function MainAppNavigator() {
     const { isAdmin, user } = useAuth();
     const { isDark } = useTheme();
 
-    const categoria = typeof user?.negocioActivo === 'object' ? user?.negocioActivo?.categoria : 'COMIDA';
+    const negocioActual = typeof user?.negocioActivo === 'object' 
+        ? user.negocioActivo as Negocio 
+        : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
+    
+    const categoria = negocioActual?.categoria || 'COMIDA';
 
     // Explicit theme colors based on context
     const colors = isDark ? darkTheme : lightTheme;
@@ -36,18 +42,27 @@ export default function MainAppNavigator() {
                 animation: 'shift', // Transición de deslizamiento suave (React Navigation 7+)
                 tabBarIcon: ({ focused, color }) => {
                     let iconName: keyof typeof Ionicons.glyphMap = 'home';
+                    const isBelleza = categoria === 'BELLEZA';
 
                     if (route.name === 'Dashboard') {
-                        iconName = focused ? 'home' : 'home-outline';
+                        iconName = isBelleza 
+                            ? (focused ? 'sparkles' : 'sparkles-outline')
+                            : (focused ? 'home' : 'home-outline');
+                    } else if (route.name === 'Reventa') {
+                        iconName = focused ? 'bag-handle' : 'bag-handle-outline';
                     } else if (route.name === 'Ventas') {
-                        iconName = focused ? 'cart' : 'cart-outline';
+                        iconName = isBelleza 
+                            ? (focused ? 'cut' : 'cut-outline')
+                            : (focused ? 'cart' : 'cart-outline');
                     } else if (route.name === 'Inventario') {
-                        iconName = focused ? 'cube' : 'cube-outline';
+                        iconName = isBelleza 
+                            ? (focused ? 'brush' : 'brush-outline')
+                            : (focused ? 'cube' : 'cube-outline');
                     } else if (route.name === 'Panel') {
                         iconName = focused ? 'grid' : 'grid-outline';
                     }
 
-                    return <Ionicons name={iconName} size={20} color={color} />; // Size fijo de 20 para evitar gigantes en Web
+                    return <Ionicons name={iconName} size={20} color={color} />; 
                 },
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textMuted,
@@ -73,10 +88,17 @@ export default function MainAppNavigator() {
                 component={categoria === 'BELLEZA' ? BellezaDashboardScreen : DashboardScreen}
                 options={{ tabBarLabel: 'Inicio' }}
             />
+            {categoria === 'BELLEZA' && (
+                <Tab.Screen
+                    name="Reventa"
+                    component={BellezaReventaScreen}
+                    options={{ tabBarLabel: 'Reventa' }}
+                />
+            )}
             <Tab.Screen
                 name="Ventas"
                 component={VentasScreen}
-                options={{ tabBarLabel: 'Ventas' }}
+                options={{ tabBarLabel: categoria === 'BELLEZA' ? 'Cortes' : 'Ventas' }}
             />
             <Tab.Screen
                 name="Inventario"
