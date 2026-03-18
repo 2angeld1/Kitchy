@@ -86,8 +86,9 @@ export const useBellezaVentas = () => {
     };
 
     const total = serviciosSeleccionados.reduce((acc, s) => acc + s.precio, 0);
+    const cambio = parseFloat(montoRecibido) > total ? parseFloat(montoRecibido) - total : 0;
 
-    const procesarCobro = async () => {
+    const procesarCobro = async (onSuccess?: () => void) => {
         if (serviciosSeleccionados.length === 0 || !especialistaSeleccionado) {
             Toast.show({ type: 'info', text1: 'Atención', text2: 'Selecciona al menos un servicio y un especialista.' });
             return;
@@ -104,6 +105,8 @@ export const useBellezaVentas = () => {
 
             const res = await createVenta(payload);
             setLastVentaId(res.data._id); // Guardar para posible Undo
+            
+            if (onSuccess) onSuccess();
             
             Toast.show({ type: 'success', text1: '¡Venta Lista!', text2: 'Cobro registrado correctamente.' });
             
@@ -150,6 +153,7 @@ export const useBellezaVentas = () => {
         lastVentaId, anularUltimaVenta,
         procesarCobro,
         total,
+        cambio,
         onRefresh: cargarDatos
     };
 };

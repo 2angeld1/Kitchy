@@ -2,9 +2,10 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-export const styles = StyleSheet.create({
+export const createStyles = (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
     },
     headerRow: {
         flexDirection: 'row',
@@ -22,6 +23,8 @@ export const styles = StyleSheet.create({
         borderRadius: 16,
         paddingHorizontal: 14,
         paddingVertical: 12,
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
     },
     searchInput: {
         flex: 1,
@@ -29,6 +32,7 @@ export const styles = StyleSheet.create({
         marginRight: 10,
         fontSize: 16,
         fontWeight: '600',
+        color: colors.textPrimary,
     },
     filterContainer: {
         height: 50,
@@ -38,6 +42,8 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 16,
         height: 50,
         flexGrow: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
     filterPill: {
         flexDirection: 'row',
@@ -65,6 +71,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: colors.border,
     },
     itemIconBox: {
         width: 48,
@@ -74,14 +81,14 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 16,
         overflow: 'hidden',
+        backgroundColor: colors.card,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     productImage: {
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
-    },
-    emojiText: {
-        fontSize: 24,
     },
     itemInfo: {
         flex: 1,
@@ -152,6 +159,7 @@ export const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 4,
         alignSelf: 'flex-end',
+        backgroundColor: colors.surface,
     },
     emptyState: {
         paddingVertical: 60,
@@ -166,6 +174,7 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,
+        backgroundColor: colors.surface,
     },
     emptyTitle: {
         fontSize: 20,
@@ -182,7 +191,6 @@ export const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
         justifyContent: 'flex-end',
-        margin: 0,
     },
     modalContent: {
         width: '100%',
@@ -211,6 +219,7 @@ export const styles = StyleSheet.create({
         borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: colors.surface,
     },
     formContainer: {
         paddingHorizontal: 24,
@@ -255,6 +264,7 @@ export const styles = StyleSheet.create({
         borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: colors.card,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -288,6 +298,7 @@ export const styles = StyleSheet.create({
         marginBottom: 12,
         borderTopWidth: 1,
         paddingTop: 20,
+        borderTopColor: colors.border,
     },
     sectionTitle: {
         fontSize: 14,
@@ -300,10 +311,6 @@ export const styles = StyleSheet.create({
         paddingVertical: 6,
         borderRadius: 12,
         gap: 4,
-    },
-    addIngredientText: {
-        fontSize: 12,
-        fontWeight: '900',
     },
     ingredientRow: {
         flexDirection: 'row',
@@ -321,6 +328,7 @@ export const styles = StyleSheet.create({
         paddingHorizontal: 12,
         borderWidth: 1,
         borderRadius: 12,
+        backgroundColor: colors.background,
     },
     ingredientInput: {
         flex: 1,
@@ -331,6 +339,7 @@ export const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '700',
         fontSize: 14,
+        backgroundColor: colors.background,
     },
     deleteIngredientBtn: {
         width: 36,
@@ -345,5 +354,6 @@ export const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 10,
         elevation: 2,
+        backgroundColor: colors.surface,
     },
 });

@@ -8,6 +8,11 @@ export interface Negocio {
     logo?: string;
     tipo: string;
     categoria: 'COMIDA' | 'BELLEZA';
+    config?: {
+        moneda: string;
+        denominaciones: number[];
+        impuesto: number;
+    };
 }
 
 interface User {

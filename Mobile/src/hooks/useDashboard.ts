@@ -71,6 +71,7 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
     const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
 
     const cargarDashboard = async (isRefreshing = false) => {
@@ -104,6 +105,20 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
     const onRefresh = useCallback(async () => {
         await cargarDashboard(true);
     }, []);
+
+    // Handlers para acciones desde el Dashboard
+    const handleAjustarPrecio = async (id: string) => {
+        try {
+            const { autoAjustarPrecio } = await import('../services/api');
+            await autoAjustarPrecio(id);
+            setSuccess('Precio actualizado correctamente');
+            onRefresh();
+            return true;
+        } catch (err) {
+            setError('No se pudo actualizar el precio');
+            return false;
+        }
+    };
 
     // Lógica de Negocio: Generar notificaciones basadas en la data
     const notifications = useMemo(() => {
@@ -176,8 +191,11 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         loading,
         refreshing,
         error,
+        success,
         notifications,
         onRefresh,
-        clearError: () => setError('')
+        handleAjustarPrecio,
+        clearError: () => setError(''),
+        clearSuccess: () => setSuccess('')
     };
 };

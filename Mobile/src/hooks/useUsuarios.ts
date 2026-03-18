@@ -99,15 +99,42 @@ export const useUsuarios = () => {
     const clearError = () => setError('');
     const clearSuccess = () => setSuccess('');
 
+    const [isSubmittingNegocio, setIsSubmittingNegocio] = useState(false);
+
+    const handleCreateNegocio = async (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' }) => {
+        setIsSubmittingNegocio(true);
+        try {
+            const { createNegocio } = await import('../services/api');
+            const res = await createNegocio(data);
+            setSuccess('Negocio creado correctamente');
+            return res.data;
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al crear negocio');
+            return null;
+        } finally {
+            setIsSubmittingNegocio(false);
+        }
+    };
+
+    const getRoleInfo = (rol: string) => {
+        switch (rol) {
+            case 'admin': return { label: 'Administrador', color: '#3b82f6', icon: 'options' };
+            default: return { label: 'Cajero/Mesero', color: '#10b981', icon: 'person' };
+        }
+    };
+
     return {
         usuarios,
         loading,
         refreshing,
+        isSubmittingNegocio,
         error, clearError,
         success, clearSuccess,
         handleRefresh,
         handleChangeRole,
         handleDeleteUser,
-        handleCreateUser
+        handleCreateUser,
+        handleCreateNegocio,
+        getRoleInfo
     };
 };

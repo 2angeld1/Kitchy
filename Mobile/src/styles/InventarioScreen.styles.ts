@@ -1,60 +1,135 @@
-import { StyleSheet, Platform } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { StyleSheet, Platform, Dimensions } from 'react-native';
 
-export const styles = StyleSheet.create({
+const { width } = Dimensions.get('window');
+
+export const createStyles = (colors: any) => StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: colors.background,
     },
     headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: spacing.xl,
-        paddingTop: spacing.md,
-        paddingBottom: spacing.sm,
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: 8,
     },
     searchInputWrapper: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         height: 48,
-        borderRadius: borderRadius.full,
-        paddingHorizontal: spacing.md,
-        marginRight: spacing.sm,
+        borderRadius: 24,
+        paddingHorizontal: 16,
+        marginRight: 8,
         borderWidth: 1,
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
     },
     searchInput: {
         flex: 1,
-        marginLeft: spacing.sm,
-        fontSize: typography.fontSize.sm,
-        fontFamily: typography.fontFamily.medium,
+        marginLeft: 8,
+        fontSize: 14,
+        fontWeight: '500',
         height: '100%',
+        color: colors.textPrimary,
+    },
+    smartHint: {
+        paddingHorizontal: 24,
+        fontSize: 12,
+        marginBottom: 8,
+        fontStyle: 'italic',
     },
     filterContainer: {
         flexGrow: 0,
         height: 50,
-        marginBottom: spacing.sm,
+        marginBottom: 8,
     },
     filterOptions: {
         flexDirection: 'row',
-        paddingHorizontal: spacing.xl,
-        gap: spacing.sm,
+        paddingHorizontal: 24,
+        gap: 8,
         alignItems: 'center',
     },
     filterChip: {
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.sm,
-        borderRadius: borderRadius.full,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
         borderWidth: 1,
+        backgroundColor: colors.card,
+        borderColor: colors.border,
+    },
+    filterChipActive: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
     },
     filterText: {
-        fontSize: typography.fontSize.xs,
-        fontFamily: typography.fontFamily.bold,
+        fontSize: 11,
+        fontWeight: '700',
         textTransform: 'uppercase',
+        color: colors.textSecondary,
+    },
+    filterTextActive: {
+        color: '#fff',
     },
     listContainer: {
-        paddingHorizontal: spacing.xl,
-        paddingBottom: 100, // padding for fab
+        paddingHorizontal: 24,
+        paddingBottom: 120, 
+    },
+    itemCard: {
+        flexDirection: 'row',
+        paddingVertical: 16,
+        paddingHorizontal: 4,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+        alignItems: 'center',
+        backgroundColor: colors.background,
+    },
+    itemIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        backgroundColor: colors.card,
+    },
+    itemInfo: {
+        flex: 1,
+    },
+    itemHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 2,
+    },
+    itemTitle: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.textPrimary,
+    },
+    itemDot: {
+        color: colors.textMuted,
+        marginHorizontal: 6,
+    },
+    itemQty: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: colors.primary,
+    },
+    itemSub: {
+        fontSize: 12,
+        color: colors.textSecondary,
+    },
+    stockWarning: {
+        fontSize: 11,
+        fontWeight: '800',
+        color: '#ef4444',
+        marginTop: 4,
+    },
+    vencimientoText: {
+        fontSize: 10,
+        marginTop: 2,
     },
     emptyContainer: {
         alignItems: 'center',
@@ -62,74 +137,17 @@ export const styles = StyleSheet.create({
         marginTop: 60,
     },
     emptyText: {
-        marginTop: spacing.md,
-        fontSize: typography.fontSize.base,
-        fontFamily: typography.fontFamily.medium,
+        marginTop: 16,
+        fontSize: 15,
+        color: colors.textMuted,
     },
-    itemCard: {
-        flexDirection: 'row',
-        paddingVertical: spacing.md,
-        paddingHorizontal: spacing.xs,
-        borderBottomWidth: 1,
-        alignItems: 'center',
-    },
-    itemIconBox: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: spacing.md,
-    },
-    itemInfo: {
+    loadingContainer: {
         flex: 1,
-    },
-    itemTitle: {
-        fontSize: typography.fontSize.base,
-        fontFamily: typography.fontFamily.bold,
-        marginBottom: 2,
-    },
-    itemSub: {
-        fontSize: typography.fontSize.xs,
-        fontFamily: typography.fontFamily.regular,
-    },
-    stockWarning: {
-        fontSize: typography.fontSize.xs,
-        fontFamily: typography.fontFamily.bold,
-        color: colors.error,
-        marginTop: 4,
-    },
-    itemActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: spacing.xs,
-    },
-    actionBtn: {
-        width: 32,
-        height: 32,
-        borderRadius: 10,
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
     },
-    qtyBadge: {
-        position: 'absolute',
-        top: -8,
-        right: -8,
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 10,
-        borderWidth: 1,
-    },
-    qtyBadgeText: {
-        fontSize: 10,
-        fontFamily: typography.fontFamily.black,
-    },
-
     // FAB
     fab: {
-        position: 'absolute',
-        bottom: spacing.lg,
-        right: spacing.xl,
         width: 56,
         height: 56,
         borderRadius: 28,
@@ -141,7 +159,21 @@ export const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 5,
     },
-
+    fabMenuLabel: {
+        backgroundColor: colors.card,
+        color: colors.textPrimary,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+        fontSize: 13,
+        fontWeight: '800',
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
     // Modals
     modalOverlay: {
         flex: 1,
@@ -149,35 +181,75 @@ export const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     modalContent: {
+        backgroundColor: colors.card,
         borderTopLeftRadius: 32,
         borderTopRightRadius: 32,
-        padding: spacing.xl,
+        padding: 24,
         maxHeight: '90%',
     },
     modalHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: spacing.xl,
+        marginBottom: 20,
     },
     modalTitle: {
-        fontSize: typography.fontSize.lg,
-        fontFamily: typography.fontFamily.black,
+        fontSize: 20,
+        fontWeight: '900',
+        color: colors.textPrimary,
     },
     modalScroll: {
         paddingBottom: 40,
     },
     formRow: {
         flexDirection: 'row',
-        gap: spacing.md,
-        marginBottom: spacing.md,
+        gap: 12,
+        marginBottom: 12,
     },
     inputSmall: {
         flex: 1,
     },
-    actionButtonGroup: {
-        flexDirection: 'row',
-        gap: spacing.md,
-        marginTop: spacing.md,
+    // IA Overlay
+    iaOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    iaCard: {
+        backgroundColor: colors.card,
+        padding: 30,
+        borderRadius: 24,
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    iaTitle: {
+        fontSize: 22,
+        fontWeight: '900',
+        marginTop: 20,
+        color: colors.textPrimary,
+    },
+    iaSubtitle: {
+        fontSize: 14,
+        color: colors.textMuted,
+        marginTop: 10,
+        textAlign: 'center',
+    },
+    // Right Actions
+    rightAction: {
+        width: 60,
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 });

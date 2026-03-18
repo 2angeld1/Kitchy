@@ -8,6 +8,7 @@ export interface INegocio extends Document {
     categoria: 'COMIDA' | 'BELLEZA';
     config: {
         moneda: string;
+        denominaciones: number[];
         impuesto: number;
         margenObjetivo: number;
     };
@@ -59,6 +60,7 @@ const negocioSchema = new Schema({
     },
     config: {
         moneda: { type: String, default: 'USD' },
+        denominaciones: { type: [Number], default: [1, 5, 10, 20, 50, 100] },
         impuesto: { type: Number, default: 0.07 },
         margenObjetivo: { type: Number, default: 65 }
     },

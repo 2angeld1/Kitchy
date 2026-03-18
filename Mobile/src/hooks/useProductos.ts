@@ -233,6 +233,26 @@ export const useProductos = () => {
         return matchesSearch && matchesFilter;
     });
 
+    const handleAddIngrediente = () => {
+        setIngredientes(prev => [...prev, { inventario: '', cantidad: 1 }]);
+    };
+
+    const handleRemoveIngrediente = (index: number) => {
+        setIngredientes(prev => {
+            const nuevos = [...prev];
+            nuevos.splice(index, 1);
+            return nuevos;
+        });
+    };
+
+    const handleChangeIngrediente = (index: number, field: string, value: any) => {
+        setIngredientes(prev => {
+            const nuevos = [...prev];
+            (nuevos[index] as any)[field] = value;
+            return nuevos;
+        });
+    };
+
     return {
         // Data
         productos,
@@ -266,6 +286,9 @@ export const useProductos = () => {
         handleSubmit,
         handleDelete,
         handleToggleDisponible,
-        handleImportCsv
+        handleImportCsv,
+        handleAddIngrediente,
+        handleRemoveIngrediente,
+        handleChangeIngrediente
     };
 };

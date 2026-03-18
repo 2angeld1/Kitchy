@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,13 +7,22 @@ import { useBellezaVentas } from '../hooks/useBellezaVentas';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { KitchyToolbar } from '../components/KitchyToolbar';
+import { useAuth, Negocio } from '../context/AuthContext';
+import { createStyles } from '../styles/BellezaReventaScreen.styles';
+import { getBeautyIcon, formatMoney } from '../utils/beauty-helpers';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 60) / 2;
 
 export default function BellezaReventaScreen() {
     const { isDark } = useTheme();
+    const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
+    const styles = useMemo(() => createStyles(colors), [colors]);
+
+    const negocio = user?.negocioActivo as Negocio;
+    const BILLETES = negocio?.config?.denominaciones || [1, 5, 10, 20, 50, 100];
+
     const {
         productosVenta,
         especialistas,
@@ -29,26 +38,28 @@ export default function BellezaReventaScreen() {
         setMetodoPago,
         procesarCobro,
         total,
+        cambio,
         onRefresh
     } = useBellezaVentas();
 
     useFocusEffect(
         useCallback(() => {
             onRefresh();
-        }, [])
+        }, [onRefresh])
     );
 
     const [showSuccess, setShowSuccess] = useState(false);
     const successScale = useSharedValue(0);
 
     const handleCobrar = async () => {
-        const res = await procesarCobro();
-        setShowSuccess(true);
-        successScale.value = withSequence(
-            withSpring(1),
-            withDelay(1500, withSpring(0))
-        );
-        setTimeout(() => setShowSuccess(false), 2000);
+        await procesarCobro(() => {
+            setShowSuccess(true);
+            successScale.value = withSequence(
+                withSpring(1),
+                withDelay(1500, withSpring(0))
+            );
+            setTimeout(() => setShowSuccess(false), 2000);
+        });
     };
 
     const successStyle = useAnimatedStyle(() => ({
@@ -56,26 +67,23 @@ export default function BellezaReventaScreen() {
         opacity: successScale.value
     }));
 
-    const BILLETES = [1, 5, 10, 20, 50];
-    const cambio = parseFloat(montoRecibido) > total ? parseFloat(montoRecibido) - total : 0;
-
     return (
-        <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1, backgroundColor: colors.background }}
         >
-            <KitchyToolbar 
-                title="Ventas de Productos" 
+            <KitchyToolbar
+                title="Ventas de Productos"
                 extraButtons={
                     lastVentaId && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={anularUltimaVenta}
-                            style={{ 
-                                flexDirection: 'row', 
-                                alignItems: 'center', 
-                                backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-                                paddingHorizontal: 12, 
-                                paddingVertical: 6, 
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                paddingHorizontal: 12,
+                                paddingVertical: 6,
                                 borderRadius: 12,
                                 gap: 6
                             }}
@@ -102,7 +110,7 @@ export default function BellezaReventaScreen() {
                                 const isSelected = serviciosSeleccionados.some(s => s._id === prod._id);
                                 return (
                                     <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 50)} style={{ width: CARD_WIDTH }}>
-                                        <TouchableOpacity 
+                                        <TouchableOpacity
                                             onPress={() => toggleServicio(prod)}
                                             style={{
                                                 backgroundColor: isSelected ? `rgba(16, 185, 129, 0.1)` : colors.card,
@@ -123,13 +131,13 @@ export default function BellezaReventaScreen() {
                                                     justifyContent: 'center',
                                                     alignItems: 'center'
                                                 }}>
-                                                    <Ionicons name="sparkles" size={20} color={isSelected ? '#fff' : '#10b981'} />
+                                                    <Ionicons name={getBeautyIcon(prod.nombre)} size={20} color={isSelected ? '#fff' : '#10b981'} />
                                                 </View>
                                                 {isSelected && <Ionicons name="checkmark-circle" size={24} color="#10b981" />}
                                             </View>
                                             <View>
                                                 <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }} numberOfLines={1}>{prod.nombre}</Text>
-                                                <Text style={{ fontSize: 18, fontWeight: '900', color: '#10b981', marginTop: 2 }}>${(prod.precio || 0).toFixed(2)}</Text>
+                                                <Text style={{ fontSize: 18, fontWeight: '900', color: '#10b981', marginTop: 2 }}>{formatMoney(prod.precio)}</Text>
                                             </View>
                                         </TouchableOpacity>
                                     </Animated.View>
@@ -146,7 +154,7 @@ export default function BellezaReventaScreen() {
                         {especialistas.map((esp) => {
                             const isSelected = especialistaSeleccionado === esp._id;
                             return (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     key={esp._id}
                                     style={{
                                         paddingHorizontal: 20,
@@ -171,12 +179,12 @@ export default function BellezaReventaScreen() {
 
                 {/* 3. NOMBRE DEL CLIENTE */}
                 <View style={{ padding: 20 }}>
-                     <View style={{ backgroundColor: colors.card, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: colors.border }}>
-                        <TextInput 
-                            style={{ 
-                                backgroundColor: colors.surface, 
-                                borderRadius: 12, 
-                                padding: 12, 
+                    <View style={{ backgroundColor: colors.card, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: colors.border }}>
+                        <TextInput
+                            style={{
+                                backgroundColor: colors.surface,
+                                borderRadius: 12,
+                                padding: 12,
                                 color: colors.textPrimary,
                                 fontSize: 15,
                                 fontWeight: '600'
@@ -186,13 +194,13 @@ export default function BellezaReventaScreen() {
                             value={clienteNombre}
                             onChangeText={setClienteNombre}
                         />
-                     </View>
+                    </View>
                 </View>
             </ScrollView>
 
             {/* TICKET FLOTANTE */}
             {serviciosSeleccionados.length > 0 && especialistaSeleccionado && (
-                <Animated.View 
+                <Animated.View
                     entering={SlideInDown.duration(400)}
                     style={{
                         position: 'absolute',
@@ -215,7 +223,7 @@ export default function BellezaReventaScreen() {
                         {['efectivo', 'yappy', 'tarjeta'].map((m) => {
                             const isSelected = metodoPago === m;
                             return (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     key={m}
                                     onPress={() => setMetodoPago(m as any)}
                                     style={{
@@ -239,13 +247,13 @@ export default function BellezaReventaScreen() {
                         <Animated.View entering={FadeInDown} style={{ marginBottom: 15 }}>
                             <View style={{ flexDirection: 'row', gap: 6 }}>
                                 {BILLETES.map(b => (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={b}
                                         onPress={() => setMontoRecibido(b.toString())}
-                                        style={{ 
-                                            flex: 1, 
-                                            backgroundColor: montoRecibido === b.toString() ? colors.primary : colors.surface, 
-                                            paddingVertical: 8, 
+                                        style={{
+                                            flex: 1,
+                                            backgroundColor: montoRecibido === b.toString() ? colors.primary : colors.surface,
+                                            paddingVertical: 8,
                                             borderRadius: 8,
                                             alignItems: 'center',
                                             borderWidth: 1,
@@ -262,12 +270,12 @@ export default function BellezaReventaScreen() {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 15 }}>
                         <View>
                             <Text style={{ fontSize: 11, color: colors.textMuted }}>{serviciosSeleccionados.length} productos</Text>
-                            <Text style={{ fontSize: 32, fontWeight: '900', color: colors.textPrimary }}>${total.toFixed(2)}</Text>
+                            <Text style={{ fontSize: 32, fontWeight: '900', color: colors.textPrimary }}>{formatMoney(total)}</Text>
                         </View>
-                        {cambio > 0 && <Text style={{ fontSize: 14, color: '#10b981', fontWeight: '900', marginBottom: 5 }}>CAMBIO: ${cambio.toFixed(2)}</Text>}
+                        {cambio > 0 && <Text style={{ fontSize: 14, color: '#10b981', fontWeight: '900', marginBottom: 5 }}>CAMBIO: {formatMoney(cambio)}</Text>}
                     </View>
 
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={{
                             backgroundColor: colors.primary,
                             height: 60,
