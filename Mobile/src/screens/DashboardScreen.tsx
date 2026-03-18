@@ -5,6 +5,7 @@ import { MainTabParamList } from '../navigation/MainAppNavigator';
 import { useAuth } from '../context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
 import { useGastos } from '../hooks/useGastos';
+import { useCaitlyn } from '../hooks/useCaitlyn';
 import { KitchyInput } from '../components/KitchyInput';
 import { KitchyButton } from '../components/KitchyButton';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,9 @@ import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 import Toast from 'react-native-toast-message';
 import { LineChart } from 'react-native-chart-kit';
+import { autoAjustarPrecio } from '../services/api';
+import { FinancialAlertCard } from '../components/FinancialAlertCard';
+import { CaitlynAlertsModal } from '../components/CaitlynAlertsModal';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +28,7 @@ type DashboardScreenProps = {
 
 export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { user } = useAuth();
+    const { getDashboardAlertsAnalysis, advice, loading: analyzingAlerts } = useCaitlyn();
     const {
         data,
         loading,
@@ -32,13 +37,22 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
         notifications, // Consumimos la lógica de negocio procesada
         onRefresh,
         clearError
-    } = useDashboard();
+    } = useDashboard(advice);
 
     const { registrarGasto, loading: creatingGasto } = useGastos();
     const { isDark } = useTheme();
 
     // Estado UI (Este sí puede vivir aquí porque es puramente visual/modal)
     const [showGastoModal, setShowGastoModal] = React.useState(false);
+    const [showCaitlynAlerts, setShowCaitlynAlerts] = React.useState(false);
+
+    React.useEffect(() => {
+        // Caching preventivo: no gastamos tokens de la IA si ya generó el resumen para este render de datos
+        // Ahora se dispara automáticamente si detectamos alertas al cargar el dashboard
+        if (data?.inventario?.alertasRentabilidad && data.inventario.alertasRentabilidad.length > 0 && !advice && !analyzingAlerts) {
+            getDashboardAlertsAnalysis(data.inventario.alertasRentabilidad);
+        }
+    }, [data?.inventario?.alertasRentabilidad]);
     const [form, setForm] = React.useState({ desc: '', monto: '', cat: 'servicios' });
 
     const colors = isDark ? darkTheme : lightTheme;
@@ -69,6 +83,16 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
         }
     };
 
+    const handleAjustarPrecio = async (id: string) => {
+        try {
+            await autoAjustarPrecio(id);
+            Toast.show({ type: 'success', text1: '¡Precio Actualizado!', text2: 'El margen se ha restaurado correctamente.' });
+            onRefresh();
+        } catch (error) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo actualizar el precio.' });
+        }
+    };
+
     if (loading && !data) {
         return (
             <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
@@ -80,7 +104,15 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title="Dashboard" notifications={notifications} />
+            <KitchyToolbar 
+                title="Dashboard" 
+                notifications={notifications} 
+                onNotificationPress={(n) => {
+                    if (n.id === 'caitlyn-ai-insight' || n.id === 'low-stock') {
+                        setShowCaitlynAlerts(true);
+                    }
+                }}
+            />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -99,6 +131,14 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
                 {data && (
                     <View style={styles.content}>
+
+                        {/* 🤖 ALERTA CAITLYN: Rentabilidad en Peligro */}
+                        {data.inventario?.alertasRentabilidad?.length > 0 && (
+                            <FinancialAlertCard 
+                                alertCount={data.inventario.alertasRentabilidad.length}
+                                onPress={() => setShowCaitlynAlerts(true)}
+                            />
+                        )}
 
                         {/* 1. Métrica Principal: Ventas Hoy */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(250)}>
@@ -407,6 +447,13 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                     </Animated.View>
                 </View>
             </Modal>
+
+            <CaitlynAlertsModal 
+                visible={showCaitlynAlerts}
+                onClose={() => setShowCaitlynAlerts(false)}
+                alertas={data?.inventario?.alertasRentabilidad || []}
+                onAjustarPrecio={handleAjustarPrecio}
+            />
         </View>
     );
 }

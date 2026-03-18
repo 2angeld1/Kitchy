@@ -16,6 +16,7 @@ interface KitchyToolbarProps {
     notifications?: any[]; // Prop opcional para inyectar notificaciones
     extraButtons?: React.ReactNode;
     onBack?: () => void;
+    onNotificationPress?: (notif: any) => void;
 }
 
 export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
@@ -23,7 +24,8 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     showNotifications = true,
     notifications,
     extraButtons,
-    onBack
+    onBack,
+    onNotificationPress
 }) => {
     const { logout, user, switchNegocioContext } = useAuth();
     const { isDark } = useTheme();
@@ -145,6 +147,10 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                 visible={showNotif}
                 onClose={() => setShowNotif(false)}
                 notifications={notifications}
+                onNotificationPress={(notif) => {
+                    setShowNotif(false);
+                    onNotificationPress?.(notif);
+                }}
             />
 
             {/* Modal Menú de Usuario */}

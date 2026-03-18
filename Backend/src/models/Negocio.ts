@@ -4,11 +4,12 @@ export interface INegocio extends Document {
     nombre: string;
     ruc?: string;
     logo?: string;
-    tipo: 'comida' | 'bebida' | 'postre' | 'otro';
+    tipo?: 'comida' | 'bebida' | 'postre' | 'otro';
     categoria: 'COMIDA' | 'BELLEZA';
     config: {
         moneda: string;
         impuesto: number;
+        margenObjetivo: number;
     };
     comisionConfig?: {
         porcentajeBarbero: number;
@@ -58,7 +59,8 @@ const negocioSchema = new Schema({
     },
     config: {
         moneda: { type: String, default: 'USD' },
-        impuesto: { type: Number, default: 0.07 }
+        impuesto: { type: Number, default: 0.07 },
+        margenObjetivo: { type: Number, default: 65 }
     },
     comisionConfig: {
         porcentajeBarbero: { type: Number, default: 50 },

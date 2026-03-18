@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import Animated, { FadeInDown, SlideInDown, FadeIn } from 'react-native-reanimated';
+import Animated, { FadeInDown, SlideInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring, FadeOutDown, FadeOut } from 'react-native-reanimated';
 import { lightTheme, darkTheme, spacing } from '../theme';
 import { styles } from '../styles/InventarioScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
@@ -41,6 +41,20 @@ export default function InventarioScreen() {
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
         pickDocument, startListening, handleCaitlynInvoice, tomarFotoFactura, seleccionarImagenGaleria, handleConfirmInvoiceItems
     } = useInventario();
+
+    const [isFabOpen, setIsFabOpen] = React.useState(false);
+    
+    // Animación de rotación para el FAB
+    const fabRotation = useSharedValue(0);
+    React.useEffect(() => {
+        fabRotation.value = withSpring(isFabOpen ? 45 : 0, { damping: 15, stiffness: 150 });
+    }, [isFabOpen]);
+
+    const animatedFabStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ rotate: `${fabRotation.value}deg` }]
+        };
+    });
 
     // Mapa de colores por estado de item de factura
     const statusColors: Record<string, { bg: string; border: string; text: string; label: string; icon: string }> = {
@@ -176,31 +190,55 @@ export default function InventarioScreen() {
                 )}
             </ScrollView>
 
-            <View style={{ position: 'absolute', bottom: spacing.lg, right: spacing.xl, gap: spacing.md }}>
-                <TouchableOpacity
-                    style={[styles.fab, { backgroundColor: '#4f46e5', position: 'relative', right: 0, bottom: 0 }]}
-                    onPress={tomarFotoFactura}
+            {isFabOpen && (
+                <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 10 }}>
+                    <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setIsFabOpen(false)} />
+                </Animated.View>
+            )}
+
+            <View style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 11, alignItems: 'flex-end' }}>
+                {isFabOpen && (
+                    <Animated.View entering={FadeInDown.springify().damping(15)} exiting={FadeOutDown.duration(200)} style={{ gap: spacing.md, alignItems: 'flex-end', marginBottom: spacing.md }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Text style={{ backgroundColor: colors.card, color: colors.textPrimary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, fontSize: 13, fontWeight: '800', overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}>Crear Manualmente</Text>
+                            <TouchableOpacity style={[styles.fab, { position: 'relative', bottom: 0, right: 0, width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primary }]} onPress={() => { setIsFabOpen(false); resetForm(); setShowModal(true); }}>
+                                <Ionicons name="pencil" size={20} color={colors.white} />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Text style={{ backgroundColor: colors.card, color: colors.textPrimary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, fontSize: 13, fontWeight: '800', overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}>Foto de Factura</Text>
+                            <TouchableOpacity style={[styles.fab, { position: 'relative', bottom: 0, right: 0, width: 48, height: 48, borderRadius: 24, backgroundColor: '#4f46e5' }]} onPress={() => { setIsFabOpen(false); tomarFotoFactura(); }}>
+                                <Ionicons name="camera" size={20} color={colors.white} />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Text style={{ backgroundColor: colors.card, color: colors.textPrimary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, fontSize: 13, fontWeight: '800', overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}>Factura de Galería</Text>
+                            <TouchableOpacity style={[styles.fab, { position: 'relative', bottom: 0, right: 0, width: 48, height: 48, borderRadius: 24, backgroundColor: '#6366f1' }]} onPress={() => { setIsFabOpen(false); seleccionarImagenGaleria(); }}>
+                                <Ionicons name="images" size={20} color={colors.white} />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Text style={{ backgroundColor: colors.card, color: colors.textPrimary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, fontSize: 13, fontWeight: '800', overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}>Escanear Código</Text>
+                            <TouchableOpacity style={[styles.fab, { position: 'relative', bottom: 0, right: 0, width: 48, height: 48, borderRadius: 24, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]} onPress={() => { setIsFabOpen(false); openScanner(); }}>
+                                <Ionicons name="barcode-outline" size={20} color={colors.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Text style={{ backgroundColor: colors.card, color: colors.textPrimary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, fontSize: 13, fontWeight: '800', overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 }}>Subir CSV / Excel</Text>
+                            <TouchableOpacity style={[styles.fab, { position: 'relative', bottom: 0, right: 0, width: 48, height: 48, borderRadius: 24, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]} onPress={() => { setIsFabOpen(false); pickDocument(); }}>
+                                <Ionicons name="cloud-download-outline" size={20} color={colors.textPrimary} />
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+                )}
+
+                <TouchableOpacity 
+                    activeOpacity={0.8}
+                    onPress={() => setIsFabOpen(!isFabOpen)}
                 >
-                    <Ionicons name="camera" size={24} color={colors.white} />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.fab, { backgroundColor: '#6366f1', position: 'relative', right: 0, bottom: 0 }]}
-                    onPress={seleccionarImagenGaleria}
-                >
-                    <Ionicons name="images" size={24} color={colors.white} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface, position: 'relative', right: 0, bottom: 0, borderWidth: 1, borderColor: colors.border }]} onPress={openScanner}>
-                    <Ionicons name="barcode-outline" size={24} color={colors.textPrimary} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.fab, { backgroundColor: colors.surface, position: 'relative', right: 0, bottom: 0, borderWidth: 1, borderColor: colors.border }]} onPress={pickDocument}>
-                    <Ionicons name="cloud-download-outline" size={24} color={colors.textPrimary} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary, position: 'relative', right: 0, bottom: 0 }]} onPress={() => { resetForm(); setShowModal(true); }}>
-                    <Ionicons name="add" size={30} color={colors.white} />
+                    <Animated.View style={[styles.fab, { position: 'relative', bottom: 0, right: 0, backgroundColor: isFabOpen ? '#ef4444' : colors.primary }, animatedFabStyle]}>
+                        <Ionicons name="add" size={32} color={colors.white} />
+                    </Animated.View>
                 </TouchableOpacity>
             </View>
 
@@ -424,7 +462,7 @@ export default function InventarioScreen() {
 
                                     <View style={{ flexDirection: 'row', gap: 10 }}>
                                         <View style={{ flex: 2 }}>
-                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RUC</Text>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RUC EMISOR</Text>
                                             <TextInput 
                                                 style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
                                                 value={invoiceMetadata.ruc}
@@ -449,7 +487,30 @@ export default function InventarioScreen() {
                                                 style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
                                                 value={invoiceMetadata.nroFactura}
                                                 onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, nroFactura: text })}
-                                                placeholder="000-000-000"
+                                                placeholder="000"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <View style={{ flexDirection: 'row', gap: 10 }}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>FECHA EMISIÓN</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.fecha}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, fecha: text })}
+                                                placeholder="YYYY-MM-DD"
+                                                placeholderTextColor={colors.textMuted}
+                                            />
+                                        </View>
+                                        <View style={{ flex: 2 }}>
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RECEPTOR (CLIENTE)</Text>
+                                            <TextInput 
+                                                style={{ color: colors.textPrimary, fontSize: 14, paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                                value={invoiceMetadata.receptor}
+                                                onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, receptor: text })}
+                                                placeholder="Consumidor Final"
                                                 placeholderTextColor={colors.textMuted}
                                             />
                                         </View>

@@ -11,15 +11,17 @@ interface Notification {
     title: string;
     message: string;
     time: string;
+    type?: 'ai' | 'info' | 'error' | 'warning';
 }
 
 interface NotificationModalProps {
     visible: boolean;
     onClose: () => void;
     notifications?: Notification[];
+    onNotificationPress?: (notif: Notification) => void;
 }
 
-export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, onClose, notifications = [] }) => {
+export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, onClose, notifications = [], onNotificationPress }) => {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 
@@ -44,22 +46,47 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, o
 
                     <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
                         {notifications.length > 0 ? notifications.map((notif: Notification) => (
-                            <View key={notif.id} style={[styles.item, { borderBottomColor: colors.border }]}>
-                                <View style={[styles.iconCircle, { backgroundColor: colors.background }]}>
+                            <TouchableOpacity 
+                                key={notif.id} 
+                                style={[
+                                    styles.item, 
+                                    { borderBottomColor: colors.border },
+                                    notif.type === 'ai' && { backgroundColor: isDark ? 'rgba(225, 29, 72, 0.05)' : 'rgba(225, 29, 72, 0.03)', borderRadius: 16, marginVertical: 4, borderBottomWidth: 0, padding: 16 }
+                                ]}
+                                onPress={() => onNotificationPress?.(notif)}
+                                activeOpacity={0.7}
+                            >
+                                <View style={[
+                                    styles.iconCircle, 
+                                    { backgroundColor: colors.background },
+                                    notif.type === 'ai' && { backgroundColor: colors.primary }
+                                ]}>
                                     <Ionicons
-                                        name={notif.title === 'Stock Bajo' ? 'alert-circle' : 'information-circle'}
-                                        size={22}
-                                        color={notif.title === 'Stock Bajo' ? colors.error : colors.primary}
+                                        name={notif.type === 'ai' ? 'sparkles' : notif.title === 'Stock Bajo' ? 'alert-circle' : 'information-circle'}
+                                        size={notif.type === 'ai' ? 18 : 22}
+                                        color={notif.type === 'ai' ? '#fff' : notif.title === 'Stock Bajo' ? colors.error : colors.primary}
                                     />
                                 </View>
                                 <View style={styles.body}>
                                     <View style={styles.itemHeader}>
-                                        <Text style={[styles.itemTitle, { color: colors.textPrimary }]}>{notif.title}</Text>
+                                        <Text style={[
+                                            styles.itemTitle, 
+                                            { color: colors.textPrimary },
+                                            notif.type === 'ai' && { color: colors.primary, fontWeight: '900' }
+                                        ]}>{notif.title}</Text>
                                         <Text style={[styles.time, { color: colors.textMuted }]}>{notif.time}</Text>
                                     </View>
-                                    <Text style={[styles.msg, { color: colors.textSecondary }]}>{notif.message}</Text>
+                                    <Text 
+                                        style={[styles.msg, { color: colors.textSecondary }]}
+                                        numberOfLines={notif.type === 'ai' ? 3 : 2}
+                                    >
+                                        {notif.message}
+                                    </Text>
+                                    {notif.type === 'ai' && (
+                                        <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '700', marginTop: 8 }}>Toca para ver productos →</Text>
+                                    )}
                                 </View>
-                            </View>
+                            </TouchableOpacity>
                         )) : (
                             <View style={{ padding: 40, alignItems: 'center' }}>
                                 <Ionicons name="notifications-off-outline" size={48} color={colors.textMuted} />

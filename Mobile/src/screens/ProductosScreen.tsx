@@ -8,6 +8,7 @@ import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useProductos, Producto, IIngrediente } from '../hooks/useProductos';
 import { useInventario } from '../hooks/useInventario';
+import { useCaitlyn } from '../hooks/useCaitlyn';
 import { KitchyInput } from '../components/KitchyInput';
 import Toast from 'react-native-toast-message';
 import * as DocumentPicker from 'expo-document-picker';
@@ -15,6 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
+import { updateNegocioConfig } from '../services/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +35,26 @@ export default function ProductosScreen() {
     } = useProductos();
 
     const { items: itemsInventario } = useInventario();
+    const { getBusinessAdvice, advice, loading: loadingCaitlyn, error: errorCaitlyn, setAdvice } = useCaitlyn();
+
+    // Estado para Configuración de Margen
+    const [showConfigModal, setShowConfigModal] = useState(false);
+    const [margenInput, setMargenInput] = useState('65');
+    const [savingConfig, setSavingConfig] = useState(false);
+
+    const handleSaveMargen = async () => {
+        setSavingConfig(true);
+        try {
+            await updateNegocioConfig({ margenObjetivo: parseInt(margenInput) });
+            Toast.show({ type: 'success', text1: '¡Actualizado!', text2: 'Caitlyn ahora vigilará los precios con esta meta.' });
+            setShowConfigModal(false);
+            handleRefresh(); // recargar si es necesario
+        } catch (err) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo actualizar el margen.' });
+        } finally {
+            setSavingConfig(false);
+        }
+    };
 
     useEffect(() => {
         if (error) {
@@ -177,6 +199,12 @@ export default function ProductosScreen() {
                         returnKeyType="search"
                     />
                 </View>
+                <TouchableOpacity 
+                    style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, padding: 12, borderRadius: 16 }}
+                    onPress={() => setShowConfigModal(true)}
+                >
+                    <Ionicons name="options-outline" size={20} color={colors.primary} />
+                </TouchableOpacity>
             </View>
 
             <View style={styles.filterContainer}>
@@ -314,6 +342,46 @@ export default function ProductosScreen() {
                                     />
                                 </View>
 
+                                {/* 🤖 ASISTENTE CAITLYN (Solo en edición para tener datos reales) */}
+                                {editItem && (
+                                    <View style={[styles.caitlynContainer, { backgroundColor: colors.surface, borderColor: colors.primary + '30', borderWidth: 1, borderRadius: 24, padding: 16, marginVertical: 12 }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                                            <View style={{ backgroundColor: colors.primary, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+                                                <Ionicons name="sparkles" size={18} color="#fff" />
+                                            </View>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary }}>Consejo de Caitlyn</Text>
+                                                <Text style={{ fontSize: 11, color: colors.textMuted }}>Análisis de rentabilidad con IA</Text>
+                                            </View>
+                                            {!advice && !loadingCaitlyn && (
+                                                <TouchableOpacity 
+                                                    style={{ backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
+                                                    onPress={() => getBusinessAdvice(nombre)}
+                                                >
+                                                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Preguntar</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+
+                                        {loadingCaitlyn && (
+                                            <Animated.View entering={FadeIn} style={{ paddingVertical: 10, alignItems: 'center' }}>
+                                                <Text style={{ color: colors.textSecondary, fontSize: 12, fontStyle: 'italic' }}>Analizando costos y márgenes...</Text>
+                                            </Animated.View>
+                                        )}
+
+                                        {advice && (
+                                            <Animated.View entering={FadeInDown} style={{ backgroundColor: colors.background, padding: 12, borderRadius: 16 }}>
+                                                <Text style={{ fontSize: 13, color: colors.textPrimary, lineHeight: 18 }}>{advice}</Text>
+                                                <TouchableOpacity onPress={() => setAdvice(null)} style={{ marginTop: 8 }}>
+                                                    <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }}>Cerrar</Text>
+                                                </TouchableOpacity>
+                                            </Animated.View>
+                                        )}
+
+                                        {errorCaitlyn && <Text style={{ fontSize: 12, color: '#e11d48', marginTop: 4 }}>{errorCaitlyn}</Text>}
+                                    </View>
+                                )}
+
                                 {/* Receta / Insumos */}
                                 <View style={[styles.sectionTitleRow, { borderTopColor: colors.border }]}>
                                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}><Ionicons name="archive" size={16} color={colors.primary} /> Receta / Insumos</Text>
@@ -374,6 +442,41 @@ export default function ProductosScreen() {
                             </ScrollView>
                         </Animated.View>
                     </KeyboardAvoidingView>
+                </Animated.View>
+            </Modal>
+
+            {/* Modal de Configurar Rentabilidad */}
+            <Modal visible={showConfigModal} animationType="fade" transparent={true} onRequestClose={() => setShowConfigModal(false)}>
+                <Animated.View entering={FadeIn.duration(200)} style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 }]}>
+                    <View style={{ backgroundColor: colors.card, borderRadius: 24, padding: 24, paddingBottom: 32, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
+                        <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: `${colors.primary}20`, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+                            <Ionicons name="trending-up" size={28} color={colors.primary} />
+                        </View>
+                        <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>Rentabilidad Deseada</Text>
+                        <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center', marginBottom: 20 }}>
+                            Establece el <Text style={{ fontWeight: 'bold' }}>Margen de Ganancia Objetivo</Text>. Caitlyn te avisará si algún producto cae por debajo de esta meta.
+                        </Text>
+                        
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingHorizontal: 16, width: '100%', marginBottom: 24 }}>
+                            <TextInput 
+                                style={{ height: 56, fontSize: 32, fontWeight: '900', color: colors.textPrimary, textAlign: 'center', minWidth: 60 }}
+                                value={margenInput}
+                                onChangeText={setMargenInput}
+                                keyboardType="numeric"
+                                maxLength={2}
+                            />
+                            <Text style={{ fontSize: 32, fontWeight: '900', color: colors.textMuted }}>%</Text>
+                        </View>
+
+                        <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+                            <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: colors.surface }} onPress={() => setShowConfigModal(false)}>
+                                <Text style={{ fontSize: 15, fontWeight: '700', color: colors.textSecondary }}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: colors.primary }} onPress={handleSaveMargen} disabled={savingConfig}>
+                                <Text style={{ fontSize: 15, fontWeight: '700', color: '#fff' }}>{savingConfig ? 'Guardando...' : 'Guardar Meta'}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </Animated.View>
             </Modal>
 

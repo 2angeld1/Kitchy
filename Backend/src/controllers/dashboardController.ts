@@ -7,6 +7,7 @@ import Producto from '../models/Producto';
 import User from '../models/User';
 import Gasto from '../models/Gasto';
 import Negocio from '../models/Negocio';
+import { calcularPrecioSugerido, calcularMargenActual } from '../utils/pricing';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 
 // Dashboard general
@@ -165,6 +166,39 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             new Date(item.fechaVencimiento) <= proximaSemana
         ).length;
 
+        // --- CAITLYN: VIGILANCIA DE MÁRGENES ---
+        const negocio = await Negocio.findById(req.negocioId);
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65; // Por defecto 65% si no configuró
+        const alertasRentabilidad: any[] = [];
+
+        for (const prod of (productos as any[])) {
+            if (prod.ingredientes && prod.ingredientes.length > 0) {
+                let costoTotal = 0;
+                for (const ing of (prod.ingredientes as any[])) {
+                    const invItem = (inventario as any[]).find((i: any) => i._id.toString() === (ing.inventario as any).toString());
+                    if (invItem) {
+                        costoTotal += (invItem.costoUnitario * ing.cantidad);
+                    }
+                }
+                
+                const precio = prod.precio || 0;
+                const margenActual = calcularMargenActual(precio, costoTotal);
+
+                if (precio > 0 && margenActual < margenObjetivo) {
+                    const precioSugerido = calcularPrecioSugerido(costoTotal, margenObjetivo);
+                    alertasRentabilidad.push({
+                        id: prod._id,
+                        nombre: prod.nombre,
+                        margenActual: margenActual.toFixed(1),
+                        margenObjetivo,
+                        precioActual: precio,
+                        precioSugerido: precioSugerido.toFixed(2),
+                        costoTotal: costoTotal.toFixed(2)
+                    });
+                }
+            }
+        }
+
         // Productos más vendidos del mes
         const productosCantidad: { [key: string]: { nombre: string; cantidad: number; total: number } } = {};
         ventasMes.forEach(venta => {
@@ -320,7 +354,8 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                 itemsStockBajo,
                 itemsVenciendo,
                 totalItems: inventario.length,
-                productosEnRiesgo: productosEnRiesgo.slice(0, 5)
+                productosEnRiesgo: productosEnRiesgo.slice(0, 5),
+                alertasRentabilidad
             },
             finanzas: {
                 ingresosMes: totalVentasMes.toFixed(2),
