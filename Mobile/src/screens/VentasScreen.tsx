@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, RefreshControl, Image } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeIn, SlideInDown } from 'react-native-reanimated';
 import { useVentas, Producto } from '../hooks/useVentas';
 import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/VentasScreen.styles';
@@ -10,8 +9,22 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth, Negocio } from '../context/AuthContext';
 import BellezaVentasScreen from './BellezaVentasScreen';
 
+// Componentes modulares
+import { VentasProductCard } from './Ventas/components/VentasProductCard';
+import { VentasCartModal } from './Ventas/components/VentasCartModal';
+import { VentasOrderSelector } from './Ventas/components/VentasOrderSelector';
+
 export default function VentasScreen() {
-    const { productosFiltrados, carrito, loading, refreshing, onRefresh, showModal, setShowModal, busqueda, setBusqueda, categoriaFiltro, setCategoriaFiltro, agregarAlCarrito, quitarDelCarrito, calcularTotal, procesarVenta, cliente, setCliente, metodoPago, setMetodoPago, ordenes, activeOrderId, activeOrder, nuevaOrden, seleccionarOrden, eliminarOrden } = useVentas();
+    const { 
+        productosFiltrados, carrito, loading, refreshing, onRefresh, 
+        showModal, setShowModal, busqueda, setBusqueda, 
+        categoriaFiltro, setCategoriaFiltro, agregarAlCarrito, 
+        quitarDelCarrito, calcularTotal, procesarVenta, 
+        cliente, setCliente, metodoPago, setMetodoPago, 
+        ordenes, activeOrderId, activeOrder, nuevaOrden, 
+        seleccionarOrden, eliminarOrden 
+    } = useVentas();
+    
     const { user } = useAuth();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
@@ -20,69 +33,12 @@ export default function VentasScreen() {
         ? user.negocioActivo as Negocio
         : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
 
-    // Si es un negocio de belleza, derivamos a su dashboard especializado
+    // Si es un negocio de belleza, derivamos a su pantalla especializada
     if (negocioActual?.categoria === 'BELLEZA') {
         return <BellezaVentasScreen />;
     }
 
     const categorias = ['comida', 'bebida', 'postre'];
-
-    const renderItem = (producto: Producto, index: number) => (
-        <Animated.View
-            entering={FadeInDown.delay(index * 50)}
-            key={producto._id}
-        >
-            <TouchableOpacity
-                style={[
-                    styles.productCard,
-                    { backgroundColor: colors.card, borderColor: colors.border },
-                    producto.insuficiente && { opacity: 0.7, borderColor: '#ef4444' }
-                ]}
-                onPress={() => agregarAlCarrito(producto)}
-                activeOpacity={0.7}
-            >
-                {producto.insuficiente && (
-                    <View style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        zIndex: 10,
-                        backgroundColor: '#ef4444',
-                        paddingHorizontal: 6,
-                        paddingVertical: 2,
-                        borderRadius: 6
-                    }}>
-                        <Text style={{ color: 'white', fontSize: 8, fontWeight: 'bold' }}>SIN STOCK</Text>
-                    </View>
-                )}
-                <View style={[styles.imagePlaceholder, { backgroundColor: colors.background, overflow: 'hidden' }]}>
-                    {producto.imagen ? (
-                        <Image
-                            source={{ uri: producto.imagen }}
-                            style={{ width: '100%', height: '100%' }}
-                            resizeMode="cover"
-                        />
-                    ) : (
-                        <Ionicons
-                            name={producto.categoria === 'comida' ? 'fast-food' : producto.categoria === 'bebida' ? 'water' : producto.categoria === 'postre' ? 'ice-cream' : 'cube'}
-                            size={48}
-                            color={colors.textMuted}
-                            style={{ opacity: 0.5 }}
-                        />
-                    )}
-                </View>
-                <Text style={[styles.productName, { color: colors.textPrimary }]} numberOfLines={2}>{producto.nombre}</Text>
-
-                {producto.insuficiente && producto.faltantes && (
-                    <Text style={{ color: '#ef4444', fontSize: 8, marginTop: 2 }} numberOfLines={1}>
-                        Falta: {producto.faltantes.join(', ')}
-                    </Text>
-                )}
-
-                <Text style={[styles.productPrice, { color: colors.primary }]}>${producto.precio.toFixed(2)}</Text>
-            </TouchableOpacity>
-        </Animated.View>
-    );
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -105,65 +61,16 @@ export default function VentasScreen() {
                 }
             />
 
-            {/* Selector de Pedidos / Agrupamiento */}
-            <View style={{ backgroundColor: colors.card, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
-                    {ordenes.map(o => (
-                        <TouchableOpacity
-                            key={o.id}
-                            onPress={() => seleccionarOrden(o.id)}
-                            onLongPress={() => eliminarOrden(o.id)}
-                            style={{
-                                paddingHorizontal: 14,
-                                paddingVertical: 8,
-                                borderRadius: 12,
-                                backgroundColor: activeOrderId === o.id ? colors.primary : colors.surface,
-                                borderWidth: 1.5,
-                                borderColor: activeOrderId === o.id ? colors.primary : colors.border,
-                                minWidth: 80,
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <Text style={{
-                                color: activeOrderId === o.id ? colors.white : colors.textPrimary,
-                                fontWeight: '800',
-                                fontSize: 13
-                            }}>
-                                {o.nombre}
-                            </Text>
-                            {o.items.length > 0 && (
-                                <Text style={{
-                                    color: activeOrderId === o.id ? 'rgba(255,255,255,0.8)' : colors.textMuted,
-                                    fontSize: 10,
-                                    fontWeight: '600',
-                                    marginTop: 2
-                                }}>
-                                    {o.items.length} items
-                                </Text>
-                            )}
-                        </TouchableOpacity>
-                    ))}
-                    <TouchableOpacity
-                        onPress={() => nuevaOrden()}
-                        style={{
-                            width: 44,
-                            height: 44,
-                            borderRadius: 12,
-                            backgroundColor: colors.surface,
-                            borderWidth: 1.5,
-                            borderColor: colors.border,
-                            borderStyle: 'dashed',
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}
-                    >
-                        <Ionicons name="add" size={24} color={colors.primary} />
-                    </TouchableOpacity>
-                </ScrollView>
-            </View>
+            <VentasOrderSelector 
+                ordenes={ordenes}
+                activeOrderId={activeOrderId}
+                seleccionarOrden={seleccionarOrden}
+                eliminarOrden={eliminarOrden}
+                nuevaOrden={nuevaOrden}
+                colors={colors}
+                styles={styles}
+            />
 
-            {/* Buscador */}
             <View style={styles.searchContainer}>
                 <View style={[styles.searchInputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                     <Ionicons name="search-outline" size={20} color={colors.textMuted} />
@@ -177,7 +84,6 @@ export default function VentasScreen() {
                 </View>
             </View>
 
-            {/* Categorías */}
             <View>
                 <ScrollView
                     horizontal
@@ -210,7 +116,6 @@ export default function VentasScreen() {
                 </ScrollView>
             </View>
 
-            {/* Listado de Productos */}
             <ScrollView
                 refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
@@ -223,124 +128,37 @@ export default function VentasScreen() {
                     </View>
                 ) : (
                     <View style={styles.productsGrid}>
-                        {productosFiltrados.map((p, i) => renderItem(p, i))}
+                        {productosFiltrados.map((p: Producto, i: number) => (
+                            <VentasProductCard 
+                                key={p._id}
+                                producto={p}
+                                index={i}
+                                onPress={agregarAlCarrito}
+                                colors={colors}
+                                styles={styles}
+                            />
+                        ))}
                     </View>
                 )}
             </ScrollView>
 
-            {/* Modal de Carrito */}
-            <Modal
+            <VentasCartModal 
                 visible={showModal}
-                animationType="fade"
-                transparent={true}
-                onRequestClose={() => setShowModal(false)}
-            >
-                <Animated.View
-                    entering={FadeIn.duration(300)}
-                    style={styles.modalOverlay}
-                >
-                    <Animated.View
-                        entering={SlideInDown.springify().damping(15)}
-                        style={[styles.modalContent, { backgroundColor: colors.card }]}
-                    >
-                        <View style={styles.modalHeader}>
-                            <View>
-                                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{activeOrder.nombre}</Text>
-                                <Text style={[styles.modalSubtitle, { color: colors.textMuted }]}>{carrito.length} Items seleccionados</Text>
-                            </View>
-                            <TouchableOpacity onPress={() => setShowModal(false)}>
-                                <Ionicons name="close-circle" size={32} color={colors.textMuted} />
-                            </TouchableOpacity>
-                        </View>
-
-                        <ScrollView contentContainerStyle={styles.carritoList}>
-                            {carrito.length === 0 ? (
-                                <View style={[styles.emptyContainer, { paddingTop: 100 }]}>
-                                    <Ionicons name="cart-outline" size={64} color={colors.border} />
-                                    <Text style={[styles.emptyText, { color: colors.textMuted }]}>El carrito está vacío</Text>
-                                </View>
-                            ) : (
-                                carrito.map(item => (
-                                    <View key={item.producto._id} style={[styles.cartItem, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                                        <View style={[styles.cartItemImage, { backgroundColor: colors.surface, overflow: 'hidden' }]}>
-                                            {item.producto.imagen ? (
-                                                <Image
-                                                    source={{ uri: item.producto.imagen }}
-                                                    style={{ width: '100%', height: '100%' }}
-                                                    resizeMode="cover"
-                                                />
-                                            ) : (
-                                                <Ionicons
-                                                    name={item.producto.categoria === 'comida' ? 'fast-food' : item.producto.categoria === 'bebida' ? 'water' : item.producto.categoria === 'postre' ? 'ice-cream' : 'cube'}
-                                                    size={20}
-                                                    color={colors.primary}
-                                                />
-                                            )}
-                                        </View>
-                                        <View style={styles.cartItemInfo}>
-                                            <Text style={[styles.cartItemName, { color: colors.textPrimary }]} numberOfLines={1}>{item.producto.nombre}</Text>
-                                            <Text style={[styles.cartItemPrice, { color: colors.primary }]}>${item.producto.precio.toFixed(2)}</Text>
-                                        </View>
-                                        <View style={[styles.quantityControls, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                                            <TouchableOpacity
-                                                style={styles.qtyBtn}
-                                                onPress={() => quitarDelCarrito(item.producto._id)}
-                                            >
-                                                <Ionicons name="remove" size={18} color={colors.textSecondary} />
-                                            </TouchableOpacity>
-                                            <Text style={[styles.qtyText, { color: colors.textPrimary }]}>{item.cantidad}</Text>
-                                            <TouchableOpacity
-                                                style={styles.qtyBtn}
-                                                onPress={() => agregarAlCarrito(item.producto)}
-                                            >
-                                                <Ionicons name="add" size={18} color={colors.primary} />
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-                                ))
-                            )}
-                        </ScrollView>
-
-                        {carrito.length > 0 && (
-                            <View style={[styles.checkoutFooter, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-                                <View style={styles.formRow}>
-                                    <TextInput
-                                        style={[styles.inputSmall, { backgroundColor: colors.background, borderColor: colors.border, color: colors.textPrimary }]}
-                                        placeholder="Cliente (Opcional)"
-                                        placeholderTextColor={colors.textMuted}
-                                        value={cliente}
-                                        onChangeText={setCliente}
-                                    />
-                                    <TouchableOpacity
-                                        onPress={() => setMetodoPago(metodoPago === 'efectivo' ? 'yappy' : 'efectivo')}
-                                        style={[styles.selectSmall, { backgroundColor: colors.background, borderColor: colors.border }]}
-                                    >
-                                        <Text style={[styles.selectText, { color: colors.textPrimary }]}>
-                                            {metodoPago === 'efectivo' ? '💵 Efectivo' : '💸 Yappy'}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                                <View style={styles.totalRow}>
-                                    <Text style={[styles.totalLabel, { color: colors.textMuted }]}>Total a pagar</Text>
-                                    <Text style={[styles.totalValue, { color: colors.textPrimary }]}>${calcularTotal().toFixed(2)}</Text>
-                                </View>
-
-                                <TouchableOpacity
-                                    style={styles.confirmBtn}
-                                    onPress={procesarVenta}
-                                    disabled={loading}
-                                >
-                                    <Ionicons name="checkmark-circle" size={24} color={colors.white} />
-                                    <Text style={styles.confirmBtnText}>
-                                        {loading ? 'Procesando...' : 'Confirmar Pedido'}
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </Animated.View>
-                </Animated.View>
-            </Modal>
+                onClose={() => setShowModal(false)}
+                activeOrder={activeOrder}
+                carrito={carrito}
+                colors={colors}
+                styles={styles}
+                agregarAlCarrito={agregarAlCarrito}
+                quitarDelCarrito={quitarDelCarrito}
+                calcularTotal={calcularTotal}
+                cliente={cliente}
+                setCliente={setCliente}
+                metodoPago={metodoPago}
+                setMetodoPago={setMetodoPago}
+                procesarVenta={procesarVenta}
+                loading={loading}
+            />
         </View>
     );
 }

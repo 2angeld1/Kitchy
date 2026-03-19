@@ -72,7 +72,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                 <Animated.Text entering={FadeInDown.duration(400).delay(100)} style={[styles.greetingTitle, { color: colors.textMuted }]}>
                     Centro de Belleza
                 </Animated.Text>
-                
+
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 20 }}>
                     <Animated.Text entering={FadeInDown.duration(400).delay(150)} style={[styles.greetingSubtitle, { color: colors.textPrimary, marginBottom: 12 }]}>
                         ¡Hola, {user?.nombre?.split(' ')[0]}!
@@ -94,10 +94,10 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                 borderColor: periodo === p.id ? colors.primary : colors.border
                             }}
                         >
-                            <Text style={{ 
-                                fontSize: 12, 
-                                fontWeight: '700', 
-                                color: periodo === p.id ? '#fff' : colors.textSecondary 
+                            <Text style={{
+                                fontSize: 12,
+                                fontWeight: '700',
+                                color: periodo === p.id ? '#fff' : colors.textSecondary
                             }}>
                                 {p.label}
                             </Text>
@@ -107,7 +107,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
 
                 {data && (
                     <View style={styles.content}>
-                        
+
                         {/* 1. Métrica Principal: Comisiones a pagar */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(250)}>
                             <View style={[styles.glassCardBase, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -174,7 +174,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
 
                                 <View style={styles.listContainer}>
                                     {data.comisiones?.especialistas && data.comisiones.especialistas.length > 0 ? (
-                                        data.comisiones.especialistas.sort((a,b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => {
+                                        data.comisiones.especialistas.sort((a, b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => {
                                             const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
                                             const isTop3 = idx < 3;
                                             const rankColor = isTop3 ? rankColors[idx] : colors.textPrimary;
@@ -193,7 +193,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                                             {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día
                                                         </Text>
                                                     </View>
-                                                    <View 
+                                                    <View
                                                         style={[styles.listItemRightBadge, { backgroundColor: isTop3 ? rankColor + '15' : 'rgba(139, 92, 246, 0.1)' }]}
                                                     >
                                                         <Text style={[styles.listItemRightBadgeText, { color: isTop3 ? rankColor : '#8b5cf6' }]}>${esp.pago.toFixed(0)}</Text>

@@ -88,19 +88,19 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
         );
     }
 
-    const negocioActual = typeof user?.negocioActivo === 'object' 
-        ? user.negocioActivo as Negocio 
+    const negocioActual = typeof user?.negocioActivo === 'object'
+        ? user.negocioActivo as Negocio
         : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
-    
+
     if (negocioActual?.categoria === 'BELLEZA') {
         return <BellezaDashboardScreen navigation={navigation} />;
     }
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar 
-                title="Dashboard" 
-                notifications={notifications} 
+            <KitchyToolbar
+                title="Dashboard"
+                notifications={notifications}
                 onNotificationPress={(n) => {
                     if (n.id === 'caitlyn-ai-insight' || n.id === 'low-stock') setShowCaitlynAlerts(true);
                 }}
@@ -178,19 +178,19 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                             datasets: [{ data: data.ventasUltimos7Dias.map((v: any) => v.total) }]
                                         }}
                                         width={width - 64} // Ajustado para el padding de content (24*2) + borde (1*2) + margen seguro
-                                        height={180} 
-                                        yAxisLabel="$" 
+                                        height={180}
+                                        yAxisLabel="$"
                                         yAxisInterval={1}
                                         chartConfig={{
                                             backgroundColor: colors.card,
                                             backgroundGradientFrom: colors.card,
                                             backgroundGradientTo: colors.card,
                                             decimalPlaces: 0,
-                                            color: (opacity = 1) => `rgba(${parseInt(colors.primary.slice(1,3), 16)}, ${parseInt(colors.primary.slice(3,5), 16)}, ${parseInt(colors.primary.slice(5,7), 16)}, ${opacity})`,
+                                            color: (opacity = 1) => `rgba(${parseInt(colors.primary.slice(1, 3), 16)}, ${parseInt(colors.primary.slice(3, 5), 16)}, ${parseInt(colors.primary.slice(5, 7), 16)}, ${opacity})`,
                                             labelColor: (opacity = 1) => colors.textMuted,
                                             propsForDots: { r: "4", strokeWidth: "2", stroke: colors.primary }
                                         }}
-                                        bezier 
+                                        bezier
                                         style={{ marginVertical: 8, borderRadius: 16 }}
                                     />
                                 </View>
@@ -203,7 +203,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
             </ScrollView>
 
             <DashboardGastoModal visible={showGastoModal} onClose={() => setShowGastoModal(false)} onSave={handleGuardarGasto} loading={creatingGasto} colors={colors} styles={styles} />
-            
+
             <CaitlynAlertsModal visible={showCaitlynAlerts} onClose={() => setShowCaitlynAlerts(false)} alertas={data?.inventario?.alertasRentabilidad || []} onAjustarPrecio={async (id) => { await handleAjustarPrecio(id); }} />
         </View>
     );

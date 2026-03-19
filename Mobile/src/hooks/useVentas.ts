@@ -174,6 +174,27 @@ export const useVentas = () => {
     };
 
     const agregarAlCarrito = (producto: Producto) => {
+        if (producto.insuficiente) {
+            const sugerencia = getSugerenciaInteligente(producto._id);
+            if (sugerencia) {
+                Toast.show({
+                    type: 'info',
+                    text1: '🧠 Sugerencia de Caitlyn',
+                    text2: `No hay ${producto.nombre}, ¡pero el ${sugerencia.nombre} está disponible!`,
+                    position: 'bottom',
+                    visibilityTime: 4000
+                });
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Sin Stock',
+                    text2: `No hay insumos suficientes para ${producto.nombre}`,
+                    position: 'bottom'
+                });
+            }
+            return;
+        }
+
         setOrdenes(ordenes.map(o => {
             if (o.id !== activeOrderId) return o;
             
@@ -288,6 +309,20 @@ export const useVentas = () => {
         return matchBusqueda && matchCategoria;
     });
 
+    const getSugerenciaInteligente = (productoId: string) => {
+        const prod = productos.find(p => p._id === productoId);
+        if (!prod || !prod.insuficiente) return null;
+
+        // Buscar otro de la misma categoría con stock
+        const sugerencia = productos.find(p => 
+            p.categoria === prod.categoria && 
+            !p.insuficiente && 
+            p._id !== prod._id
+        );
+
+        return sugerencia || null;
+    };
+
     return {
         productos,
         carrito,
@@ -315,6 +350,7 @@ export const useVentas = () => {
         seleccionarOrden,
         eliminarOrden,
         showOrderSelector,
-        setShowOrderSelector
+        setShowOrderSelector,
+        getSugerenciaInteligente
     };
 };
