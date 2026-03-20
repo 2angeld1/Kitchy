@@ -8,6 +8,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { useReportes } from '../hooks/useReportes';
 import { LineChart, BarChart } from 'react-native-chart-kit';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -16,13 +17,29 @@ export default function FinanzasScreen() {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const { financialData, loading, error, cargarReporteFinanciero } = useReportes();
+    const [fiscalData, setFiscalData] = useState<any>(null);
+    const [loadingFiscal, setLoadingFiscal] = useState(false);
+
+    const cargarDatosFiscales = async () => {
+        try {
+            setLoadingFiscal(true);
+            const response = await api.get('/stats/fiscal-balance');
+            setFiscalData(response.data);
+        } catch (err) {
+            console.warn('Error cargando balance fiscal:', err);
+        } finally {
+            setLoadingFiscal(false);
+        }
+    };
 
     useEffect(() => {
         cargarReporteFinanciero();
+        cargarDatosFiscales();
     }, [cargarReporteFinanciero]);
 
     const onRefresh = () => {
         cargarReporteFinanciero();
+        cargarDatosFiscales();
     };
 
     if (loading && !financialData) {
@@ -58,6 +75,34 @@ export default function FinanzasScreen() {
                 contentContainerStyle={{ padding: 20 }}
                 refreshControl={<RefreshControl refreshing={loading} onRefresh={onRefresh} tintColor={colors.primary} />}
             >
+                {/* 🇵🇦 TARJETA FISCAL (PROVISIÓN ITBMS) */}
+                <Animated.View 
+                    entering={FadeInDown.delay(50)} 
+                    style={{ 
+                        backgroundColor: isDark ? 'rgba(79, 70, 229, 0.15)' : 'rgba(79, 70, 229, 0.05)', 
+                        padding: 18, borderRadius: 24, marginBottom: 20, 
+                        borderWidth: 1.5, borderColor: '#4f46e5',
+                        flexDirection: 'row', alignItems: 'center'
+                    }}
+                >
+                    <View style={{ backgroundColor: '#4f46e5', padding: 12, borderRadius: 16, marginRight: 15 }}>
+                        <Ionicons name="receipt-outline" size={24} color="#fff" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.5 }}>PROVISIÓN ITBMS ({fiscalData?.resumen.mes || 'Mes'})</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'baseline', marginTop: 2 }}>
+                            <Text style={{ color: colors.textPrimary, fontSize: 24, fontWeight: '900' }}>
+                                ${fiscalData?.balanceFinal || '0.00'}
+                            </Text>
+                            <Text style={{ color: colors.textMuted, fontSize: 12, marginLeft: 4 }}>estimado</Text>
+                        </View>
+                        <Text style={{ color: '#4f46e5', fontSize: 11, marginTop: 4, fontWeight: '600' }}>
+                            Deducibles de facturas: ${fiscalData?.itbmsCompras || '0.00'}
+                        </Text>
+                    </View>
+                    {loadingFiscal && <ActivityIndicator size="small" color="#4f46e5" />}
+                </Animated.View>
+
                 {/* Resumen Cards */}
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 20 }}>
                     <Animated.View entering={FadeInDown.delay(100)} style={{ width: '48%', backgroundColor: colors.card, padding: 16, borderRadius: 20, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>

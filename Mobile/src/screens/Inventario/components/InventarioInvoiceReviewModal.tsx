@@ -17,7 +17,7 @@ interface Props {
     invoiceItemsFiltrados: any[];
     invoiceStatusCounts: any;
     getInvoiceItemStatus: (item: any) => 'coincide' | 'similar' | 'nuevo' | 'incompleto';
-    onConfirm: (items: any[]) => void;
+    onConfirm: (items: any[], metadata: any) => void;
     loading: boolean;
     colors: any;
     styles: any;
@@ -137,12 +137,12 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                                         <Ionicons name="close-circle" size={22} color="#ef4444" />
                                     </TouchableOpacity>
                                 </View>
-                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
                                     <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 10, color: sc.text }}>Cant.</Text>
+                                        <Text style={{ fontSize: 10, color: sc.text, fontWeight: '700' }}>CANT. FACTURA</Text>
                                         <TextInput
-                                            style={{ color: colors.textPrimary, borderBottomWidth: 1, borderBottomColor: sc.border }}
-                                            value={String(item.cantidad)}
+                                            style={{ color: colors.textPrimary, borderBottomWidth: 1.5, borderBottomColor: sc.border, paddingVertical: 4, fontWeight: '700' }}
+                                            value={String(item.cantidad || 0)}
                                             keyboardType="numeric"
                                             onChangeText={(text) => {
                                                 const newItems = [...invoiceItems];
@@ -152,9 +152,23 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                                         />
                                     </View>
                                     <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 10, color: sc.text }}>Precio Ud.</Text>
+                                        <Text style={{ fontSize: 10, color: sc.text, fontWeight: '700' }}>UDS/PACK</Text>
                                         <TextInput
-                                            style={{ color: colors.textPrimary, borderBottomWidth: 1, borderBottomColor: sc.border }}
+                                            style={{ color: colors.primary, borderBottomWidth: 1.5, borderBottomColor: colors.primary, paddingVertical: 4, fontWeight: '800' }}
+                                            value={String(item.unidadesPorEmpaque || 1)}
+                                            keyboardType="numeric"
+                                            placeholder="1"
+                                            onChangeText={(text) => {
+                                                const newItems = [...invoiceItems];
+                                                newItems[realIndex] = { ...newItems[realIndex], unidadesPorEmpaque: parseInt(text) || 1 };
+                                                setInvoiceItems(newItems);
+                                            }}
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1.5 }}>
+                                        <Text style={{ fontSize: 10, color: sc.text, fontWeight: '700' }}>PRECIO EMPAQUE</Text>
+                                        <TextInput
+                                            style={{ color: colors.textPrimary, borderBottomWidth: 1.5, borderBottomColor: sc.border, paddingVertical: 4, fontWeight: '700' }}
                                             value={String(item.precioUnitario || '')}
                                             keyboardType="numeric"
                                             onChangeText={(text) => {
@@ -165,13 +179,26 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                                         />
                                     </View>
                                 </View>
+
+                                {/* Resumen de Desglose */}
+                                <View style={{ marginTop: 12, backgroundColor: 'rgba(255,255,255,0.3)', padding: 8, borderRadius: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                        <Ionicons name="cube-outline" size={14} color={sc.text} />
+                                        <Text style={{ fontSize: 11, color: colors.textPrimary, fontWeight: '600' }}>
+                                            Ingresar: <Text style={{ color: colors.primary, fontWeight: '900' }}>{(item.cantidad * (item.unidadesPorEmpaque || 1)).toFixed(1)} {item.unidad || 'uds'}</Text>
+                                        </Text>
+                                    </View>
+                                    <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                                        Costo Ud: <Text style={{ fontWeight: '700' }}>${((item.precioUnitario || 0) / (item.unidadesPorEmpaque || 1)).toFixed(2)}</Text>
+                                    </Text>
+                                </View>
                             </Animated.View>
                         );
                     })}
                 </ScrollView>
 
                 <View style={{ padding: 16, backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border }}>
-                    <KitchyButton title={`Importar (${invoiceItems.length})`} onPress={() => onConfirm(invoiceItems)} loading={loading} />
+                    <KitchyButton title={`Importar (${invoiceItems.length})`} onPress={() => onConfirm(invoiceItems, invoiceMetadata)} loading={loading} />
                     <TouchableOpacity onPress={onClose} style={{ marginTop: 12, alignItems: 'center' }}>
                         <Text style={{ color: colors.textMuted }}>Cancelar</Text>
                     </TouchableOpacity>

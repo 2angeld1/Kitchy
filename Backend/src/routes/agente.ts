@@ -1,10 +1,17 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio } from '../controllers/agenteController';
+import {
+    procesarFactura,
+    consultarCosteoPorNombre,
+    obtenerConsejoNegocio,
+    guardarGastoFactura,
+    sugerirReceta,
+    analizarAlertasDashboard
+} from '../controllers/agenteController';
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
+// Todas las rutas requieren autenticaci\u00f3n
 router.use(auth);
 
 /**
@@ -12,7 +19,10 @@ router.use(auth);
  * @desc Sube una foto de factura para que Caitlyn la analice
  */
 router.post('/factura', procesarFactura);
-router.post('/advice', obtenerConsejoNegocio);
-router.get('/costeo/:nombre', consultarCosteoPorNombre);
+router.post('/advice', auth, obtenerConsejoNegocio);
+router.post('/dashboard-alerts', auth, analizarAlertasDashboard);
+router.post('/invoice', auth, procesarFactura);
+router.post('/invoice/confirm', auth, guardarGastoFactura);
+router.post('/recipe/suggest', auth, sugerirReceta);
 
 export default router;

@@ -1,44 +1,75 @@
-import { useState } from 'react';
-import api from '../services/api'; // Usamos el servicio de la API de Node (Puerto 5000)
-import { CAITLYN_URL } from '../config/api'; 
+import { useState, useCallback } from 'react';
+import api from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Variables fuera del hook para caché en RAM (Dura mientras la app no se cierre)
+let cachedInsight: string | null = null;
+let lastFetchTime: number = 0;
+const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 horas (Ajustado por Angel)
 
 export const useCaitlyn = () => {
     const [loading, setLoading] = useState(false);
-    const [advice, setAdvice] = useState<string | null>(null);
+    const [advice, setAdvice] = useState<string | null>(cachedInsight); // PARA EL DASHBOARD
+    const [productAdvice, setProductAdvice] = useState<string | null>(null); // PARA PRODUCTOS/RECETAS
     const [error, setError] = useState<string | null>(null);
 
-    // Insight Automático del Día (Sin botones!)
-    const getDailyInsight = async () => {
+    // Insight Autom\u00e1tico del D\u00eda (Con Cach\u00e9!)
+    const getDailyInsight = useCallback(async (force = false) => {
+        const now = Date.now();
+        
+        // 1. Si tenemos caché en RAM y no ha pasado el tiempo, usarlo
+        if (!force && cachedInsight && (now - lastFetchTime < CACHE_DURATION)) {
+            setAdvice(cachedInsight);
+            return;
+        }
+
+        // 2. Intentar recuperar de disco (AsyncStorage) antes de ir a Internet
+        if (!force && !cachedInsight) {
+            try {
+                const stored = await AsyncStorage.getItem('caitlyn_insight');
+                const storedTime = await AsyncStorage.getItem('caitlyn_insight_time');
+                if (stored && storedTime && (now - Number(storedTime) < CACHE_DURATION)) {
+                    cachedInsight = stored;
+                    lastFetchTime = Number(storedTime);
+                    setAdvice(stored);
+                    return;
+                }
+            } catch (err) {
+                console.error('Error leyendo caché de Caitlyn:', err);
+            }
+        }
+
+        // 3. Si no hay caché o queremos forzar, consultar a la central (IA)
         setLoading(true);
         setError(null);
         try {
-            // Llamamos a nuestro nuevo Broker en el Backend de Node (5000)
             const response = await api.post('/agente/advice', {});
             
             if (response.data.success) {
-                setAdvice(response.data.message);
+                const message = response.data.message;
+                setAdvice(message);
+                
+                // Actualizar caché en RAM y Disco
+                cachedInsight = message;
+                lastFetchTime = now;
+                await AsyncStorage.setItem('caitlyn_insight', message);
+                await AsyncStorage.setItem('caitlyn_insight_time', now.toString());
             }
         } catch (err: any) {
             console.error('Error al obtener insight automático:', err);
-            // Si falla, no mostramos error al usuario para no interrumpir, 
-            // simplemente Caitlyn se queda callada en el dashboard.
         } finally {
             setLoading(false);
         }
-    };
+    }, [advice]);
 
     const getBusinessAdvice = async (productName: string) => {
         setLoading(true);
         setError(null);
-        setAdvice(null);
-
+        setProductAdvice(null);
         try {
-            // Redirigimos la llamada al Broker (Backend Node 5000)
             const response = await api.post('/agente/advice', { productName });
-
             if (response.data.success) {
-                setAdvice(response.data.message);
+                setProductAdvice(response.data.message);
             } else {
                 setError(response.data.message || 'Caitlyn no pudo analizar este producto.');
             }
@@ -53,14 +84,11 @@ export const useCaitlyn = () => {
     const getDashboardAlertsAnalysis = async (alerts: any[]) => {
         setLoading(true);
         setError(null);
-        setAdvice(null);
-
+        setProductAdvice(null);
         try {
-            // Este sigue yendo directo a la IA por ahora o podemos unificarlo luego
             const response = await api.post('/agente/dashboard-alerts', { alerts });
-
             if (response.data.success) {
-                setAdvice(response.data.message);
+                setProductAdvice(response.data.message);
             } else {
                 setError(response.data.message || 'Caitlyn no pudo analizar las alertas.');
             }
@@ -77,8 +105,10 @@ export const useCaitlyn = () => {
         getBusinessAdvice,
         getDashboardAlertsAnalysis,
         advice,
+        productAdvice,
         loading,
         error,
-        setAdvice
+        setAdvice,
+        setProductAdvice
     };
 };

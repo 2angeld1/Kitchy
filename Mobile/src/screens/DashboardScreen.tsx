@@ -47,12 +47,17 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const [showGastoModal, setShowGastoModal] = useState(false);
     const [showCaitlynAlerts, setShowCaitlynAlerts] = useState(false);
 
+    const [hasAnalyzed, setHasAnalyzed] = useState(false);
+
     useEffect(() => {
-        // Solo intentamos analizar si hay alertas, no hay consejo previo, no estamos cargando Y no hay un error previo de conexión
-        if (data?.inventario?.alertasRentabilidad && data.inventario.alertasRentabilidad.length > 0 && !advice && !analyzingAlerts && !caitlynError) {
-            getDashboardAlertsAnalysis(data.inventario.alertasRentabilidad);
+        const alertas = data?.inventario?.alertasRentabilidad;
+        // Solo intentamos analizar si hay alertas, no hemos analizado ya en esta carga,
+        // no hay consejo previo, no estamos cargando Y no hay un error previo
+        if (alertas && alertas.length > 0 && !hasAnalyzed && !advice && !analyzingAlerts && !caitlynError) {
+            setHasAnalyzed(true);
+            getDashboardAlertsAnalysis(alertas);
         }
-    }, [data?.inventario?.alertasRentabilidad, advice, analyzingAlerts, caitlynError]);
+    }, [data?.inventario?.alertasRentabilidad, advice, analyzingAlerts, caitlynError, hasAnalyzed]);
 
     useEffect(() => {
         if (error) {
@@ -114,8 +119,6 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
             >
                 <Animated.Text entering={FadeInDown.duration(400).delay(100)} style={styles.greetingTitle}>Resumen General</Animated.Text>
                 <Animated.Text entering={FadeInDown.duration(400).delay(150)} style={styles.greetingSubtitle}>¡Hola, {user?.nombre?.split(' ')[0]}!</Animated.Text>
-
-                <CaitlynAutomaticInsight />
 
                 {data && (
                     <View style={styles.content}>
@@ -208,6 +211,8 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
             <DashboardGastoModal visible={showGastoModal} onClose={() => setShowGastoModal(false)} onSave={handleGuardarGasto} loading={creatingGasto} colors={colors} styles={styles} />
 
             <CaitlynAlertsModal visible={showCaitlynAlerts} onClose={() => setShowCaitlynAlerts(false)} alertas={data?.inventario?.alertasRentabilidad || []} onAjustarPrecio={async (id) => { await handleAjustarPrecio(id); }} />
+            
+            <CaitlynAutomaticInsight />
         </View>
     );
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Modal, ScrollView, TouchableOpacity, Image, Switch, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Modal, ScrollView, TouchableOpacity, Image, Switch, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown, FadeInDown } from 'react-native-reanimated';
 import { KitchyInput } from '../../../components/KitchyInput';
@@ -27,24 +27,25 @@ interface Props {
     onAddIngrediente: () => void;
     onRemoveIngrediente: (index: number) => void;
     onChangeIngrediente: (index: number, field: string, value: any) => void;
+    onSugerirReceta: () => void;
     onSubmit: () => void;
     loading: boolean;
     colors: any;
     styles: any;
     // Caitlyn props
-    advice: string | null;
+    productAdvice: string | null;
     loadingCaitlyn: boolean;
     errorCaitlyn: string | null;
     getBusinessAdvice: (nombre: string) => void;
-    setAdvice: (v: string | null) => void;
+    setProductAdvice: (v: string | null) => void;
 }
 
 export const ProductoFormModal: React.FC<Props> = ({ 
     visible, onClose, editItem, nombre, setNombre, descripcion, setDescripcion, 
     precio, setPrecio, categoria, setCategoria, disponible, setDisponible, 
     imagen, setImagen, ingredientes, itemsInventario, onPickImage, onAddIngrediente, 
-    onRemoveIngrediente, onChangeIngrediente, onSubmit, loading, colors, styles,
-    advice, loadingCaitlyn, errorCaitlyn, getBusinessAdvice, setAdvice
+    onRemoveIngrediente, onChangeIngrediente, onSugerirReceta, onSubmit, loading, colors, styles,
+    productAdvice, loadingCaitlyn, errorCaitlyn, getBusinessAdvice, setProductAdvice
 }) => {
     return (
         <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
@@ -125,43 +126,53 @@ export const ProductoFormModal: React.FC<Props> = ({
                             </View>
 
                             {/* 🤖 ASISTENTE CAITLYN */}
-                            {editItem && (
-                                <View style={[styles.caitlynContainer, { borderColor: colors.primary + '30', borderWidth: 1, borderRadius: 24, padding: 16, marginVertical: 12 }]}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                                        <View style={{ backgroundColor: colors.primary, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
-                                            <Ionicons name="sparkles" size={18} color="#fff" />
-                                        </View>
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary }}>Consejo de Caitlyn</Text>
-                                            <Text style={{ fontSize: 11, color: colors.textMuted }}>An\u00e1lisis de rentabilidad con IA</Text>
-                                        </View>
-                                        {!advice && !loadingCaitlyn && (
-                                            <TouchableOpacity 
-                                                style={{ backgroundColor: colors.primary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}
-                                                onPress={() => getBusinessAdvice(nombre)}
-                                            >
-                                                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Preguntar</Text>
-                                            </TouchableOpacity>
-                                        )}
+                            <View style={[styles.caitlynContainer, { borderColor: colors.primary + '30', borderWidth: 1, borderRadius: 24, padding: 16, marginVertical: 12 }]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                                    <View style={{ backgroundColor: colors.primary, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+                                        <Ionicons name="sparkles" size={18} color="#fff" />
                                     </View>
-
-                                    {loadingCaitlyn && (
-                                        <Animated.View entering={FadeIn} style={{ paddingVertical: 10, alignItems: 'center' }}>
-                                            <Text style={{ color: colors.textSecondary, fontSize: 12, fontStyle: 'italic' }}>Analizando costos y m\u00e1rgenes...</Text>
-                                        </Animated.View>
-                                    )}
-
-                                    {advice && (
-                                        <Animated.View entering={FadeInDown} style={{ backgroundColor: colors.background, padding: 12, borderRadius: 16 }}>
-                                            <Text style={{ fontSize: 13, color: colors.textPrimary, lineHeight: 18 }}>{advice}</Text>
-                                            <TouchableOpacity onPress={() => setAdvice(null)} style={{ marginTop: 8 }}>
-                                                <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }}>Cerrar</Text>
-                                            </TouchableOpacity>
-                                        </Animated.View>
-                                    )}
-                                    {errorCaitlyn && <Text style={{ fontSize: 12, color: '#e11d48', marginTop: 4 }}>{errorCaitlyn}</Text>}
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary }}>Asistente Caitlyn</Text>
+                                        <Text style={{ fontSize: 11, color: colors.textMuted }}>Sugerencias inteligentes con IA</Text>
+                                    </View>
+                                    
+                                    {/* Botón para Sugerir Receta (Ideal para productos nuevos) */}
+                                    <TouchableOpacity 
+                                        style={{ backgroundColor: colors.primary + '22', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.primary + '44' }}
+                                        onPress={onSugerirReceta}
+                                        disabled={loadingCaitlyn}
+                                    >
+                                        <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
+                                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '900' }}>Sugerir Receta</Text>
+                                    </TouchableOpacity>
                                 </View>
-                            )}
+
+                                {productAdvice && (
+                                    <Animated.View entering={FadeInDown} style={{ backgroundColor: colors.background, padding: 12, borderRadius: 16, marginTop: 10 }}>
+                                        <Text style={{ fontSize: 13, color: colors.textPrimary, lineHeight: 18 }}>{productAdvice}</Text>
+                                        <TouchableOpacity onPress={() => setProductAdvice(null)} style={{ marginTop: 8 }}>
+                                            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }}>Cerrar</Text>
+                                        </TouchableOpacity>
+                                    </Animated.View>
+                                )}
+                                
+                                {editItem && !productAdvice && !loadingCaitlyn && (
+                                    <TouchableOpacity 
+                                        onPress={() => getBusinessAdvice(nombre)}
+                                        style={{ marginTop: 10, paddingVertical: 8, alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.border + '44' }}
+                                    >
+                                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>¿Análisis de rentabilidad para este ítem? <Text style={{ color: colors.primary }}>Consultar</Text></Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                {loadingCaitlyn && (
+                                    <Animated.View entering={FadeIn} style={{ paddingVertical: 10, alignItems: 'center' }}>
+                                        <ActivityIndicator size="small" color={colors.primary} />
+                                        <Text style={{ color: colors.textSecondary, fontSize: 12, fontStyle: 'italic', marginTop: 6 }}>Caitlyn está razonando...</Text>
+                                    </Animated.View>
+                                )}
+                                {errorCaitlyn && <Text style={{ fontSize: 12, color: '#e11d48', marginTop: 4 }}>{errorCaitlyn}</Text>}
+                            </View>
 
                             {/* Receta / Insumos */}
                             <View style={styles.sectionTitleRow}>

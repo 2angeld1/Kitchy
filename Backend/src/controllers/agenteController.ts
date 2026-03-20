@@ -209,3 +209,134 @@ export const consultarCosteoPorNombre = async (req: AuthRequest, res: Response) 
         res.status(500).json({ message: 'Error de costeo' });
     }
 };
+
+/**
+ * Guarda los datos de la factura confirmados por el usuario como un Gasto real
+ * Y ADEMÁS actualiza el stock en el Inventario basándose en el desglose (uds/pack).
+ */
+export const guardarGastoFactura = async (req: AuthRequest, res: Response) => {
+    try {
+        const { proveedor, ruc, dv, total, subtotal, itbms, nroFactura, fecha, items } = req.body;
+        const negocioId = req.negocioId;
+        const userId = req.userId;
+
+        if (!negocioId) return res.status(403).json({ message: 'No tienes negocio activo' });
+
+        // 1. Guardar el registro de GASTO (Para Balance Fiscal e ITBMS)
+        const nuevoGasto = new Gasto({
+            descripcion: `Compra a ${proveedor || 'Proveedor'} (Factura #${nroFactura || 'S/N'})`,
+            categoria: 'compras',
+            monto: total,
+            subtotal: subtotal || (total - (itbms || 0)),
+            itbms: itbms || 0,
+            fecha: fecha ? new Date(fecha) : new Date(),
+            proveedor,
+            ruc,
+            dv,
+            nroFactura,
+            usuario: userId,
+            negocioId
+        });
+
+        await nuevoGasto.save();
+
+        // 2. Actualizar el INVENTARIO (Si vienen productos vinculados)
+        let actualizados = 0;
+        if (items && Array.isArray(items)) {
+            for (const item of items) {
+                // Buscamos si el item ya existe en el inventario por nombre (o si tiene un ID vinculado)
+                // En el futuro Kitchy usará IDs, por ahora buscamos por nombre exacto en el negocio
+                const itemInv = await Inventario.findOne({ 
+                    negocioId, 
+                    nombre: new RegExp(`^${item.nombre}$`, 'i') 
+                });
+
+                if (itemInv) {
+                    const multi = item.unidadesPorEmpaque || 1;
+                    const cantidadRealAAgregar = item.cantidad * multi;
+                    
+                    // Actualizar Stock
+                    itemInv.cantidad += cantidadRealAAgregar;
+                    
+                    // Actualizar Costo Unitario (Nuevo costo / Multiplicador)
+                    const nuevoCostoReportado = item.precioUnitario || 0;
+                    itemInv.costoUnitario = nuevoCostoReportado / multi;
+
+                    await itemInv.save();
+                    actualizados++;
+                }
+            }
+        }
+
+        res.status(201).json({
+            success: true,
+            message: `Factura procesada. Gasto registrado y ${actualizados} productos actualizados en stock.`,
+            gasto: nuevoGasto
+        });
+
+    } catch (error: any) {
+        console.error('Error al guardar gasto e inventario de factura:', error);
+        res.status(500).json({ message: 'Error al procesar la confirmación', error: error.message });
+    }
+};
+
+/**
+ * Pide a Caitlyn una sugerencia de receta basada en el inventario actual.
+ */
+export const sugerirReceta = async (req: AuthRequest, res: Response) => {
+    try {
+        const { nombrePlato } = req.body;
+        const negocioId = req.negocioId;
+
+        if (!nombrePlato) return res.status(400).json({ message: 'Falta el nombre del plato' });
+
+        // 1. Obtener TODO el inventario del negocio para que Caitlyn sepa con qué cuenta
+        const inventario = await Inventario.find({ negocioId }).select('nombre unidad _id');
+
+        // 2. Consultar a Caitlyn
+        const response = await axios.post(`${CAITLYN_URL}/agent/recipe/suggest`, {
+            dish_name: nombrePlato,
+            inventory: inventario
+        });
+
+        if (response.data.success) {
+            res.json({
+                success: true,
+                recipe: response.data.recipe
+            });
+        } else {
+            res.status(400).json({ success: false, error: response.data.error || 'Caitlyn no pudo generar la receta' });
+        }
+
+    } catch (error: any) {
+        console.error('Error sugiriendo receta con Caitlyn:', error);
+        res.status(500).json({ message: 'Error de conexión con el Chef Caitlyn' });
+    }
+};
+/**
+ * Pide a Caitlyn un resumen de las alertas del dashboard.
+ */
+export const analizarAlertasDashboard = async (req: AuthRequest, res: Response) => {
+    try {
+        const { alerts } = req.body;
+        if (!alerts || !Array.isArray(alerts)) {
+            return res.status(400).json({ success: false, message: 'No se enviaron alertas válidas.' });
+        }
+
+        // 1. Delegar a Caitlyn en Python (8000)
+        console.log(`🤖 Caitlyn analizando ${alerts.length} alertas del Dashboard...`);
+        const response = await axios.post(`${CAITLYN_URL}/agent/business/dashboard-alerts`, { alerts });
+
+        if (response.data.success) {
+            res.json({
+                success: true,
+                message: response.data.message
+            });
+        } else {
+            res.status(400).json({ success: false, message: response.data.message || 'Error analizando alertas con Caitlyn.' });
+        }
+    } catch (error: any) {
+        console.error('❌ Error en broker de alertas Caitlyn:', error.message);
+        res.status(500).json({ success: false, message: 'Caitlyn no pudo procesar el resumen de alertas hoy.' });
+    }
+};

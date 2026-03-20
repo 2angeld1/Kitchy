@@ -123,4 +123,10 @@ export const updateMenuConfig = (data: any) => api.put('/menu-config', data);
 export const procesarFacturaCaitlyn = (imagenBase64: string) =>
     api.post('/agente/factura', { imagen: imagenBase64 });
 
+export const confirmInvoice = (metadata: any, items: any[]) =>
+    api.post('/agente/invoice/confirm', { ...metadata, items });
+
+export const suggestRecipe = (nombrePlato: string) =>
+    api.post('/agente/recipe/suggest', { nombrePlato });
+
 export default api;

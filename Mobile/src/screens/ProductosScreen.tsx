@@ -33,11 +33,12 @@ export default function ProductosScreen() {
         categoria, setCategoria, disponible, setDisponible, imagen, setImagen,
         ingredientes, handleRefresh, resetForm, openEditModal,
         handleSubmit, handleDelete, handleToggleDisponible, handleImportCsv,
-        handleAddIngrediente, handleRemoveIngrediente, handleChangeIngrediente
+        handleAddIngrediente, handleRemoveIngrediente, handleChangeIngrediente,
+        handleSugerirReceta
     } = useProductos();
 
     const { items: itemsInventario } = useInventario();
-    const { getBusinessAdvice, advice, loading: loadingCaitlyn, error: errorCaitlyn, setAdvice } = useCaitlyn();
+    const { getBusinessAdvice, productAdvice, loading: loadingCaitlyn, error: errorCaitlyn, setProductAdvice } = useCaitlyn();
 
     // Estado para Configuraci\u00f3n de Margen
     const [showConfigModal, setShowConfigModal] = useState(false);
@@ -213,15 +214,16 @@ export default function ProductosScreen() {
                 onAddIngrediente={handleAddIngrediente}
                 onRemoveIngrediente={handleRemoveIngrediente}
                 onChangeIngrediente={handleChangeIngrediente}
+                onSugerirReceta={handleSugerirReceta}
                 onSubmit={handleSubmit}
                 loading={loading}
                 colors={colors}
                 styles={styles}
-                advice={advice}
+                productAdvice={productAdvice}
                 loadingCaitlyn={loadingCaitlyn}
                 errorCaitlyn={errorCaitlyn}
                 getBusinessAdvice={getBusinessAdvice}
-                setAdvice={setAdvice}
+                setProductAdvice={setProductAdvice}
             />
 
             <RentabilidadConfigModal 

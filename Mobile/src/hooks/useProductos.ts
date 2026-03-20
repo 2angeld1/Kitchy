@@ -7,7 +7,8 @@ import {
     updateProducto,
     deleteProducto,
     toggleDisponibilidad,
-    importarProductos
+    importarProductos,
+    suggestRecipe
 } from '../services/api';
 
 export interface IIngrediente {
@@ -253,6 +254,31 @@ export const useProductos = () => {
         });
     };
 
+    const handleSugerirReceta = async () => {
+        if (!nombre) {
+            setError('Primero escribe el nombre del plato');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await suggestRecipe(nombre);
+            if (response.data.success && response.data.recipe) {
+                const sugeridos = response.data.recipe.map((ing: any) => ({
+                    inventario: ing.inventario,
+                    cantidad: ing.cantidad,
+                    nombreDisplay: ing.nombre
+                }));
+                setIngredientes(sugeridos);
+                setSuccess('Caitlyn sugirió una receta basada en tu inventario');
+            }
+        } catch (err: any) {
+            setError('Error al conectar con la Chef Caitlyn');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         // Data
         productos,
@@ -289,6 +315,7 @@ export const useProductos = () => {
         handleImportCsv,
         handleAddIngrediente,
         handleRemoveIngrediente,
-        handleChangeIngrediente
+        handleChangeIngrediente,
+        handleSugerirReceta
     };
 };

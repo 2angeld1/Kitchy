@@ -2,7 +2,67 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import Negocio from '../models/Negocio';
 import Venta from '../models/Venta';
+import Gasto from '../models/Gasto';
 import PDFDocument from 'pdfkit';
+
+/**
+ * Calcula el Balance Fiscal Panameño (Ventas vs Compras)
+ * Esto le dice al dueño cuánto puede deducir de ITBMS.
+ */
+export const getFiscalBalance = async (req: AuthRequest, res: Response) => {
+    try {
+        const negocioId = req.negocioId;
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // 1. Obtener Ventas del Mes
+        const ventas = await Venta.find({
+            negocioId,
+            fecha: { $gte: startOfMonth }
+        });
+
+        // 2. Obtener Gastos (con ITBMS leídos por Caitlyn) del Mes
+        const gastos = await Gasto.find({
+            negocioId,
+            fecha: { $gte: startOfMonth }
+        });
+
+        // ITBMS por Ventas (Asumimos 7% sobre el total si no está desglosado)
+        let totalVentas = 0;
+        let itbmsDebito = 0; // Lo que le debo a la DGI
+        ventas.forEach(v => {
+            totalVentas += v.total;
+            // Kitchy asume que sus precios ya incluyen el 7% o lo calcula sobre el total
+            itbmsDebito += v.total * 0.07; 
+        });
+
+        // ITBMS por Compras (Deducible - Leído de las facturas)
+        let totalCompras = 0;
+        let itbmsCredito = 0; // Lo que puedo deducir
+        gastos.forEach(g => {
+            totalCompras += g.monto;
+            itbmsCredito += g.itbms || 0;
+        });
+
+        const provisionITBMS = itbmsDebito - itbmsCredito;
+
+        res.json({
+            periodo: startOfMonth,
+            itbmsVentas: itbmsDebito.toFixed(2),
+            itbmsCompras: itbmsCredito.toFixed(2),
+            balanceFinal: provisionITBMS.toFixed(2),
+            resumen: {
+                totalVentas: totalVentas.toFixed(2),
+                totalGastoInsumos: totalCompras.toFixed(2),
+                mes: now.toLocaleString('es-PA', { month: 'long' })
+            }
+        });
+
+    } catch (error: any) {
+        console.error('Error al calcular balance fiscal:', error);
+        res.status(500).json({ message: 'Error de cálculo fiscal', error: error.message });
+    }
+};
 
 export const getProducerReport = async (req: AuthRequest, res: Response) => {
     try {
