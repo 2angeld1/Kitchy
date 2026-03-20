@@ -17,7 +17,12 @@ import statsRoutes from './routes/stats';
 import comisionRoutes from './routes/comisiones';
 import especialistaRoutes from './routes/especialistas';
 
+import { initScheduler } from './config/scheduler';
+
 dotenv.config();
+
+// Inicializar el Radar de Caitlyn (Clima, Gasolina, Merca)
+initScheduler();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

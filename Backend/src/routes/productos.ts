@@ -11,7 +11,8 @@ import {
     obtenerCategorias,
     importarProductosCsv,
     obtenerCosteoProducto,
-    autoAdjustMargin
+    autoAdjustMargin,
+    autoAdjustGeneral
 } from '../controllers/productoController';
 
 const router = Router();
@@ -25,7 +26,8 @@ router.get('/categorias', obtenerCategorias);
 router.get('/:id', obtenerProductoPorId);
 
 // Rutas de administración
-router.post('/importar', upload.single('archivo'), importarProductosCsv);
+router.post('/auto-adjust-general', auth, autoAdjustGeneral);
+router.post('/importar-csv', auth, upload.single('file'), importarProductosCsv);
 router.post('/', crearProducto);
 router.put('/:id', actualizarProducto);
 router.delete('/:id', eliminarProducto);

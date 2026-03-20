@@ -3,11 +3,14 @@ import { AuthRequest } from '../middleware/auth';
 import { uploadImage } from '../utils/imageUpload';
 import Producto from '../models/Producto';
 import Gasto from '../models/Gasto';
+import Venta from '../models/Venta';
+import Inventario from '../models/Inventario';
 import axios from 'axios';
+import { getLatestContext } from '../services/marketContextService';
 
 /**
  * Controller para manejar las peticiones a Caitlyn (IA)
- * Flujo: Kitchy Backend → Caitlyn (analizar) → Frontend (revisar)
+ * Flujo: Kitchy Backend (Broker) → Caitlyn (IA) → Mobile
  */
 
 const CAITLYN_URL = process.env.CAITLYN_URL || 'http://localhost:8000';
@@ -73,24 +76,103 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
 };
 
 /**
- * Endpoint para que Caitlyn consulte el costeo de un producto por nombre
+ * ENDPOINT MAESTRO: Obtener consejo estratégico con contexto de PANAMÁ (Caitlyn)
  */
+export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => {
+    try {
+        const { productName } = req.body;
+        const negocioId = req.negocioId;
+
+        console.log(`🧠 Caitlyn generando insight automático (Negocio: ${negocioId})`);
+
+        // 1. Recolectar Contexto del Mercado de Panamá
+        const marketContext = await getLatestContext();
+
+        let businessStats: any = {};
+        
+        if (productName) {
+            // Caso específico de un producto (como antes)
+            const producto = await Producto.findOne({ nombre: new RegExp(productName, 'i'), negocioId })
+                .populate('ingredientes.inventario');
+
+            if (producto) {
+                const ventasRecientes = await Venta.find({
+                    negocioId,
+                    'productos.producto': producto._id,
+                    fecha: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+                });
+
+                businessStats = {
+                    tipo: 'PRODUCTO',
+                    nombre: producto.nombre,
+                    precioActual: producto.precio,
+                    ventas30Dias: ventasRecientes.length,
+                    ingredientes: (producto.ingredientes || []).map((ing: any) => ({
+                        nombre: ing.inventario?.nombre,
+                        costo: ing.inventario?.costoUnitario,
+                        unidad: ing.inventario?.unidad,
+                        cantidad: ing.cantidad
+                    }))
+                };
+            }
+        } else {
+            // CASO AUTOMÁTICO (Dashboard): Buscar el producto más vendido del mes
+            const ventasMes = await Venta.find({
+                negocioId,
+                fecha: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+            });
+
+            businessStats = {
+                tipo: 'GENERAL',
+                totalVentasMes: ventasMes.length,
+                ingresosMes: ventasMes.reduce((acc, v) => acc + v.total, 0)
+            };
+        }
+
+        // 3. Empaquetar y enviar al Microservicio de IA
+        const payload = {
+            product_name: productName,
+            market_context: marketContext,
+            business_data: businessStats,
+            config: {
+                tipo_negocio: (req as any).user?.negocioActivo?.categoria || 'GASTRONOMIA'
+            }
+        };
+
+        const response = await axios.post(`${CAITLYN_URL}/agent/business/advice`, payload);
+
+        if (response.data.success) {
+            res.json({
+                success: true,
+                message: response.data.message,
+                contextUsed: {
+                    clima: !!marketContext.WEATHER,
+                    gasolina: !!marketContext.FUEL,
+                    merca: !!marketContext.MERCA
+                }
+            });
+        } else {
+            res.status(400).json({ success: false, message: response.data.error || 'Caitlyn no pudo procesar el consejo.' });
+        }
+
+    } catch (error: any) {
+        console.error('❌ Error en broker de Caitlyn:', error.message);
+        res.status(500).json({ success: false, message: 'Error de conexión con IA' });
+    }
+};
+
 export const consultarCosteoPorNombre = async (req: AuthRequest, res: Response) => {
     try {
         const { nombre } = req.params;
         const negocioId = req.negocioId;
 
-        // Buscar producto por nombre (regex para flexibilidad)
         const producto = await Producto.findOne({ 
             nombre: new RegExp(nombre, 'i'), 
             negocioId 
         }).populate('ingredientes.inventario');
 
-        if (!producto) {
-            return res.status(404).json({ message: 'No encontré ese producto en tu menú.' });
-        }
+        if (!producto) return res.status(404).json({ message: 'No encontré ese producto.' });
 
-        // Lógica de cálculo (reutilizando la del productoController)
         let costoTotal = 0;
         const desglose = [];
 
@@ -119,13 +201,11 @@ export const consultarCosteoPorNombre = async (req: AuthRequest, res: Response) 
             margenActual: margenActual.toFixed(1) + '%',
             desglose,
             sugerencias: {
-                ideal: (costoTotal / 0.35).toFixed(2), // 65% margen
+                ideal: (costoTotal / 0.30).toFixed(2), // 70% margen
                 competitivo: (costoTotal / 0.40).toFixed(2) // 60% margen
             }
         });
-
     } catch (error: any) {
-        console.error('Error en consulta de costeo para Caitlyn:', error);
-        res.status(500).json({ message: 'Error al obtener costeo del producto', error: error.message });
+        res.status(500).json({ message: 'Error de costeo' });
     }
 };

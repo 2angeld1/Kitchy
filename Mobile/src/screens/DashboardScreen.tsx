@@ -23,6 +23,7 @@ import { DashboardFinancialSummary } from './Dashboard/components/DashboardFinan
 import { DashboardInventoryRisk } from './Dashboard/components/DashboardInventoryRisk';
 import { DashboardBestSellers } from './Dashboard/components/DashboardBestSellers';
 import { DashboardGastoModal } from './Dashboard/components/DashboardGastoModal';
+import { CaitlynAutomaticInsight } from '../components/CaitlynAutomaticInsight';
 
 const { width } = Dimensions.get('window');
 
@@ -113,6 +114,8 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
             >
                 <Animated.Text entering={FadeInDown.duration(400).delay(100)} style={styles.greetingTitle}>Resumen General</Animated.Text>
                 <Animated.Text entering={FadeInDown.duration(400).delay(150)} style={styles.greetingSubtitle}>¡Hola, {user?.nombre?.split(' ')[0]}!</Animated.Text>
+
+                <CaitlynAutomaticInsight />
 
                 {data && (
                     <View style={styles.content}>

@@ -38,14 +38,14 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
     return (
         <Modal visible={visible} animationType="slide">
             <View style={{ flex: 1, backgroundColor: colors.background }}>
-                <KitchyToolbar title="Revisi\u00f3n de Factura" />
+                <KitchyToolbar title="Revisión de Factura" />
 
                 <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
                     <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>
-                        Caitlyn detect\u00f3 {invoiceItems.length} productos
+                        Caitlyn detectó {invoiceItems.length} productos
                     </Text>
                     <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 4 }}>
-                        Verifica la informaci\u00f3n.
+                        Verifica la información.
                     </Text>
 
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, gap: 8 }}>

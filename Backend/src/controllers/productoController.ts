@@ -335,3 +335,41 @@ export const autoAdjustMargin = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error auto-ajustando el precio', error: error.message });
     }
 };
+
+// Auto ajustar TODOS los productos del negocio (Caitlyn Action General)
+export const autoAdjustGeneral = async (req: AuthRequest, res: Response) => {
+    try {
+        const negocioId = req.negocioId;
+        const negocio = await Negocio.findById(negocioId);
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
+
+        const productos = await Producto.find({ negocioId }).populate('ingredientes.inventario');
+        
+        let actualizados = 0;
+        for (const producto of productos) {
+            let costoTotal = 0;
+            if (producto.ingredientes && producto.ingredientes.length > 0) {
+                for (const ing of producto.ingredientes) {
+                    const inv = ing.inventario as any;
+                    if (inv) costoTotal += inv.costoUnitario * ing.cantidad;
+                }
+            }
+
+            if (costoTotal > 0) {
+                producto.precio = calcularPrecioSugerido(costoTotal, margenObjetivo);
+                await producto.save();
+                actualizados++;
+            }
+        }
+
+        res.json({ 
+            message: `Se han optimizado ${actualizados} productos para un margen del ${margenObjetivo}%.`,
+            actualizados,
+            margenObjetivo
+        });
+
+    } catch (error: any) {
+        console.error('Error en autoAdjustGeneral:', error);
+        res.status(500).json({ message: 'Error en la optimización general de precios' });
+    }
+};
