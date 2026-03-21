@@ -5,6 +5,7 @@ import Producto from '../models/Producto';
 import Gasto from '../models/Gasto';
 import Venta from '../models/Venta';
 import Inventario from '../models/Inventario';
+import Negocio from '../models/Negocio';
 import axios from 'axios';
 import { getLatestContext } from '../services/marketContextService';
 
@@ -286,29 +287,47 @@ export const guardarGastoFactura = async (req: AuthRequest, res: Response) => {
  */
 export const sugerirReceta = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombrePlato, servingSize } = req.body;
+        const { nombrePlato, servingSize, categoria } = req.body;
         const negocioId = req.negocioId;
 
         if (!nombrePlato) return res.status(400).json({ message: 'Falta el nombre del plato' });
 
-        // 1. Obtener TODO el inventario con COSTOS para que Caitlyn calcule
-        const inventario = await Inventario.find({ negocioId }).select('nombre unidad cantidad costoUnitario _id');
-        console.log(`📡 [NODE] Enviando ${inventario.length} items de inventario a Caitlyn para receta: ${nombrePlato}`);
+        // 1. Obtener margen objetivo del negocio
+        const negocio = await Negocio.findById(negocioId);
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
 
-        // 2. Consultar a Caitlyn
+        // 2. Obtener TODO el inventario con COSTOS
+        const inventario = await Inventario.find({ negocioId }).select('nombre unidad cantidad costoUnitario _id');
+        
+        // 3. Consultar a Caitlyn (IA)
         const response = await axios.post(`${CAITLYN_URL}/agent/recipe/suggest`, {
             dish_name: nombrePlato,
-            serving_size: servingSize, // Enviamos el tamaño/porción deseada
-            inventory: inventario
+            serving_size: servingSize,
+            category: categoria, // Pasamos la categoría (ej. 'bebida')
+            inventory: inventario,
+            target_margin: margenObjetivo
         });
 
         if (response.data.success) {
-            console.log(`✅ [NODE] Caitlyn respondió con éxito. Costo: ${response.data.costoTotal}, Precio: ${response.data.precioSugerido}`);
+            const recipeSuggestions = response.data.recipe || [];
+            
+            // 4. Identificar Faltantes (Insumos que no están en inventario o tienen stock 0)
+            const faltantes = recipeSuggestions.filter((ingSuggested: any) => {
+                const nombreSugerido = (ingSuggested.nombre || ingSuggested.insumo || "").toLowerCase();
+                const enInventario = inventario.find(inv => {
+                    const nombreInv = (inv.nombre || "").toLowerCase();
+                    return nombreInv.includes(nombreSugerido) || nombreSugerido.includes(nombreInv);
+                });
+                return !enInventario || enInventario.cantidad <= 0;
+            }).map((f: any) => f.nombre || f.insumo);
+
             res.json({
                 success: true,
-                recipe: response.data.recipe,
+                recipe: recipeSuggestions,
                 costoTotal: response.data.costoTotal,
-                precioSugerido: response.data.precioSugerido
+                precioSugerido: response.data.precioSugerido,
+                margenAplicado: margenObjetivo,
+                faltantes 
             });
         } else {
             res.status(400).json({ success: false, error: response.data.error || 'Caitlyn no pudo generar la receta' });

@@ -46,6 +46,7 @@ export const useProductos = () => {
     const [sugerenciaIA, setSugerenciaIA] = useState<IIngrediente[] | null>(null);
     const [costoTotalReceta, setCostoTotalReceta] = useState(0);
     const [precioSugeridoReceta, setPrecioSugeridoReceta] = useState(0);
+    const [faltantesIA, setFaltantesIA] = useState<string[]>([]);
 
     // Asistente Assistant State (Caitlyn)
     const [servingSize, setServingSize] = useState('');
@@ -297,6 +298,7 @@ export const useProductos = () => {
                 setSugerenciaIA(sugeridos);
                 setCostoTotalReceta(response.data.costoTotal || 0);
                 setPrecioSugeridoReceta(response.data.precioSugerido || 0);
+                setFaltantesIA(response.data.faltantes || []);
                 setSuccess('Caitlyn encontró una receta sugerida');
                 setShowSizePrompt(false);
             }
@@ -371,6 +373,7 @@ export const useProductos = () => {
         isLiquid,
         handlePreSugerirReceta,
         handleApplySuggestion,
+        faltantesIA,
 
         // Actions
         handleRefresh,

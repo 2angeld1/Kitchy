@@ -61,5 +61,6 @@ export interface ProductoFormModalProps {
     onPreSugerirReceta: () => void;
     onApplySuggestion: () => void;
     sugerenciaIA: IIngrediente[] | null;
+    faltantesIA?: string[];
     handleApplyRecipe: () => void;
 }

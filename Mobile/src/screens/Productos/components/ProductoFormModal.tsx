@@ -16,7 +16,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     sugerenciaIA, handleApplyRecipe,
     backendCostoTotal, backendPrecioSugerido,
     servingSize, onServingSizeChange, showSizePrompt, onShowSizePromptChange,
-    isLiquid, onPreSugerirReceta, onApplySuggestion
+    isLiquid, onPreSugerirReceta, onApplySuggestion, faltantesIA
 }) => {
 
     const styles = createModalStyles(colors);
@@ -31,23 +31,20 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     );
 
     return (
-        <Modal visible={visible} animationType="none" transparent={true} onRequestClose={onClose}>
+        <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
             <GestureHandlerRootView style={{ flex: 1 }}>
-                {visible && (
-                    <Animated.View 
-                        entering={FadeIn.duration(300)} 
-                        exiting={FadeOut.duration(300)}
-                        style={styles.modalOverlay}
+                <Animated.View 
+                    entering={FadeIn.duration(300)} 
+                    style={styles.modalOverlay}
+                >
+                    <KeyboardAvoidingView 
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                        style={styles.keyboardView}
                     >
-                        <KeyboardAvoidingView 
-                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-                            style={styles.keyboardView}
+                        <Animated.View 
+                            entering={SlideInDown.springify().damping(15)} 
+                            style={styles.modalContent}
                         >
-                            <Animated.View 
-                                entering={SlideInDown.springify().damping(15)} 
-                                exiting={SlideOutDown.springify().damping(15)}
-                                style={styles.modalContent}
-                            >
                                 {/* HEADER */}
                                 <View style={styles.header}>
                                     <View style={styles.headerTitleBox}>
@@ -190,14 +187,35 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                             <View style={styles.sugerenciaList}>
                                                 {sugerenciaIA.map((ing, idx) => (
                                                     <Text key={idx} style={styles.sugerenciaItem}>
-                                                        • {ing.nombreDisplay}: {ing.cantidad} {ing.unidad}
+                                                        • {ing.nombreDisplay || 'Insumo'}: {ing.cantidad} {ing.unidad}
                                                     </Text>
                                                 ))}
                                             </View>
-                                            <TouchableOpacity style={styles.applyRecipeBtn} onPress={handleApplyRecipe}>
-                                                <Ionicons name="checkmark-done" size={20} color="#fff" style={{ marginRight: 8 }} />
-                                                <Text style={styles.applyRecipeText}>APLICAR RECETA SUGERIDA</Text>
-                                            </TouchableOpacity>
+
+                                            {faltantesIA && faltantesIA.length > 0 && (
+                                                <View style={{ backgroundColor: '#ef444415', padding: 10, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: '#ef4444', marginTop: 8 }}>
+                                                    <Text style={{ fontSize: 11, fontWeight: '900', color: '#ef4444' }}>FALTANTES EN INVENTARIO:</Text>
+                                                    <Text style={{ fontSize: 11, color: '#ef4444' }}>{faltantesIA.join(', ')}</Text>
+                                                    <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 4 }}>* Deberás comprar estos insumos antes de preparar esta receta.</Text>
+                                                </View>
+                                            )}
+
+                                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                                                <TouchableOpacity style={[styles.applyRecipeBtn, { flex: 1.5 }]} onPress={handleApplyRecipe}>
+                                                    <Ionicons name="checkmark-done" size={20} color="#fff" style={{ marginRight: 8 }} />
+                                                    <Text style={styles.applyRecipeText}>APLICAR RECETA</Text>
+                                                </TouchableOpacity>
+
+                                                {backendPrecioSugerido && backendPrecioSugerido > 0 && (
+                                                    <TouchableOpacity 
+                                                        style={{ flex: 1, backgroundColor: `${colors.primary}20`, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: colors.primary }}
+                                                        onPress={onApplySuggestion}
+                                                    >
+                                                        <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>PRECIO SUGERIDO</Text>
+                                                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>${backendPrecioSugerido.toFixed(2)}</Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                            </View>
                                         </Animated.View>
                                     )}
 
@@ -325,7 +343,6 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                         </Animated.View>
                     </KeyboardAvoidingView>
                 </Animated.View>
-                )}
             </GestureHandlerRootView>
         </Modal>
     );

@@ -67,26 +67,16 @@ export const obtenerProductos = async (req: AuthRequest, res: Response) => {
             .sort({ categoria: 1, nombre: 1 });
 
         // Verificar disponibilidad real basada en ingredientes
+        // Tip de Performance: Ya estamos usando .populate(), así que el chequeo de stock es eficiente en memoria.
         const productosConEstado = productos.map(p => {
             const prodObj = p.toObject();
-            let insuficiente = false;
-            let faltantes: string[] = [];
-
-            if (prodObj.ingredientes && prodObj.ingredientes.length > 0) {
-                for (const ing of prodObj.ingredientes) {
-                    if (ing.inventario && typeof ing.inventario === 'object') {
-                        const inv: any = ing.inventario;
-                        if (inv.cantidad < ing.cantidad) {
-                            insuficiente = true;
-                            faltantes.push(inv.nombre);
-                        }
-                    }
-                }
-            }
+            const faltantes = (prodObj.ingredientes || [])
+                .filter((ing: any) => ing.inventario && ing.inventario.cantidad < ing.cantidad)
+                .map((ing: any) => ing.inventario.nombre);
 
             return {
                 ...prodObj,
-                insuficiente,
+                insuficiente: faltantes.length > 0,
                 faltantes
             };
         });
@@ -345,8 +335,8 @@ export const autoAdjustGeneral = async (req: AuthRequest, res: Response) => {
 
         const productos = await Producto.find({ negocioId }).populate('ingredientes.inventario');
         
-        let actualizados = 0;
-        for (const producto of productos) {
+        // Refactor de Performance: Usamos bulkWrite para evitar múltiples llamadas await .save() en un bucle N
+        const bulkOps = productos.map(producto => {
             let costoTotal = 0;
             if (producto.ingredientes && producto.ingredientes.length > 0) {
                 for (const ing of producto.ingredientes) {
@@ -356,15 +346,23 @@ export const autoAdjustGeneral = async (req: AuthRequest, res: Response) => {
             }
 
             if (costoTotal > 0) {
-                producto.precio = calcularPrecioSugerido(costoTotal, margenObjetivo);
-                await producto.save();
-                actualizados++;
+                return {
+                    updateOne: {
+                        filter: { _id: producto._id },
+                        update: { $set: { precio: calcularPrecioSugerido(costoTotal, margenObjetivo) } }
+                    }
+                };
             }
+            return null;
+        }).filter(op => op !== null);
+
+        if (bulkOps.length > 0) {
+            await Producto.bulkWrite(bulkOps as any);
         }
 
         res.json({ 
-            message: `Se han optimizado ${actualizados} productos para un margen del ${margenObjetivo}%.`,
-            actualizados,
+            message: `Optimización completada. ${bulkOps.length} productos ajustados al ${margenObjetivo}% de margen.`,
+            actualizados: bulkOps.length,
             margenObjetivo
         });
 
