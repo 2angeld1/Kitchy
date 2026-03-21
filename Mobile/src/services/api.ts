@@ -126,7 +126,7 @@ export const procesarFacturaCaitlyn = (imagenBase64: string) =>
 export const confirmInvoice = (metadata: any, items: any[]) =>
     api.post('/agente/invoice/confirm', { ...metadata, items });
 
-export const suggestRecipe = (nombrePlato: string) =>
-    api.post('/agente/recipe/suggest', { nombrePlato });
+export const suggestRecipe = (nombrePlato: string, servingSize?: string) =>
+    api.post('/agente/recipe/suggest', { nombrePlato, servingSize });
 
 export default api;

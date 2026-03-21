@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { TouchableOpacity as GHTouchableOpacity } from 'react-native-gesture-handler';
-import { Producto } from '../../../hooks/useProductos';
+import { Producto } from '../../../types/producto.types';
 
 interface Props {
     item: Producto;
@@ -14,11 +14,13 @@ interface Props {
     onEdit: (item: Producto) => void;
     onDelete: (id: string) => void;
     onToggleDisponible: (id: string, currentState: boolean) => void;
+    onSwipeableOpen: (swipeable: Swipeable) => void;
 }
 
 export const ProductoItemCard: React.FC<Props> = ({ 
-    item, index, colors, styles, onEdit, onDelete, onToggleDisponible 
+    item, index, colors, styles, onEdit, onDelete, onToggleDisponible, onSwipeableOpen
 }) => {
+    const swipeableRef = React.useRef<Swipeable>(null);
     const iconName = item.categoria === 'comida' ? 'restaurant-outline' : item.categoria === 'bebida' ? 'cafe-outline' : item.categoria === 'postre' ? 'ice-cream-outline' : 'cube-outline';
 
     const renderRightActions = () => (
@@ -46,7 +48,11 @@ export const ProductoItemCard: React.FC<Props> = ({
 
     return (
         <Animated.View entering={FadeInDown.delay(index * 50)}>
-            <Swipeable renderRightActions={renderRightActions}>
+            <Swipeable 
+                ref={swipeableRef}
+                renderRightActions={renderRightActions}
+                onSwipeableOpen={() => swipeableRef.current && onSwipeableOpen(swipeableRef.current)}
+            >
                 <GHTouchableOpacity
                     style={[styles.itemCard, { opacity: item.disponible ? 1 : 0.5 }]}
                     onPress={() => onEdit(item)}

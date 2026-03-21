@@ -216,7 +216,7 @@ export const consultarCosteoPorNombre = async (req: AuthRequest, res: Response) 
  */
 export const guardarGastoFactura = async (req: AuthRequest, res: Response) => {
     try {
-        const { proveedor, ruc, dv, total, subtotal, itbms, nroFactura, fecha, items } = req.body;
+        const { proveedor, ruc, dv, total, subtotal, itbms, nroFactura, receptor, fecha, items } = req.body;
         const negocioId = req.negocioId;
         const userId = req.userId;
 
@@ -234,6 +234,7 @@ export const guardarGastoFactura = async (req: AuthRequest, res: Response) => {
             ruc,
             dv,
             nroFactura,
+            receptor,
             usuario: userId,
             negocioId
         });
@@ -285,24 +286,29 @@ export const guardarGastoFactura = async (req: AuthRequest, res: Response) => {
  */
 export const sugerirReceta = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombrePlato } = req.body;
+        const { nombrePlato, servingSize } = req.body;
         const negocioId = req.negocioId;
 
         if (!nombrePlato) return res.status(400).json({ message: 'Falta el nombre del plato' });
 
-        // 1. Obtener TODO el inventario del negocio para que Caitlyn sepa con qué cuenta
-        const inventario = await Inventario.find({ negocioId }).select('nombre unidad _id');
+        // 1. Obtener TODO el inventario con COSTOS para que Caitlyn calcule
+        const inventario = await Inventario.find({ negocioId }).select('nombre unidad cantidad costoUnitario _id');
+        console.log(`📡 [NODE] Enviando ${inventario.length} items de inventario a Caitlyn para receta: ${nombrePlato}`);
 
         // 2. Consultar a Caitlyn
         const response = await axios.post(`${CAITLYN_URL}/agent/recipe/suggest`, {
             dish_name: nombrePlato,
+            serving_size: servingSize, // Enviamos el tamaño/porción deseada
             inventory: inventario
         });
 
         if (response.data.success) {
+            console.log(`✅ [NODE] Caitlyn respondió con éxito. Costo: ${response.data.costoTotal}, Precio: ${response.data.precioSugerido}`);
             res.json({
                 success: true,
-                recipe: response.data.recipe
+                recipe: response.data.recipe,
+                costoTotal: response.data.costoTotal,
+                precioSugerido: response.data.precioSugerido
             });
         } else {
             res.status(400).json({ success: false, error: response.data.error || 'Caitlyn no pudo generar la receta' });

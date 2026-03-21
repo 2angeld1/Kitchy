@@ -8,11 +8,9 @@ import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useAuth, Negocio } from '../context/AuthContext';
-import { createStyles } from '../styles/BellezaReventaScreen.styles';
+import { createStyles } from '../styles/BellezaVentasScreen.styles';
 import { getBeautyIcon, formatMoney } from '../utils/beauty-helpers';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 60) / 2;
 
 export default function BellezaReventaScreen() {
     const { isDark } = useTheme();
@@ -95,49 +93,72 @@ export default function BellezaReventaScreen() {
                 }
             />
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 380 }}>
-                {/* 1. SELECCIONAR PRODUCTOS - GRID 2x2 */}
-                <View style={{ padding: 20 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary, marginBottom: 15 }}>Catálogo de Productos</Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                {/* 1. ¿QUIEN VENDIÓ? - TOP PRIORITY GRID */}
+                <View style={styles.especialistaSection}>
+                    <Text style={styles.especialistaTitle}>¿Quién realizó la venta?</Text>
+                    <View style={styles.especialistaGrid}>
+                        {especialistas.map((esp, idx) => {
+                            const isSelected = especialistaSeleccionado === esp._id;
+                            return (
+                                <Animated.View key={esp._id} entering={FadeInDown.delay(idx * 50)}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.especialistaCard,
+                                            { backgroundColor: isSelected ? `${colors.primary}10` : colors.card, borderColor: isSelected ? colors.primary : colors.border }
+                                        ]}
+                                        onPress={() => setEspecialistaSeleccionado(esp._id)}
+                                    >
+                                        {(esp.conteoDia || 0) > 0 && (
+                                            <View style={styles.badgeContainer}>
+                                                <Text style={styles.badgeText}>{esp.conteoDia}</Text>
+                                            </View>
+                                        )}
+                                        <Ionicons name="person" size={24} color={isSelected ? colors.primary : colors.textMuted} />
+                                        <View>
+                                            <Text style={[styles.especialistaText, { color: colors.textPrimary }]}>{esp.nombre.split(' ')[0]}</Text>
+                                            <Text style={[styles.especialistaRole, { color: colors.textMuted }]}>{esp.rol}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            );
+                        })}
+                    </View>
+                </View>
+
+                {/* 2. SELECCIONAR PRODUCTOS - 3x3 GRID */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Catálogo de Productos</Text>
+                    <View style={styles.grid}>
                         {productosVenta.length === 0 ? (
                             <View style={{ flex: 1, padding: 40, alignItems: 'center' }}>
                                 <Ionicons name="sparkles-outline" size={48} color={colors.border} />
-                                <Text style={{ color: colors.textMuted, marginTop: 10, textAlign: 'center' }}>No hay productos de reventa configurados en el inventario.</Text>
+                                <Text style={{ color: colors.textMuted, marginTop: 10, textAlign: 'center' }}>No hay productos de reventa configurados.</Text>
                             </View>
                         ) : (
                             productosVenta.map((prod, idx) => {
                                 const isSelected = serviciosSeleccionados.some(s => s._id === prod._id);
                                 return (
-                                    <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 50)} style={{ width: CARD_WIDTH }}>
+                                    <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 50)}>
                                         <TouchableOpacity
                                             onPress={() => toggleServicio(prod)}
-                                            style={{
-                                                backgroundColor: isSelected ? `rgba(16, 185, 129, 0.1)` : colors.card,
-                                                borderRadius: 24,
-                                                padding: 16,
-                                                borderWidth: 2,
-                                                borderColor: isSelected ? '#10b981' : colors.border,
-                                                height: 140,
-                                                justifyContent: 'space-between'
-                                            }}
+                                            style={[
+                                                styles.serviceCard,
+                                                { 
+                                                    backgroundColor: isSelected ? `rgba(16, 185, 129, 0.15)` : colors.card, 
+                                                    borderColor: isSelected ? '#10b981' : colors.border
+                                                }
+                                            ]}
                                         >
-                                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <View style={{
-                                                    width: 40,
-                                                    height: 40,
-                                                    borderRadius: 12,
-                                                    backgroundColor: isSelected ? '#10b981' : colors.surface,
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center'
-                                                }}>
-                                                    <Ionicons name={getBeautyIcon(prod.nombre)} size={20} color={isSelected ? '#fff' : '#10b981'} />
+                                            <View style={styles.cardHeader}>
+                                                <View style={[styles.iconContainer, { backgroundColor: isSelected ? '#10b981' : 'rgba(16, 185, 129, 0.08)' }]}>
+                                                    <Ionicons name={getBeautyIcon(prod.nombre)} size={22} color={isSelected ? '#fff' : '#10b981'} />
                                                 </View>
                                                 {isSelected && <Ionicons name="checkmark-circle" size={24} color="#10b981" />}
                                             </View>
-                                            <View>
-                                                <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }} numberOfLines={1}>{prod.nombre}</Text>
-                                                <Text style={{ fontSize: 18, fontWeight: '900', color: '#10b981', marginTop: 2 }}>{formatMoney(prod.precio)}</Text>
+                                            <View style={styles.serviceInfo}>
+                                                <Text style={styles.serviceName} numberOfLines={1}>{prod.nombre}</Text>
+                                                <Text style={[styles.servicePrice, { color: '#10b981' }]}>{formatMoney(prod.precio)}</Text>
                                             </View>
                                         </TouchableOpacity>
                                     </Animated.View>
@@ -147,48 +168,11 @@ export default function BellezaReventaScreen() {
                     </View>
                 </View>
 
-                {/* 2. ¿QUIEN VENDIÓ? (BARBERO) - HORIZONTAL SCROLL */}
-                <View style={{ paddingHorizontal: 20, marginBottom: 10 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary, marginBottom: 12 }}>Atendido por:</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-                        {especialistas.map((esp) => {
-                            const isSelected = especialistaSeleccionado === esp._id;
-                            return (
-                                <TouchableOpacity
-                                    key={esp._id}
-                                    style={{
-                                        paddingHorizontal: 20,
-                                        paddingVertical: 10,
-                                        borderRadius: 15,
-                                        backgroundColor: isSelected ? colors.primary : colors.card,
-                                        borderWidth: 1.5,
-                                        borderColor: isSelected ? colors.primary : colors.border,
-                                        alignItems: 'center',
-                                        flexDirection: 'row',
-                                        gap: 8
-                                    }}
-                                    onPress={() => setEspecialistaSeleccionado(esp._id)}
-                                >
-                                    <Ionicons name="person" size={14} color={isSelected ? '#fff' : colors.primary} />
-                                    <Text style={{ fontSize: 12, fontWeight: '700', color: isSelected ? '#fff' : colors.textPrimary }}>{esp.nombre.split(' ')[0]}</Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </ScrollView>
-                </View>
-
                 {/* 3. NOMBRE DEL CLIENTE */}
-                <View style={{ padding: 20 }}>
-                    <View style={{ backgroundColor: colors.card, borderRadius: 20, padding: 16, borderWidth: 1, borderColor: colors.border }}>
+                <View style={styles.clienteSection}>
+                    <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
                         <TextInput
-                            style={{
-                                backgroundColor: colors.surface,
-                                borderRadius: 12,
-                                padding: 12,
-                                color: colors.textPrimary,
-                                fontSize: 15,
-                                fontWeight: '600'
-                            }}
+                            style={[styles.textInput, { backgroundColor: colors.surface, color: colors.textPrimary }]}
                             placeholder="Nombre del Cliente (Opcional)"
                             placeholderTextColor={colors.textMuted}
                             value={clienteNombre}

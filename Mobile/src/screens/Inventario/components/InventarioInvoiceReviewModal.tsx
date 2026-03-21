@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Modal, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, ScrollView, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { KitchyToolbar } from '../../../components/KitchyToolbar';
@@ -28,6 +29,7 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
     invoiceFiltro, setInvoiceFiltro, invoiceItemsFiltrados, invoiceStatusCounts, getInvoiceItemStatus,
     onConfirm, loading, colors, styles
 }) => {
+    const insets = useSafeAreaInsets();
     const statusColors: Record<string, { bg: string; border: string; text: string; label: string; icon: string }> = {
         coincide: { bg: 'rgba(16, 185, 129, 0.10)', border: '#10b981', text: '#059669', label: 'Coincide', icon: 'checkmark-circle' },
         similar: { bg: 'rgba(245, 158, 11, 0.10)', border: '#f59e0b', text: '#d97706', label: 'Similar', icon: 'help-circle' },
@@ -37,8 +39,14 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
 
     return (
         <Modal visible={visible} animationType="slide">
-            <View style={{ flex: 1, backgroundColor: colors.background }}>
-                <KitchyToolbar title="Revisión de Factura" />
+            <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
+                <KitchyToolbar 
+                    title="Revisión de Factura" 
+                    showNotifications={false}
+                    showUserMenuButton={false}
+                    showSwitchNegocioButton={false}
+                    onBack={onClose}
+                />
 
                 <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.border }}>
                     <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>
@@ -93,14 +101,84 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                                 <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary, marginLeft: 8 }}>DATOS FISCALES</Text>
                             </View>
                             <View style={{ gap: 12 }}>
-                                <View>
-                                    <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>PROVEEDOR</Text>
-                                    <TextInput 
-                                        style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
-                                        value={invoiceMetadata.proveedor}
-                                        onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, proveedor: text })}
-                                    />
+                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>PROVEEDOR</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.proveedor}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, proveedor: text })}
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RECEPTOR</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.receptor}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, receptor: text })}
+                                        />
+                                    </View>
                                 </View>
+
+                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                    <View style={{ flex: 2 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>RUC</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.ruc}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, ruc: text })}
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>DV</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.dv}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, dv: text })}
+                                        />
+                                    </View>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>NRO. FACTURA</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.nroFactura}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, nroFactura: text })}
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>FECHA</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={invoiceMetadata.fecha}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, fecha: text })}
+                                        />
+                                    </View>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>SUBTOTAL</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={String(invoiceMetadata.subtotal || '')}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, subtotal: parseFloat(text) || 0 })}
+                                            keyboardType="numeric"
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>ITBMS (7%)</Text>
+                                        <TextInput 
+                                            style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '600', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                                            value={String(invoiceMetadata.itbms || '')}
+                                            onChangeText={(text) => setInvoiceMetadata({ ...invoiceMetadata, itbms: parseFloat(text) || 0 })}
+                                            keyboardType="numeric"
+                                        />
+                                    </View>
+                                </View>
+
                                 <View style={{ flexDirection: 'row', gap: 10 }}>
                                     <View style={{ flex: 1 }}>
                                         <Text style={{ fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 4 }}>TOTAL</Text>
@@ -197,10 +275,16 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                     })}
                 </ScrollView>
 
-                <View style={{ padding: 16, backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border }}>
+                <View style={{ 
+                    padding: 16, 
+                    backgroundColor: colors.card, 
+                    borderTopWidth: 1, 
+                    borderTopColor: colors.border,
+                    paddingBottom: insets.bottom + 16
+                }}>
                     <KitchyButton title={`Importar (${invoiceItems.length})`} onPress={() => onConfirm(invoiceItems, invoiceMetadata)} loading={loading} />
                     <TouchableOpacity onPress={onClose} style={{ marginTop: 12, alignItems: 'center' }}>
-                        <Text style={{ color: colors.textMuted }}>Cancelar</Text>
+                        <Text style={{ color: colors.textMuted, fontWeight: '700' }}>Cancelar</Text>
                     </TouchableOpacity>
                 </View>
             </View>

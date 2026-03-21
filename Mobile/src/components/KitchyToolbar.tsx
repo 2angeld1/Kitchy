@@ -17,6 +17,8 @@ interface KitchyToolbarProps {
     extraButtons?: React.ReactNode;
     onBack?: () => void;
     onNotificationPress?: (notif: any) => void;
+    showUserMenuButton?: boolean;
+    showSwitchNegocioButton?: boolean;
 }
 
 export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
@@ -25,7 +27,9 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     notifications,
     extraButtons,
     onBack,
-    onNotificationPress
+    onNotificationPress,
+    showUserMenuButton = true,
+    showSwitchNegocioButton = true
 }) => {
     const { logout, user, switchNegocioContext } = useAuth();
     const { isDark } = useTheme();
@@ -89,16 +93,16 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                 backgroundColor: colors.background
             }
         ]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 10 }}>
                 {onBack && (
                     <TouchableOpacity onPress={onBack} style={{ marginRight: 12, padding: 4 }}>
                         <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
                     </TouchableOpacity>
                 )}
-                <View>
-                    <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+                <View style={{ flex: 1 }}>
+                    <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
                     {user?.negocioActivo && title === 'Dashboard' && (
-                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: -2, textTransform: 'uppercase' }}>
+                        <Text numberOfLines={1} ellipsizeMode="tail" style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: -2, textTransform: 'uppercase' }}>
                             {negocioActual?.categoria === 'BELLEZA' ? 'Mi Local' : 'Mi Sucursal'}
                         </Text>
                     )}
@@ -108,7 +112,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 {extraButtons}
 
-                {hasMultipleNegocios && (
+                {showSwitchNegocioButton && hasMultipleNegocios && (
                     <TouchableOpacity
                         style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}
                         onPress={() => setShowSwitchModal(true)}
@@ -128,19 +132,21 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                 )}
 
                 {/* Botón Constante de Usuario */}
-                <TouchableOpacity
-                    style={[
-                        styles.iconButton,
-                        {
-                            backgroundColor: isDark ? colors.card : colors.white,
-                            borderColor: colors.border,
-                            shadowOpacity: isDark ? 0 : 0.03
-                        }
-                    ]}
-                    onPress={() => setShowUserMenu(true)}
-                >
-                    <Ionicons name="person-outline" size={22} color={colors.textPrimary} />
-                </TouchableOpacity>
+                {showUserMenuButton && (
+                    <TouchableOpacity
+                        style={[
+                            styles.iconButton,
+                            {
+                                backgroundColor: isDark ? colors.card : colors.white,
+                                borderColor: colors.border,
+                                shadowOpacity: isDark ? 0 : 0.03
+                            }
+                        ]}
+                        onPress={() => setShowUserMenu(true)}
+                    >
+                        <Ionicons name="person-outline" size={22} color={colors.textPrimary} />
+                    </TouchableOpacity>
+                )}
             </View>
 
             <NotificationModal

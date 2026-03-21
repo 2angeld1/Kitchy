@@ -85,9 +85,41 @@ export default function BellezaVentasScreen() {
             />
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                {/* 1. SELECCIONAR SERVICIO - MULTISELECT */}
+                {/* 1. ¿QUIEN ATENDIO? - TOP PRIORITY GRID */}
+                <View style={styles.especialistaSection}>
+                    <Text style={styles.especialistaTitle}>¿Quién atendió hoy?</Text>
+                    <View style={styles.especialistaGrid}>
+                        {especialistas.map((esp, idx) => {
+                            const isSelected = especialistaSeleccionado === esp._id;
+                            return (
+                                <Animated.View key={esp._id} entering={FadeInDown.delay(idx * 50)}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.especialistaCard,
+                                            { backgroundColor: isSelected ? `${colors.primary}10` : colors.card, borderColor: isSelected ? colors.primary : colors.border }
+                                        ]}
+                                        onPress={() => setEspecialistaSeleccionado(esp._id)}
+                                    >
+                                        {(esp.conteoDia || 0) > 0 && (
+                                            <View style={styles.badgeContainer}>
+                                                <Text style={styles.badgeText}>{esp.conteoDia}</Text>
+                                            </View>
+                                        )}
+                                        <Ionicons name="person" size={24} color={isSelected ? colors.primary : colors.textMuted} />
+                                        <View>
+                                            <Text style={[styles.especialistaText, { color: colors.textPrimary }]}>{esp.nombre.split(' ')[0]}</Text>
+                                            <Text style={[styles.especialistaRole, { color: colors.textMuted }]}>{esp.rol}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            );
+                        })}
+                    </View>
+                </View>
+
+                {/* 2. SELECCIONAR SERVICIO - GRID */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Servicios (Selección Múltiple)</Text>
+                    <Text style={styles.sectionTitle}>¿Qué servicios realizó?</Text>
                     <View style={styles.grid}>
                         {servicios.map((ser, idx) => {
                             const isSelected = serviciosSeleccionados.some(s => s._id === ser._id);
@@ -97,7 +129,10 @@ export default function BellezaVentasScreen() {
                                         onPress={() => toggleServicio(ser)}
                                         style={[
                                             styles.serviceCard,
-                                            { backgroundColor: isSelected ? `${colors.primary}10` : colors.card, borderColor: isSelected ? colors.primary : colors.border }
+                                            { 
+                                                backgroundColor: isSelected ? `${colors.primary}15` : colors.card, 
+                                                borderColor: isSelected ? colors.primary : colors.border 
+                                            }
                                         ]}
                                     >
                                         <View style={styles.cardHeader}>
@@ -115,47 +150,6 @@ export default function BellezaVentasScreen() {
                             );
                         })}
                     </View>
-                </View>
-
-                {/* 2. ¿QUIEN ATENDIO? (BARBERO) - HORIZONTAL SCROLL */}
-                <View style={styles.especialistaSection}>
-                    <Text style={styles.especialistaTitle}>¿Quién atendió?</Text>
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.especialistaScroll}>
-                        {especialistas.map((esp) => {
-                            const isSelected = especialistaSeleccionado === esp._id;
-                            return (
-                                <TouchableOpacity
-                                    key={esp._id}
-                                    style={[
-                                        styles.especialistaChip,
-                                        { backgroundColor: isSelected ? colors.primary : colors.card, borderColor: isSelected ? colors.primary : colors.border }
-                                    ]}
-                                    onPress={() => setEspecialistaSeleccionado(esp._id)}
-                                >
-                                    <View style={{ position: 'relative' }}>
-                                        <Ionicons name="person" size={14} color={isSelected ? '#fff' : colors.primary} />
-                                        {(esp.conteoDia || 0) > 0 && (
-                                            <View style={{
-                                                position: 'absolute',
-                                                top: -12,
-                                                right: -12,
-                                                backgroundColor: isSelected ? '#fff' : colors.primary,
-                                                borderRadius: 10,
-                                                paddingHorizontal: 4,
-                                                minWidth: 18,
-                                                height: 18,
-                                                justifyContent: 'center',
-                                                alignItems: 'center'
-                                            }}>
-                                                <Text style={{ fontSize: 9, fontWeight: '900', color: isSelected ? colors.primary : '#fff' }}>{esp.conteoDia}</Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                    <Text style={[styles.especialistaText, { color: isSelected ? '#fff' : colors.textPrimary }]}>{esp.nombre.split(' ')[0]}</Text>
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </ScrollView>
                 </View>
 
                 {/* 3. NOMBRE DEL CLIENTE */}

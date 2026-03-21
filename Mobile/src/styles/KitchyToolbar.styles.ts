@@ -3,8 +3,8 @@ import { colors, spacing, typography, borderRadius } from '../theme';
 
 export const styles = StyleSheet.create({
     container: {
-        paddingTop: Platform.OS === 'ios' ? 50 : 30,
-        paddingHorizontal: spacing.xl,
+        paddingTop: Platform.OS === 'ios' ? 60 : 50,
+        paddingHorizontal: 16,
         paddingBottom: spacing.md,
         flexDirection: 'row',
         justifyContent: 'space-between',

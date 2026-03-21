@@ -98,7 +98,7 @@ export default function InventarioScreen() {
             <Text style={[styles.smartHint, { color: isListening ? colors.primary : colors.textMuted }]}>
                 {isListening 
                     ? '🎙️ Te escucho... Ej: "Gasté 1 litro de shampoo"' 
-                    : `💡 Escribe o dicta: "${categoriaNegocio === 'BELLEZA' ? '5 tintes a 10 d\u00f3lares' : '5 tomates a 10 d\u00f3lares'}" o "${categoriaNegocio === 'BELLEZA' ? 'us\u00e9 1 pote de cera' : 'us\u00e9 2 libras de carne'}"`}
+                    : `💡 Escribe o dicta: "${categoriaNegocio === 'BELLEZA' ? '5 tintes a 10 dólares' : '5 tomates a 10 dólares'}" o "${categoriaNegocio === 'BELLEZA' ? 'usé 1 pote de cera' : 'usé 2 libras de carne'}"`}
             </Text>
 
             {/* FILTROS RÁPIDOS */}
@@ -123,7 +123,7 @@ export default function InventarioScreen() {
                 ) : itemsFiltrados.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Ionicons name="cube-outline" size={48} color={colors.border} />
-                        <Text style={styles.emptyText}>Inventario vac\u00edo.</Text>
+                        <Text style={styles.emptyText}>Inventario vacío.</Text>
                     </View>
                 ) : (
                     itemsFiltrados.map((item, i) => (
@@ -153,8 +153,8 @@ export default function InventarioScreen() {
                         {[
                             { label: 'Crear Manualmente', color: colors.primary, icon: 'pencil', action: () => { resetForm(); setShowModal(true); } },
                             { label: 'Foto de Factura', color: '#4f46e5', icon: 'camera', action: tomarFotoFactura },
-                            { label: 'Factura de Galer\u00eda', color: '#6366f1', icon: 'images', action: seleccionarImagenGaleria },
-                            { label: 'Escanear C\u00f3digo', color: colors.surface, icon: 'barcode-outline', action: openScanner, dark: true },
+                            { label: 'Factura de Galería', color: '#6366f1', icon: 'images', action: seleccionarImagenGaleria },
+                            { label: 'Escanear Código', color: colors.surface, icon: 'barcode-outline', action: openScanner, dark: true },
                             { label: 'Subir CSV / Excel', color: colors.surface, icon: 'cloud-download-outline', action: pickDocument, dark: true },
                         ].map((m, i) => (
                             <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -225,7 +225,7 @@ export default function InventarioScreen() {
                     <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
                     <Animated.View entering={FadeIn} style={styles.iaCard}>
                         <Ionicons name="sparkles" size={50} color={colors.primary} />
-                        <Text style={styles.iaTitle}>Caitlyn est\u00e1 analizando...</Text>
+                        <Text style={styles.iaTitle}>Caitlyn está analizando...</Text>
                         <Text style={styles.iaSubtitle}>Extrayendo productos de tu factura</Text>
                     </Animated.View>
                 </View>

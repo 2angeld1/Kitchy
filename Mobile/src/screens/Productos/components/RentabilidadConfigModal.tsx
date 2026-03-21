@@ -19,8 +19,8 @@ export const RentabilidadConfigModal: React.FC<Props> = ({
 }) => {
     return (
         <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
-            <Animated.View entering={FadeIn.duration(200)} style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 }]}>
-                <View style={{ backgroundColor: colors.card, borderRadius: 24, padding: 24, paddingBottom: 32, borderWidth: 1, borderColor: colors.border, alignItems: 'center' }}>
+            <Animated.View entering={FadeIn.duration(200)} style={[styles.modalOverlay, { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+                <View style={{ backgroundColor: colors.card, borderRadius: 24, padding: 24, paddingBottom: 32, borderWidth: 1, borderColor: colors.border, alignItems: 'center', width: '100%', maxWidth: 400 }}>
                     <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: `${colors.primary}20`, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
                         <Ionicons name="trending-up" size={28} color={colors.primary} />
                     </View>

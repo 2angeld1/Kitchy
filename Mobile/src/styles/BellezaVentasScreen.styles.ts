@@ -1,7 +1,7 @@
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
-const CARD_WIDTH = (width - 60) / 3;
+const CARD_WIDTH = (width - 40 - 24) / 3;
 
 export const createStyles = (colors: any) => StyleSheet.create({
     container: {
@@ -28,60 +28,106 @@ export const createStyles = (colors: any) => StyleSheet.create({
     serviceCard: {
         width: CARD_WIDTH,
         borderRadius: 24,
-        padding: 16,
-        borderWidth: 2,
-        height: 120,
+        padding: 14,
+        borderWidth: 1.5,
+        height: 125,
         justifyContent: 'space-between',
+        backgroundColor: colors.card,
+        // Sombras para profundidad pro
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 6,
     },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     iconContainer: {
-        width: 32,
-        height: 32,
-        borderRadius: 10,
+        width: 44,
+        height: 44,
+        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
+        // Efecto cristal suave al fondo
+        backgroundColor: 'rgba(16, 185, 129, 0.08)',
     },
     serviceInfo: {
-        // No extra styles needed
+        marginTop: 10,
     },
     serviceName: {
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: '700',
+        color: colors.textPrimary,
+        opacity: 0.9,
     },
     servicePrice: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '900',
-        marginTop: 2,
+        marginTop: 4,
     },
     especialistaSection: {
-        paddingHorizontal: 20,
-        marginBottom: 10,
+        padding: 20,
+        marginBottom: 0,
     },
     especialistaTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '800',
         color: colors.textPrimary,
-        marginBottom: 12,
+        marginBottom: 16,
     },
-    especialistaScroll: {
-        gap: 10,
-    },
-    especialistaChip: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 15,
-        borderWidth: 1.5,
-        alignItems: 'center',
+    especialistaGrid: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    especialistaCard: {
+        width: CARD_WIDTH,
+        height: 100,
+        borderRadius: 24,
+        padding: 12,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
         gap: 8,
+        position: 'relative', // Para el badge absoluto
     },
     especialistaText: {
-        fontSize: 12,
-        fontWeight: '700',
+        fontSize: 13,
+        fontWeight: '800',
+        textAlign: 'center',
+    },
+    especialistaRole: {
+        fontSize: 10,
+        fontWeight: '600',
+        opacity: 0.6,
+        textTransform: 'uppercase',
+    },
+    badgeContainer: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        backgroundColor: colors.primary,
+        borderRadius: 12,
+        minWidth: 22,
+        height: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: colors.card,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        zIndex: 10,
+    },
+    badgeText: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: '#fff',
     },
     clienteSection: {
         padding: 20,

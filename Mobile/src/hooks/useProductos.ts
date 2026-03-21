@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Alert } from 'react-native'; // Fallback just in case, though we'll use Toast natively in the screen
+import { Alert } from 'react-native';
 import {
     getProductos,
     createProducto,
@@ -11,28 +11,17 @@ import {
     suggestRecipe
 } from '../services/api';
 
-export interface IIngrediente {
-    inventario: any; // ID or populated object
-    cantidad: number;
-    nombreDisplay?: string;
-}
-
-export interface Producto {
-    _id: string;
-    nombre: string;
-    descripcion?: string;
-    precio: number;
-    categoria: string;
-    disponible: boolean;
-    imagen?: string;
-    ingredientes?: IIngrediente[];
-}
+import { IIngrediente, Producto } from '../types/producto.types';
 
 export const useProductos = () => {
     const { user } = useAuth();
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingReceta, setLoadingReceta] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Cache para recetas de Caitlyn
+    const recetasCache = useRef<Record<string, any>>({});
 
     // UI State
     const [showModal, setShowModal] = useState(false);
@@ -54,6 +43,13 @@ export const useProductos = () => {
     const [disponible, setDisponible] = useState(true);
     const [imagen, setImagen] = useState('');
     const [ingredientes, setIngredientes] = useState<IIngrediente[]>([]);
+    const [sugerenciaIA, setSugerenciaIA] = useState<IIngrediente[] | null>(null);
+    const [costoTotalReceta, setCostoTotalReceta] = useState(0);
+    const [precioSugeridoReceta, setPrecioSugeridoReceta] = useState(0);
+
+    // Asistente Assistant State (Caitlyn)
+    const [servingSize, setServingSize] = useState('');
+    const [showSizePrompt, setShowSizePrompt] = useState(false);
 
     const cargarProductos = useCallback(async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -91,6 +87,11 @@ export const useProductos = () => {
         setImagen('');
         setIngredientes([]);
         setEditItem(null);
+        setServingSize('');
+        setShowSizePrompt(false);
+        setCostoTotalReceta(0);
+        setPrecioSugeridoReceta(0);
+        setSugerenciaIA(null);
     };
 
     const openEditModal = (item: Producto) => {
@@ -113,6 +114,10 @@ export const useProductos = () => {
             setIngredientes([]);
         }
 
+        setSugerenciaIA(null);
+        setCostoTotalReceta(0);
+        setPrecioSugeridoReceta(0);
+
         setShowModal(true);
     };
 
@@ -130,7 +135,7 @@ export const useProductos = () => {
                 precio: parseFloat(precio),
                 categoria,
                 disponible,
-                imagen, // Will handle base64 strings or URLs if provided
+                imagen,
                 ingredientes: ingredientes.map(ing => ({
                     inventario: ing.inventario,
                     cantidad: Number(ing.cantidad)
@@ -185,11 +190,9 @@ export const useProductos = () => {
 
     const handleToggleDisponible = async (id: string, currentState: boolean) => {
         try {
-            // Optimistic update
             setProductos(prev => prev.map(p => p._id === id ? { ...p, disponible: !p.disponible } : p));
             await toggleDisponibilidad(id);
         } catch (err: any) {
-            // Revert on error
             setProductos(prev => prev.map(p => p._id === id ? { ...p, disponible: currentState } : p));
             setError(err.response?.data?.message || 'Error al cambiar disponibilidad');
         }
@@ -199,20 +202,14 @@ export const useProductos = () => {
         setLoading(true);
         try {
             const formData = new FormData();
-
-            if (file.file) {
-                // Estamos en web
-                formData.append('archivo', file.file);
-            } else if (file.uri) {
-                // Estamos nativo
+            if (file.file) formData.append('archivo', file.file);
+            else if (file.uri) {
                 formData.append('archivo', {
                     uri: file.uri,
                     name: file.name || 'productos.csv',
                     type: file.mimeType || 'text/csv'
                 } as any);
-            } else {
-                formData.append('archivo', file);
-            }
+            } else formData.append('archivo', file);
 
             const response = await importarProductos(formData);
             const data = response.data;
@@ -254,28 +251,86 @@ export const useProductos = () => {
         });
     };
 
-    const handleSugerirReceta = async () => {
+    const isLiquid = useCallback(() => {
+        const nameLower = nombre.toLowerCase();
+        const liquidKeywords = ['jugo', 'bebida', 'saril', 'limonada', 'té', 'te', 'café', 'cafe', 'cerveza', 'vino', 'soda', 'agua', 'batido', 'refresco', 'chicha', 'coctel', 'malteada'];
+        return categoria === 'bebida' || liquidKeywords.some(key => nameLower.includes(key));
+    }, [nombre, categoria]);
+
+    const handleSugerirReceta = async (size?: string) => {
         if (!nombre) {
             setError('Primero escribe el nombre del plato');
             return;
         }
 
-        setLoading(true);
+        const cacheKey = `${nombre.toLowerCase()}${size ? `_${size.toLowerCase()}` : ''}`;
+        if (recetasCache.current[cacheKey]) {
+            const cached = recetasCache.current[cacheKey];
+            setSugerenciaIA(cached.sugeridos);
+            setCostoTotalReceta(cached.costoTotal);
+            setPrecioSugeridoReceta(cached.precioSugerido);
+            setSuccess('Chef Caitlyn recuperó la receta de su memoria');
+            setShowSizePrompt(false);
+            return;
+        }
+
+        setLoadingReceta(true);
         try {
-            const response = await suggestRecipe(nombre);
+            const response = await suggestRecipe(nombre, size);
             if (response.data.success && response.data.recipe) {
                 const sugeridos = response.data.recipe.map((ing: any) => ({
                     inventario: ing.inventario,
                     cantidad: ing.cantidad,
-                    nombreDisplay: ing.nombre
+                    nombreDisplay: ing.nombre,
+                    unidad: ing.unidad,
+                    stock_status: ing.stock_status,
+                    is_missing: ing.is_missing
                 }));
-                setIngredientes(sugeridos);
-                setSuccess('Caitlyn sugirió una receta basada en tu inventario');
+
+                // Guardar en cache
+                recetasCache.current[cacheKey] = {
+                    sugeridos,
+                    costoTotal: response.data.costoTotal || 0,
+                    precioSugerido: response.data.precioSugerido || 0
+                };
+
+                setSugerenciaIA(sugeridos);
+                setCostoTotalReceta(response.data.costoTotal || 0);
+                setPrecioSugeridoReceta(response.data.precioSugerido || 0);
+                setSuccess('Caitlyn encontró una receta sugerida');
+                setShowSizePrompt(false);
             }
         } catch (err: any) {
             setError('Error al conectar con la Chef Caitlyn');
         } finally {
-            setLoading(false);
+            setLoadingReceta(false);
+        }
+    };
+
+    const handleApplyRecipe = () => {
+        if (sugerenciaIA) {
+            setIngredientes(sugerenciaIA);
+            setSugerenciaIA(null);
+            setSuccess('Receta de Caitlyn aplicada');
+        }
+    };
+
+    const handlePreSugerirReceta = () => {
+        if (!nombre) {
+            setError('Primero escribe el nombre del plato');
+            return;
+        }
+
+        if (isLiquid() && !servingSize) {
+            setShowSizePrompt(true);
+        } else {
+            handleSugerirReceta(servingSize);
+        }
+    };
+
+    const handleApplySuggestion = () => {
+        if (precioSugeridoReceta > 0) {
+            setPrecio(precioSugeridoReceta.toFixed(2));
         }
     };
 
@@ -283,6 +338,7 @@ export const useProductos = () => {
         // Data
         productos,
         loading,
+        loadingReceta,
         refreshing,
         error, clearError,
         success, clearSuccess,
@@ -304,6 +360,17 @@ export const useProductos = () => {
         disponible, setDisponible,
         imagen, setImagen,
         ingredientes, setIngredientes,
+        backendCostoTotal: costoTotalReceta,
+        backendPrecioSugerido: precioSugeridoReceta,
+        sugerenciaIA,
+        handleApplyRecipe,
+
+        // Asistente Assistant
+        servingSize, setServingSize,
+        showSizePrompt, setShowSizePrompt,
+        isLiquid,
+        handlePreSugerirReceta,
+        handleApplySuggestion,
 
         // Actions
         handleRefresh,

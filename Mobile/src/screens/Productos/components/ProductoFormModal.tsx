@@ -1,244 +1,332 @@
 import React from 'react';
 import { View, Text, Modal, ScrollView, TouchableOpacity, Image, Switch, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, SlideInDown, FadeInDown } from 'react-native-reanimated';
-import { KitchyInput } from '../../../components/KitchyInput';
-import { Producto, IIngrediente } from '../../../hooks/useProductos';
+import Animated, { FadeIn, SlideInDown, FadeInDown, Layout, SlideOutDown, FadeOut } from 'react-native-reanimated';
+import { IIngrediente, Producto, ProductoFormModalProps } from '../../../types/producto.types';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { createModalStyles } from '../../../styles/ProductoForm.styles';
 
-interface Props {
-    visible: boolean;
-    onClose: () => void;
-    editItem: Producto | null;
-    nombre: string;
-    setNombre: (v: string) => void;
-    descripcion: string;
-    setDescripcion: (v: string) => void;
-    precio: string;
-    setPrecio: (v: string) => void;
-    categoria: string;
-    setCategoria: (v: string) => void;
-    disponible: boolean;
-    setDisponible: (v: boolean) => void;
-    imagen: string;
-    setImagen: (v: string) => void;
-    ingredientes: IIngrediente[];
-    itemsInventario: any[];
-    onPickImage: () => void;
-    onAddIngrediente: () => void;
-    onRemoveIngrediente: (index: number) => void;
-    onChangeIngrediente: (index: number, field: string, value: any) => void;
-    onSugerirReceta: () => void;
-    onSubmit: () => void;
-    loading: boolean;
-    colors: any;
-    styles: any;
-    // Caitlyn props
-    productAdvice: string | null;
-    loadingCaitlyn: boolean;
-    errorCaitlyn: string | null;
-    getBusinessAdvice: (nombre: string) => void;
-    setProductAdvice: (v: string | null) => void;
-}
-
-export const ProductoFormModal: React.FC<Props> = ({ 
-    visible, onClose, editItem, nombre, setNombre, descripcion, setDescripcion, 
-    precio, setPrecio, categoria, setCategoria, disponible, setDisponible, 
-    imagen, setImagen, ingredientes, itemsInventario, onPickImage, onAddIngrediente, 
-    onRemoveIngrediente, onChangeIngrediente, onSugerirReceta, onSubmit, loading, colors, styles,
-    productAdvice, loadingCaitlyn, errorCaitlyn, getBusinessAdvice, setProductAdvice
+export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
+    visible, onClose, editItem, nombre, setNombre, descripcion, setDescripcion,
+    precio, setPrecio, categoria, setCategoria, disponible, setDisponible,
+    imagen, setImagen, ingredientes, itemsInventario, onPickImage, onAddIngrediente,
+    onRemoveIngrediente, onChangeIngrediente, onSugerirReceta, onSubmit, loading, colors,
+    productAdvice, loadingCaitlyn, errorCaitlyn, getBusinessAdvice, setProductAdvice,
+    sugerenciaIA, handleApplyRecipe,
+    backendCostoTotal, backendPrecioSugerido,
+    servingSize, onServingSizeChange, showSizePrompt, onShowSizePromptChange,
+    isLiquid, onPreSugerirReceta, onApplySuggestion
 }) => {
-    return (
-        <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
-            <Animated.View entering={FadeIn.duration(200)} style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%', flex: 1, justifyContent: 'flex-end' }}>
-                    <Animated.View entering={SlideInDown.duration(300).springify()} style={[styles.modalContent, { backgroundColor: colors.background }]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                                {editItem ? 'Editar' : 'Nuevo'} <Text style={{ color: colors.primary }}>Producto</Text>
-                            </Text>
-                            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                                <Ionicons name="close" size={24} color={colors.textPrimary} />
-                            </TouchableOpacity>
-                        </View>
 
-                        <ScrollView contentContainerStyle={styles.formContainer} showsVerticalScrollIndicator={false}>
-                            <View style={styles.imageUploadContainer}>
-                                <TouchableOpacity style={[styles.imageUploadBox, { borderColor: imagen ? 'transparent' : colors.border, backgroundColor: colors.surface }]} onPress={onPickImage}>
-                                    {imagen ? (
-                                        <>
-                                            <Image source={{ uri: imagen }} style={styles.productImage} />
-                                            <TouchableOpacity style={styles.deleteImageBtn} onPress={() => setImagen('')}>
-                                                <Ionicons name="close" size={16} color="#e11d48" />
+    const styles = createModalStyles(colors);
+
+    const renderRightActions = (index: number) => (
+        <TouchableOpacity 
+            style={styles.deleteAction} 
+            onPress={() => onRemoveIngrediente(index)}
+        >
+            <Ionicons name="trash-outline" size={24} color="#fff" />
+        </TouchableOpacity>
+    );
+
+    return (
+        <Modal visible={visible} animationType="none" transparent={true} onRequestClose={onClose}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                {visible && (
+                    <Animated.View 
+                        entering={FadeIn.duration(300)} 
+                        exiting={FadeOut.duration(300)}
+                        style={styles.modalOverlay}
+                    >
+                        <KeyboardAvoidingView 
+                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                            style={styles.keyboardView}
+                        >
+                            <Animated.View 
+                                entering={SlideInDown.springify().damping(15)} 
+                                exiting={SlideOutDown.springify().damping(15)}
+                                style={styles.modalContent}
+                            >
+                                {/* HEADER */}
+                                <View style={styles.header}>
+                                    <View style={styles.headerTitleBox}>
+                                        <Text style={styles.headerPrefix}>{editItem ? 'Editando' : 'Nuevo'}</Text>
+                                        <Text style={styles.headerTitle}>Producto</Text>
+                                    </View>
+                                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                                        <Ionicons name="close" size={24} color={colors.textPrimary} />
+                                    </TouchableOpacity>
+                                </View>
+
+                            <ScrollView 
+                                contentContainerStyle={styles.scrollContent} 
+                                showsVerticalScrollIndicator={false}
+                                keyboardShouldPersistTaps="handled"
+                            >
+                                {/* IMAGE UPLOAD */}
+                                <TouchableOpacity 
+                                    style={styles.imageWrapper} 
+                                    onPress={onPickImage}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={styles.imageCircle}>
+                                        {imagen ? (
+                                            <Image source={{ uri: imagen }} style={styles.imagePreview} />
+                                        ) : (
+                                            <Ionicons name="camera-outline" size={40} color={colors.primary} />
+                                        )}
+                                    </View>
+                                    <View style={styles.imageBadge}>
+                                        <Text style={styles.imageBadgeText}>TOCA PARA FOTO</Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                {/* BASIC INFO (NAME FIRST) */}
+                                <Text style={styles.inputLabel}>Información del Producto</Text>
+                                <TextInput
+                                    style={styles.mainInput}
+                                    placeholder="Nombre del Producto"
+                                    placeholderTextColor={colors.textMuted}
+                                    value={nombre}
+                                    onChangeText={setNombre}
+                                />
+
+                                <View style={styles.row}>
+                                    <View style={styles.col}>
+                                        <Text style={styles.inputLabel}>Precio ($)</Text>
+                                        <TextInput
+                                            style={styles.mainInput}
+                                            placeholder="0.00"
+                                            placeholderTextColor={colors.textMuted}
+                                            value={precio}
+                                            onChangeText={setPrecio}
+                                            keyboardType="numeric"
+                                        />
+                                    </View>
+                                    <View style={styles.col}>
+                                        <Text style={styles.inputLabel}>Categoría</Text>
+                                        <View style={styles.categoryGrid}>
+                                            {[
+                                                { id: 'comida', icon: 'restaurant-outline' },
+                                                { id: 'bebida', icon: 'water-outline' },
+                                                { id: 'postre', icon: 'ice-cream-outline' },
+                                                { id: 'otro', icon: 'grid-outline' },
+                                            ].map((cat) => (
+                                                <TouchableOpacity
+                                                    key={cat.id}
+                                                    style={[
+                                                        styles.categoryItem,
+                                                        categoria === cat.id && styles.categoryItemActive
+                                                    ]}
+                                                    onPress={() => setCategoria(cat.id)}
+                                                >
+                                                    <Ionicons 
+                                                        name={cat.icon as any} 
+                                                        size={20} 
+                                                        color={categoria === cat.id ? '#fff' : colors.textPrimary} 
+                                                    />
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <Text style={styles.inputLabel}>Descripción</Text>
+                                <TextInput
+                                    style={[styles.mainInput, styles.descriptionInput]}
+                                    placeholder="Detalles sobre este producto..."
+                                    placeholderTextColor={colors.textMuted}
+                                    value={descripcion}
+                                    onChangeText={setDescripcion}
+                                    multiline
+                                />
+
+                                <View style={styles.toggleCard}>
+                                    <View style={styles.toggleInfo}>
+                                        <Text style={styles.toggleLabel}>Visible en Menú</Text>
+                                        <Text style={styles.toggleSub}>ESTADO DE DISPONIBILIDAD PARA EL CLIENTE</Text>
+                                    </View>
+                                    <Switch
+                                        value={disponible}
+                                        onValueChange={setDisponible}
+                                        trackColor={{ false: colors.border, true: colors.primary }}
+                                        thumbColor="#fff"
+                                    />
+                                </View>
+
+                                {/* 🤖 CAITLYN ASSISTANT CARD (NOW BELOW VISIBILITY) */}
+                                <View style={styles.caitlynCard}>
+                                    <View style={styles.caitlynHeader}>
+                                        <View style={styles.caitlynIconCircle}>
+                                            <Ionicons name="sparkles" size={20} color="#fff" />
+                                        </View>
+                                        <View style={styles.caitlynHeaderText}>
+                                            <Text style={styles.caitlynTitle}>Asistente Caitlyn</Text>
+                                            <Text style={styles.caitlynSub}>
+                                                {(backendCostoTotal || 0) > 0 ? `Costo receta: $${backendCostoTotal?.toFixed(2)}` : 'Sugerencias inteligentes con IA'}
+                                            </Text>
+                                        </View>
+                                        {ingredientes.length > 0 && (backendPrecioSugerido || 0) > 0 ? (
+                                            <TouchableOpacity 
+                                                style={styles.applySuggestionBtn}
+                                                onPress={onApplySuggestion}
+                                            >
+                                                <Text style={styles.applySuggestionText}>APLICAR ${backendPrecioSugerido?.toFixed(0)}</Text>
                                             </TouchableOpacity>
-                                        </>
+                                        ) : null}
+                                    </View>
+
+                                    {productAdvice && (
+                                        <Animated.View entering={FadeInDown} style={styles.caitlynInsightBox}>
+                                            <Ionicons name="bulb-outline" size={18} color={colors.primary} style={{ marginRight: 8, marginTop: 2 }} />
+                                            <Text style={styles.caitlynInsightText}>{productAdvice}</Text>
+                                        </Animated.View>
+                                    )}
+
+                                    {sugerenciaIA && (
+                                        <Animated.View entering={FadeInDown} style={styles.sugerenciaPreviewBox}>
+                                            <Text style={styles.sugerenciaTitle}>RECETA SUGERIDA POR CAITLYN</Text>
+                                            <View style={styles.sugerenciaList}>
+                                                {sugerenciaIA.map((ing, idx) => (
+                                                    <Text key={idx} style={styles.sugerenciaItem}>
+                                                        • {ing.nombreDisplay}: {ing.cantidad} {ing.unidad}
+                                                    </Text>
+                                                ))}
+                                            </View>
+                                            <TouchableOpacity style={styles.applyRecipeBtn} onPress={handleApplyRecipe}>
+                                                <Ionicons name="checkmark-done" size={20} color="#fff" style={{ marginRight: 8 }} />
+                                                <Text style={styles.applyRecipeText}>APLICAR RECETA SUGERIDA</Text>
+                                            </TouchableOpacity>
+                                        </Animated.View>
+                                    )}
+
+                                    <View>
+                                        {showSizePrompt ? (
+                                            <Animated.View entering={FadeInDown} style={styles.caitlynPromptBox}>
+                                                <Text style={[styles.caitlynSub, { marginBottom: 8, color: colors.primary }]}>
+                                                    {isLiquid ? '¿De qué tamaño es tu bebida para calcularla?' : '¿Cuál es el tamaño de la ración?'}
+                                                </Text>
+                                                <View style={styles.caitlynInputRow}>
+                                                    <TextInput
+                                                        style={styles.caitlynInput}
+                                                        placeholder={isLiquid ? "Ej: 16oz, 500ml, Jumbo" : "Ej: 250g, 1 ración"}
+                                                        placeholderTextColor={colors.textMuted}
+                                                        value={servingSize}
+                                                        onChangeText={onServingSizeChange}
+                                                    />
+                                                    <TouchableOpacity style={styles.caitlynActionBtn} onPress={onPreSugerirReceta}>
+                                                        <Ionicons name="arrow-forward" size={20} color="#fff" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </Animated.View>
+                                        ) : (
+                                            <TouchableOpacity 
+                                                style={styles.caitlynSuggestBtn} 
+                                                onPress={onPreSugerirReceta}
+                                                disabled={loadingCaitlyn}
+                                            >
+                                                {loadingCaitlyn ? (
+                                                    <ActivityIndicator size="small" color={colors.primary} />
+                                                ) : (
+                                                    <>
+                                                        <Ionicons name="color-wand-outline" size={20} color={colors.primary} />
+                                                        <Text style={styles.caitlynSuggestText}>
+                                                            {ingredientes.length > 0 ? 'RE-SUGERIR RECETA CON IA' : (isLiquid ? '¿DE QUÉ TAMAÑO ES TU BEBIDA?' : 'SUGERIR RECETA INTELIGENTE')}
+                                                        </Text>
+                                                    </>
+                                                )}
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                </View>
+
+                                {/* RECIPE SECTION */}
+                                <View style={styles.recipeHeader}>
+                                    <View>
+                                        <Text style={styles.recipeTitle}>Recetario y Costos</Text>
+                                        <Text style={styles.toggleSub}>GESTIÓN DE INSUMOS Y RENTABILIDAD</Text>
+                                    </View>
+                                    <TouchableOpacity style={styles.addBtn} onPress={onAddIngrediente}>
+                                        <Ionicons name="add" size={20} color={colors.primary} />
+                                        <Text style={styles.addBtnText}>Añadir</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.recipeContainer}>
+                                    {ingredientes.map((ing, index) => {
+                                        const inv = itemsInventario.find(i => i._id === ing.inventario);
+                                        
+                                        // STOCK STATUS ICONS
+                                        let statusIcon = "checkmark-circle";
+                                        let statusColor = "#10b981";
+                                        if (ing.is_missing) {
+                                            statusIcon = "close-circle";
+                                            statusColor = "#ef4444";
+                                        } else if (ing.stock_status === 'bajo') {
+                                            statusIcon = "alert-circle";
+                                            statusColor = "#f59e0b";
+                                        }
+                                        
+                                        return (
+                                            <Animated.View 
+                                                layout={Layout.springify()} 
+                                                key={index}
+                                                entering={FadeInDown.delay(index * 50)}
+                                            >
+                                                <Swipeable renderRightActions={() => renderRightActions(index)}>
+                                                    <View style={styles.ingredientRow}>
+                                                        <View style={styles.statusIconBox}>
+                                                            <Ionicons name={statusIcon as any} size={22} color={statusColor} />
+                                                        </View>
+                                                        <View style={styles.ingredientInfo}>
+                                                            <Text style={styles.ingredientName}>
+                                                                {inv?.nombre || ing.nombreDisplay || 'Seleccionar...'}
+                                                            </Text>
+                                                            <View style={styles.qtyUnitRow}>
+                                                                <TextInput
+                                                                    style={styles.qtyInput}
+                                                                    value={ing.cantidad.toString()}
+                                                                    onChangeText={(v) => onChangeIngrediente(index, 'cantidad', v)}
+                                                                    keyboardType="numeric"
+                                                                />
+                                                                <Text style={styles.unitLabel}>
+                                                                    {ing.unidad || inv?.unit || inv?.unidad || 'unid'}
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                        <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+                                                    </View>
+                                                </Swipeable>
+                                                {index < ingredientes.length - 1 && <View style={styles.ingredientSeparator} />}
+                                            </Animated.View>
+                                        );
+                                    })}
+                                </View>
+                            </ScrollView>
+
+                            {/* FOOTER */}
+                            <View style={styles.footer}>
+                                <TouchableOpacity style={styles.btnCancel} onPress={onClose}>
+                                    <Ionicons name="close" size={24} color={colors.textMuted} />
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={styles.btnSubmit} 
+                                    onPress={onSubmit}
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator color="#fff" />
                                     ) : (
-                                        <>
-                                            <Ionicons name="image-outline" size={40} color={colors.textMuted} />
-                                            <Text style={[styles.imageUploadText, { color: colors.textMuted }]}>Toca Para Foto</Text>
-                                        </>
+                                        <Text style={styles.btnSubmitText}>Guardar Cambios</Text>
                                     )}
                                 </TouchableOpacity>
                             </View>
-
-                            <KitchyInput label="Nombre del Producto" placeholder="Ej. Hamburguesa Kitchy" value={nombre} onChangeText={setNombre} />
-
-                            <View style={styles.formRow}>
-                                <View style={styles.flex1}>
-                                    <KitchyInput label="Precio ($)" placeholder="0.00" value={precio} onChangeText={setPrecio} keyboardType="numeric" />
-                                </View>
-                                <View style={styles.flex1}>
-                                    <Text style={{ fontSize: 10, fontWeight: '900', textTransform: 'uppercase', color: colors.textMuted, marginLeft: 16, marginBottom: 8, marginTop: 4 }}>Categor\u00eda</Text>
-                                    <View style={{ flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 16, padding: 4 }}>
-                                        {['comida', 'bebida', 'postre'].map((cat) => (
-                                            <TouchableOpacity 
-                                                key={cat}
-                                                onPress={() => setCategoria(cat)} 
-                                                style={{ 
-                                                    flex: 1, paddingVertical: 12, alignItems: 'center', 
-                                                    backgroundColor: categoria === cat ? colors.primary : 'transparent', 
-                                                    borderRadius: 12 
-                                                }}
-                                            >
-                                                <Ionicons 
-                                                    name={cat === 'comida' ? 'fast-food-outline' : cat === 'bebida' ? 'water-outline' : 'ice-cream-outline'} 
-                                                    size={24} 
-                                                    color={categoria === cat ? '#ffffff' : colors.textPrimary} 
-                                                />
-                                            </TouchableOpacity>
-                                        ))}
-                                    </View>
-                                </View>
-                            </View>
-
-                            <KitchyInput label="Descripci\u00f3n" placeholder="Detalles deliciosos..." value={descripcion} onChangeText={setDescripcion} multiline />
-
-                            <View style={[styles.toggleRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-                                <View>
-                                    <Text style={[styles.toggleTitle, { color: colors.textPrimary }]}>Visibilidad</Text>
-                                    <Text style={[styles.toggleSub, { color: colors.textMuted }]}>Mostrar en Punto de Venta</Text>
-                                </View>
-                                <Switch
-                                    trackColor={{ false: '#d4d4d8', true: 'rgba(59, 130, 246, 0.5)' }}
-                                    thumbColor={disponible ? colors.primary : '#f4f3f4'}
-                                    onValueChange={setDisponible}
-                                    value={disponible}
-                                />
-                            </View>
-
-                            {/* 🤖 ASISTENTE CAITLYN */}
-                            <View style={[styles.caitlynContainer, { borderColor: colors.primary + '30', borderWidth: 1, borderRadius: 24, padding: 16, marginVertical: 12 }]}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                                    <View style={{ backgroundColor: colors.primary, width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
-                                        <Ionicons name="sparkles" size={18} color="#fff" />
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textPrimary }}>Asistente Caitlyn</Text>
-                                        <Text style={{ fontSize: 11, color: colors.textMuted }}>Sugerencias inteligentes con IA</Text>
-                                    </View>
-                                    
-                                    {/* Botón para Sugerir Receta (Ideal para productos nuevos) */}
-                                    <TouchableOpacity 
-                                        style={{ backgroundColor: colors.primary + '22', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 16, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: colors.primary + '44' }}
-                                        onPress={onSugerirReceta}
-                                        disabled={loadingCaitlyn}
-                                    >
-                                        <Ionicons name="sparkles-outline" size={14} color={colors.primary} />
-                                        <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '900' }}>Sugerir Receta</Text>
-                                    </TouchableOpacity>
-                                </View>
-
-                                {productAdvice && (
-                                    <Animated.View entering={FadeInDown} style={{ backgroundColor: colors.background, padding: 12, borderRadius: 16, marginTop: 10 }}>
-                                        <Text style={{ fontSize: 13, color: colors.textPrimary, lineHeight: 18 }}>{productAdvice}</Text>
-                                        <TouchableOpacity onPress={() => setProductAdvice(null)} style={{ marginTop: 8 }}>
-                                            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }}>Cerrar</Text>
-                                        </TouchableOpacity>
-                                    </Animated.View>
-                                )}
-                                
-                                {editItem && !productAdvice && !loadingCaitlyn && (
-                                    <TouchableOpacity 
-                                        onPress={() => getBusinessAdvice(nombre)}
-                                        style={{ marginTop: 10, paddingVertical: 8, alignItems: 'center', borderTopWidth: 1, borderTopColor: colors.border + '44' }}
-                                    >
-                                        <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted }}>¿Análisis de rentabilidad para este ítem? <Text style={{ color: colors.primary }}>Consultar</Text></Text>
-                                    </TouchableOpacity>
-                                )}
-
-                                {loadingCaitlyn && (
-                                    <Animated.View entering={FadeIn} style={{ paddingVertical: 10, alignItems: 'center' }}>
-                                        <ActivityIndicator size="small" color={colors.primary} />
-                                        <Text style={{ color: colors.textSecondary, fontSize: 12, fontStyle: 'italic', marginTop: 6 }}>Caitlyn está razonando...</Text>
-                                    </Animated.View>
-                                )}
-                                {errorCaitlyn && <Text style={{ fontSize: 12, color: '#e11d48', marginTop: 4 }}>{errorCaitlyn}</Text>}
-                            </View>
-
-                            {/* Receta / Insumos */}
-                            <View style={styles.sectionTitleRow}>
-                                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}><Ionicons name="archive" size={16} color={colors.primary} /> Receta / Insumos</Text>
-                                <TouchableOpacity style={[styles.addIngredientBtn, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]} onPress={onAddIngrediente}>
-                                    <Ionicons name="add" size={16} color={colors.primary} />
-                                    <Text style={[styles.addIngredientText, { color: colors.primary }]}>Insumo</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            <View>
-                                {ingredientes.map((ing, index) => {
-                                    const currentInvIndex = itemsInventario.findIndex(i => i._id === ing.inventario);
-                                    const currentInv = itemsInventario[currentInvIndex];
-
-                                    const nextInv = () => {
-                                        if (itemsInventario.length === 0) return;
-                                        const nIdx = currentInvIndex + 1 >= itemsInventario.length ? 0 : currentInvIndex + 1;
-                                        onChangeIngrediente(index, 'inventario', itemsInventario[nIdx]._id);
-                                    };
-
-                                    return (
-                                        <View key={index} style={[styles.ingredientRow, { borderColor: colors.border, backgroundColor: colors.surface }]}>
-                                            <TouchableOpacity style={styles.ingredientSelect} onPress={nextInv}>
-                                                <Text style={{ fontSize: 14, fontWeight: '700', color: currentInv ? colors.textPrimary : colors.textMuted }} numberOfLines={1}>
-                                                    {currentInv ? `${currentInv.nombre} (${currentInv.unidad})` : (ing.nombreDisplay ? `${ing.nombreDisplay} (No disp.)` : 'Toca para Elegir')}
-                                                </Text>
-                                            </TouchableOpacity>
-
-                                            <TextInput
-                                                style={[styles.ingredientInput, { borderColor: colors.border, color: colors.textPrimary }]}
-                                                value={ing.cantidad.toString()}
-                                                onChangeText={(t) => onChangeIngrediente(index, 'cantidad', t)}
-                                                keyboardType="numeric"
-                                                placeholder="0.0"
-                                                placeholderTextColor={colors.textMuted}
-                                            />
-
-                                            <TouchableOpacity style={[styles.deleteIngredientBtn, { backgroundColor: 'rgba(225, 29, 72, 0.1)' }]} onPress={() => onRemoveIngrediente(index)}>
-                                                <Ionicons name="trash" size={18} color="#e11d48" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    );
-                                })}
-
-                                {ingredientes.length === 0 && (
-                                    <Text style={{ fontSize: 11, fontWeight: '900', textTransform: 'uppercase', color: colors.textMuted, textAlign: 'center', marginTop: 12, letterSpacing: 1 }}>Sin Insumos Asignados</Text>
-                                )}
-                            </View>
-
-                            <View style={{ height: 40 }} />
-                            <TouchableOpacity 
-                                style={{ backgroundColor: colors.primary, paddingVertical: 18, borderRadius: 24, alignItems: 'center', shadowColor: colors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8, flexDirection: 'row', justifyContent: 'center', gap: 8 }} 
-                                onPress={onSubmit}
-                                disabled={loading}
-                            >
-                                <Ionicons name={editItem ? 'save' : 'add-circle'} size={24} color="#fff" />
-                                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '900', letterSpacing: -0.5 }}>
-                                    {loading ? 'Guardando...' : (editItem ? 'Actualizar Producto' : 'Crear Producto')}
-                                </Text>
-                            </TouchableOpacity>
-
-                        </ScrollView>
-                    </Animated.View>
-                </KeyboardAvoidingView>
-            </Animated.View>
+                        </Animated.View>
+                    </KeyboardAvoidingView>
+                </Animated.View>
+                )}
+            </GestureHandlerRootView>
         </Modal>
     );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getProductos, createVenta, getEspecialistas, getVentas } from '../services/api';
 import Toast from 'react-native-toast-message';
@@ -33,11 +33,7 @@ export const useBellezaVentas = () => {
     const [montoRecibido, setMontoRecibido] = useState<string>('');
     const [lastVentaId, setLastVentaId] = useState<string | null>(null);
 
-    useEffect(() => {
-        cargarDatos();
-    }, [user?.negocioActivo]);
-
-    const cargarDatos = async () => {
+    const cargarDatos = useCallback(async () => {
         setLoading(true);
         try {
             const hoy = new Date().toISOString().split('T')[0];
@@ -74,21 +70,30 @@ export const useBellezaVentas = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?.negocioActivo]);
 
-    const toggleServicio = (serv: Producto) => {
-        const index = serviciosSeleccionados.findIndex(s => s._id === serv._id);
-        if (index >= 0) {
-            setServiciosSeleccionados(serviciosSeleccionados.filter(s => s._id !== serv._id));
-        } else {
-            setServiciosSeleccionados([...serviciosSeleccionados, serv]);
-        }
-    };
+    useEffect(() => {
+        cargarDatos();
+    }, [cargarDatos]);
 
-    const total = serviciosSeleccionados.reduce((acc, s) => acc + s.precio, 0);
-    const cambio = parseFloat(montoRecibido) > total ? parseFloat(montoRecibido) - total : 0;
+    const toggleServicio = useCallback((serv: Producto) => {
+        setServiciosSeleccionados(prev => {
+            const index = prev.findIndex(s => s._id === serv._id);
+            if (index >= 0) {
+                return prev.filter(s => s._id !== serv._id);
+            } else {
+                return [...prev, serv];
+            }
+        });
+    }, []);
 
-    const procesarCobro = async (onSuccess?: () => void) => {
+    const total = useMemo(() => serviciosSeleccionados.reduce((acc, s) => acc + s.precio, 0), [serviciosSeleccionados]);
+    const cambio = useMemo(() => {
+        const recibido = parseFloat(montoRecibido);
+        return recibido > total ? recibido - total : 0;
+    }, [montoRecibido, total]);
+
+    const procesarCobro = useCallback(async (onSuccess?: () => void) => {
         if (serviciosSeleccionados.length === 0 || !especialistaSeleccionado) {
             Toast.show({ type: 'info', text1: 'Atención', text2: 'Selecciona al menos un servicio y un especialista.' });
             return;
@@ -121,9 +126,9 @@ export const useBellezaVentas = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [serviciosSeleccionados, especialistaSeleccionado, metodoPago, clienteNombre, cargarDatos]);
 
-    const anularUltimaVenta = async () => {
+    const anularUltimaVenta = useCallback(async () => {
         if (!lastVentaId) return;
         
         setLoading(true);
@@ -138,7 +143,7 @@ export const useBellezaVentas = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [lastVentaId, cargarDatos]);
 
     return {
         servicios,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Platform, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -6,7 +6,8 @@ import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/ProductosScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
-import { useProductos, Producto } from '../hooks/useProductos';
+import { useProductos } from '../hooks/useProductos';
+import { Producto } from '../types/producto.types';
 import { useInventario } from '../hooks/useInventario';
 import { useCaitlyn } from '../hooks/useCaitlyn';
 import Toast from 'react-native-toast-message';
@@ -25,20 +26,30 @@ export default function ProductosScreen() {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const styles = useMemo(() => createStyles(colors), [colors]);
+    const openedSwipeableRef = useRef<any>(null);
 
     const {
-        productosFiltrados, loading, refreshing, error, clearError, success, clearSuccess,
+        productosFiltrados, loading, loadingReceta, refreshing, error, clearError, success, clearSuccess,
         showModal, setShowModal, editItem, busqueda, setBusqueda, filtro, setFiltro,
         nombre, setNombre, descripcion, setDescripcion, precio, setPrecio,
         categoria, setCategoria, disponible, setDisponible, imagen, setImagen,
         ingredientes, handleRefresh, resetForm, openEditModal,
         handleSubmit, handleDelete, handleToggleDisponible, handleImportCsv,
         handleAddIngrediente, handleRemoveIngrediente, handleChangeIngrediente,
-        handleSugerirReceta
+        handleSugerirReceta, backendCostoTotal, backendPrecioSugerido,
+        servingSize, setServingSize, showSizePrompt, setShowSizePrompt, isLiquid,
+        handlePreSugerirReceta, handleApplySuggestion, sugerenciaIA, handleApplyRecipe
     } = useProductos();
 
     const { items: itemsInventario } = useInventario();
     const { getBusinessAdvice, productAdvice, loading: loadingCaitlyn, error: errorCaitlyn, setProductAdvice } = useCaitlyn();
+
+    const handleSwipeOpen = (swipeable: any) => {
+        if (openedSwipeableRef.current && openedSwipeableRef.current !== swipeable) {
+            openedSwipeableRef.current.close();
+        }
+        openedSwipeableRef.current = swipeable;
+    };
 
     // Estado para Configuraci\u00f3n de Margen
     const [showConfigModal, setShowConfigModal] = useState(false);
@@ -49,7 +60,7 @@ export default function ProductosScreen() {
         setSavingConfig(true);
         try {
             await updateNegocioConfig({ margenObjetivo: parseInt(margenInput) });
-            Toast.show({ type: 'success', text1: '\u00a1Actualizado!', text2: 'Caitlyn ahora vigilar\u00e1 los precios con esta meta.' });
+            Toast.show({ type: 'success', text1: '¡Actualizado!', text2: 'Caitlyn ahora vigilará los precios con esta meta.' });
             setShowConfigModal(false);
             handleRefresh();
         } catch (err) {
@@ -64,9 +75,15 @@ export default function ProductosScreen() {
             Toast.show({ type: 'error', text1: 'Error', text2: error, position: 'top', onHide: clearError });
         }
         if (success) {
-            Toast.show({ type: 'success', text1: '\u00c9xito', text2: success, position: 'top', onHide: clearSuccess });
+            Toast.show({ type: 'success', text1: 'Éxito', text2: success, position: 'top', onHide: clearSuccess });
         }
     }, [error, success]);
+
+    useEffect(() => {
+        if (!showModal) {
+            setProductAdvice(null);
+        }
+    }, [showModal]);
 
     const pickDocument = async () => {
         try {
@@ -108,14 +125,14 @@ export default function ProductosScreen() {
                     <Ionicons name="search-outline" size={20} color={colors.textMuted} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Buscar men\u00fa..."
+                        placeholder="Buscar menú..."
                         placeholderTextColor={colors.textMuted}
                         value={busqueda}
                         onChangeText={setBusqueda}
                         returnKeyType="search"
                     />
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, padding: 12, borderRadius: 16 }}
                     onPress={() => setShowConfigModal(true)}
                 >
@@ -162,15 +179,16 @@ export default function ProductosScreen() {
             >
                 {productosFiltrados.length > 0 ? (
                     productosFiltrados.map((item, index) => (
-                        <ProductoItemCard 
-                            key={item._id} 
-                            item={item} 
-                            index={index} 
-                            colors={colors} 
-                            styles={styles} 
-                            onEdit={openEditModal} 
-                            onDelete={handleDelete} 
-                            onToggleDisponible={handleToggleDisponible} 
+                        <ProductoItemCard
+                            key={item._id}
+                            item={item}
+                            index={index}
+                            colors={colors}
+                            styles={styles}
+                            onEdit={openEditModal}
+                            onDelete={handleDelete}
+                            onToggleDisponible={handleToggleDisponible}
+                            onSwipeableOpen={handleSwipeOpen}
                         />
                     ))
                 ) : (
@@ -198,8 +216,8 @@ export default function ProductosScreen() {
             </View>
 
             {/* Modales Extra\u00eddos */}
-            <ProductoFormModal 
-                visible={showModal} 
+            <ProductoFormModal
+                visible={showModal}
                 onClose={() => setShowModal(false)}
                 editItem={editItem}
                 nombre={nombre} setNombre={setNombre}
@@ -218,15 +236,25 @@ export default function ProductosScreen() {
                 onSubmit={handleSubmit}
                 loading={loading}
                 colors={colors}
-                styles={styles}
                 productAdvice={productAdvice}
-                loadingCaitlyn={loadingCaitlyn}
+                loadingCaitlyn={loadingReceta}
                 errorCaitlyn={errorCaitlyn}
                 getBusinessAdvice={getBusinessAdvice}
                 setProductAdvice={setProductAdvice}
+                backendCostoTotal={backendCostoTotal}
+                backendPrecioSugerido={backendPrecioSugerido}
+                sugerenciaIA={sugerenciaIA}
+                handleApplyRecipe={handleApplyRecipe}
+                servingSize={servingSize}
+                onServingSizeChange={setServingSize}
+                showSizePrompt={showSizePrompt}
+                onShowSizePromptChange={setShowSizePrompt}
+                isLiquid={isLiquid()}
+                onPreSugerirReceta={handlePreSugerirReceta}
+                onApplySuggestion={handleApplySuggestion}
             />
 
-            <RentabilidadConfigModal 
+            <RentabilidadConfigModal
                 visible={showConfigModal}
                 onClose={() => setShowConfigModal(false)}
                 margenInput={margenInput}

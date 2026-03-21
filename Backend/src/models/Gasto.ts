@@ -11,6 +11,7 @@ export interface IGasto extends Document {
     ruc?: string;
     dv?: string;
     nroFactura?: string;
+    receptor?: string;
     comprobante?: string; // URL de la imagen si se desea
     usuario: mongoose.Types.ObjectId;
     negocioId: mongoose.Types.ObjectId;
@@ -59,6 +60,10 @@ const GastoSchema: Schema = new Schema({
         trim: true
     },
     nroFactura: {
+        type: String,
+        trim: true
+    },
+    receptor: {
         type: String,
         trim: true
     },
