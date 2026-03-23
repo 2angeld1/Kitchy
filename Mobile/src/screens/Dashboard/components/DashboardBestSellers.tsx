@@ -16,7 +16,7 @@ export const DashboardBestSellers: React.FC<Props> = ({ data, colors, styles }) 
                 <View style={[styles.glassIconSmall, { backgroundColor: colors.background }]}>
                     <Ionicons name="trophy-outline" size={18} color={colors.textPrimary} />
                 </View>
-                <Text style={styles.sectionTitle}>M\u00e1s Vendidos</Text>
+                <Text style={styles.sectionTitle}>Más Vendidos</Text>
             </View>
 
             <View style={styles.listContainer}>
@@ -36,7 +36,7 @@ export const DashboardBestSellers: React.FC<Props> = ({ data, colors, styles }) 
                                 <View style={[styles.listItemRank, isTop3 && { borderColor: rankColor, backgroundColor: rankColor + '10' }]}>
                                     <Text style={[styles.listItemRankText, isTop3 && { color: rankColor }]}>{idx + 1}</Text>
                                 </View>
-                                
+
                                 <View style={styles.listItemInfo}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                                         <Text style={styles.listItemTitle} numberOfLines={1}>{prod.nombre}</Text>

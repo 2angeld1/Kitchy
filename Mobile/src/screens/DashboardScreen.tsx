@@ -39,7 +39,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     const { getDashboardAlertsAnalysis, advice, loading: analyzingAlerts, error: caitlynError } = useCaitlyn();
     const {
-        data, loading, refreshing, error, success, notifications, onRefresh, handleAjustarPrecio, clearError, clearSuccess
+        data, loading, refreshing, error, success, notifications, onRefresh, handleAjustarPrecio, handleAjustarTodosLosPrecios, clearError, clearSuccess
     } = useDashboard('mes', advice);
 
     const { registrarGasto, loading: creatingGasto } = useGastos();
@@ -210,7 +210,16 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
             <DashboardGastoModal visible={showGastoModal} onClose={() => setShowGastoModal(false)} onSave={handleGuardarGasto} loading={creatingGasto} colors={colors} styles={styles} />
 
-            <CaitlynAlertsModal visible={showCaitlynAlerts} onClose={() => setShowCaitlynAlerts(false)} alertas={data?.inventario?.alertasRentabilidad || []} onAjustarPrecio={async (id) => { await handleAjustarPrecio(id); }} />
+            <CaitlynAlertsModal 
+                visible={showCaitlynAlerts} 
+                onClose={() => setShowCaitlynAlerts(false)} 
+                alertas={data?.inventario?.alertasRentabilidad || []} 
+                onViewStrategy={(alerta) => {
+                    setShowCaitlynAlerts(false);
+                    (navigation as any).navigate('CaitlynStrategy', { alerta });
+                }}
+                onAplicarTodo={handleAjustarTodosLosPrecios}
+            />
             
             <CaitlynAutomaticInsight />
         </View>

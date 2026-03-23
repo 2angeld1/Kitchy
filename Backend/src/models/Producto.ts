@@ -20,14 +20,21 @@ export interface IProducto extends Document {
 
 const IngredienteProductoSchema: Schema = new Schema({
     inventario: {
-        type: Schema.Types.ObjectId,
-        ref: 'Inventario',
-        required: true
+        type: Schema.Types.Mixed, // Puede ser ObjectId (ID real) o String (Nombre sugerido por IA)
+        required: false
     },
     cantidad: {
         type: Number,
         required: true,
-        min: 0.01 // Permitir fracciones (por ejemplo 0.5 kg de carne)
+        min: 0.01 
+    },
+    nombreDisplay: {
+        type: String,
+        trim: true
+    },
+    unidad: {
+        type: String,
+        trim: true
     }
 }, { _id: false });
 

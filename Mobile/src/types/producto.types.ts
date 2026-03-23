@@ -1,6 +1,7 @@
 export interface IIngrediente {
     inventario: any; // ID or populated object
     cantidad: number;
+    nombre?: string; // Fallback para nombres de Caitlyn
     nombreDisplay?: string;
     unidad?: string;
     stock_status?: 'ok' | 'bajo' | 'falta';
@@ -63,4 +64,6 @@ export interface ProductoFormModalProps {
     sugerenciaIA: IIngrediente[] | null;
     faltantesIA?: string[];
     handleApplyRecipe: () => void;
+    loadingRecipe: boolean;
+    suggestedStrategyPrice?: string;
 }

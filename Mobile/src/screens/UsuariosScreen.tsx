@@ -59,10 +59,10 @@ export default function UsuariosScreen() {
             >
                 {usuarios.length > 0 ? (
                     usuarios.map((user, index) => (
-                        <UserItemCard 
-                            key={user._id} 
-                            user={user} 
-                            index={index} 
+                        <UserItemCard
+                            key={user._id}
+                            user={user}
+                            index={index}
                             isMe={currentUser?.id === user._id}
                             colors={colors}
                             styles={styles}
@@ -79,7 +79,7 @@ export default function UsuariosScreen() {
                             </View>
                             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Sin Usuarios</Text>
                             <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
-                                A\u00fún no hay usuarios registrados en el sistema de este negocio.
+                                Aún no hay usuarios registrados en el sistema de este negocio.
                             </Text>
                         </Animated.View>
                     )
@@ -104,16 +104,16 @@ export default function UsuariosScreen() {
             </View>
 
             {/* Modales Extra\u00eddos */}
-            <UserRoleModal 
-                visible={showRoleModal} 
-                onClose={() => setShowRoleModal(false)} 
+            <UserRoleModal
+                visible={showRoleModal}
+                onClose={() => setShowRoleModal(false)}
                 selectedUser={selectedUser}
                 onConfirm={(id, role) => { handleChangeRole(id, role); setShowRoleModal(false); }}
                 colors={colors}
                 styles={styles}
             />
 
-            <UserCreateModal 
+            <UserCreateModal
                 visible={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 onConfirm={handleCreateUser}
@@ -122,7 +122,7 @@ export default function UsuariosScreen() {
                 styles={styles}
             />
 
-            <NegocioCreateModal 
+            <NegocioCreateModal
                 visible={showCreateNegocioModal}
                 onClose={() => setShowCreateNegocioModal(false)}
                 onConfirm={handleCreateNegocio}

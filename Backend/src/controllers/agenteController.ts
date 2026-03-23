@@ -6,8 +6,9 @@ import Gasto from '../models/Gasto';
 import Venta from '../models/Venta';
 import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
+import { RecetaSugerida } from '../models/RecetaSugerida';
 import axios from 'axios';
-import { getLatestContext } from '../services/marketContextService';
+import { getLatestContext, updateFuelContext, updateMarketPrices, updateAcodecoPrices } from '../services/marketContextService';
 
 /**
  * Controller para manejar las peticiones a Caitlyn (IA)
@@ -51,7 +52,7 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
                     total: fiscal.total
                 };
                 console.log(`✅ Caitlyn detectó ${productosDetectados.length} productos y metadata de ${metadata.proveedor || 'proveedor desconocido'}`);
-                
+
                 return res.json({
                     message: productosDetectados.length > 0
                         ? `Caitlyn detectó ${productosDetectados.length} productos en tu factura`
@@ -81,22 +82,69 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
  */
 export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => {
     try {
-        const { productName } = req.body;
+        const { productName, currentData } = req.body;
         const negocioId = req.negocioId;
 
-        console.log(`🧠 Caitlyn generando insight automático (Negocio: ${negocioId})`);
+        console.log(`🧠 Caitlyn generando insight automático (Negocio: ${negocioId}, Producto: ${productName || 'Dashboard'})`);
 
         // 1. Recolectar Contexto del Mercado de Panamá
-        const marketContext = await getLatestContext();
+        let marketContext: any = {};
+        try {
+            console.log(`⏱️ [NODE] Recuperando contexto del mercado local de la DB...`);
+            marketContext = await getLatestContext();
+            console.log(`✅ [NODE] Contexto cargado exitosamente.`);
+        } catch (ctxErr: any) {
+            console.warn(`⚠️ [NODE] No se pudo obtener contexto, pero se seguirá el proceso: ${ctxErr.message}`);
+        }
 
         let businessStats: any = {};
-        
-        if (productName) {
-            // Caso específico de un producto (como antes)
-            const producto = await Producto.findOne({ nombre: new RegExp(productName, 'i'), negocioId })
+
+        if (productName || currentData) {
+            // Caso específico de un producto (o simulación)
+            const searchName = currentData?.nombre || productName;
+            const producto = await Producto.findOne({ nombre: new RegExp(searchName, 'i'), negocioId })
                 .populate('ingredientes.inventario');
 
-            if (producto) {
+            if (currentData) {
+                 // Enriquecer ingredientes temporales con datos de inventario real
+                 let enrichedIngredients = [];
+                 if (currentData.ingredientes && Array.isArray(currentData.ingredientes)) {
+                     const invIds = currentData.ingredientes
+                         .map((i: any) => i.inventario)
+                         .filter((id: any) => id && typeof id === 'string' && id.length === 24 && id !== 'NONE');
+                     const invItems = await Inventario.find({ _id: { $in: invIds } });
+                     
+                           enrichedIngredients = currentData.ingredientes.map((ing: any) => {
+                            const targetId = (ing.inventario?._id || ing.inventario)?.toString();
+                            const invItem = targetId ? invItems.find((i: any) => i._id.toString() === targetId) : null;
+                            return {
+                             nombre: invItem?.nombre || 'Desconocido',
+                             costo: invItem?.costoUnitario || 0,
+                             unidad: invItem?.unidad || 'unid',
+                             cantidad: ing.cantidad
+                         };
+                     });
+                 }
+
+                 businessStats = {
+                     tipo: producto ? 'PRODUCTO_EDITADO' : 'PRODUCTO_SIMULADO',
+                     nombre: searchName,
+                     precioActual: currentData.precio || (producto?.precio || 0),
+                     precioTargetMatematico: currentData.precioSugerido || null,
+                     ventas30Dias: 0,
+                     ingredientes: enrichedIngredients
+                 };
+
+                 if (producto) {
+                     const ventasRecientes = await Venta.find({
+                         negocioId,
+                         'productos.producto': producto._id,
+                         fecha: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+                     });
+                     businessStats.ventas30Dias = ventasRecientes.length;
+                 }
+            } else if (producto) {
+                // Comportamiento estándar: leer de DB
                 const ventasRecientes = await Venta.find({
                     negocioId,
                     'productos.producto': producto._id,
@@ -126,7 +174,7 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
             businessStats = {
                 tipo: 'GENERAL',
                 totalVentasMes: ventasMes.length,
-                ingresosMes: ventasMes.reduce((acc, v) => acc + v.total, 0)
+                ingresosMes: ventasMes.reduce((acc, v) => acc + (v.total || 0), 0)
             };
         }
 
@@ -136,29 +184,43 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
             market_context: marketContext,
             business_data: businessStats,
             config: {
-                tipo_negocio: (req as any).user?.negocioActivo?.categoria || 'GASTRONOMIA'
+                tipo_negocio: (req as any).userRole || 'GASTRONOMIA'
             }
         };
 
-        const response = await axios.post(`${CAITLYN_URL}/agent/business/advice`, payload);
+        console.log(`🚀 [Node -> Python] Pidiendo consejo a ${CAITLYN_URL}/agent/business/advice ... (Timeout de 45s)`);
+        
+        try {
+            const response = await axios.post(`${CAITLYN_URL}/agent/business/advice`, payload, { timeout: 45000 });
+            console.log(`✅ [Node <- Python] IA Respondió OK con estatus ${response.status}`);
 
-        if (response.data.success) {
-            res.json({
-                success: true,
-                message: response.data.message,
-                contextUsed: {
-                    clima: !!marketContext.WEATHER,
-                    gasolina: !!marketContext.FUEL,
-                    merca: !!marketContext.MERCA
-                }
+            if (response.data.success) {
+                return res.json({
+                    success: true,
+                    message: response.data.message,
+                    caitlyn_reasoning: response.data.caitlyn_reasoning || response.data.data,
+                    contextUsed: {
+                        clima: !!marketContext.WEATHER,
+                        gasolina: !!marketContext.FUEL,
+                        merca: !!marketContext.MERCA
+                    }
+                });
+            } else {
+                return res.status(400).json({ success: false, message: response.data.error || response.data.message || 'La IA falló sin mandar motivo.' });
+            }
+        } catch (axErr: any) {
+            const errorMsg = axErr.response?.data?.message || axErr.message;
+            console.error(`❌ [Node] Error o Timeout al llamar a Caitlyn en Python:`, errorMsg);
+            return res.status(500).json({
+                success: false,
+                message: 'El cerebro de Caitlyn tomó más de lo esperado y cortamos la llamada.',
+                details: errorMsg
             });
-        } else {
-            res.status(400).json({ success: false, message: response.data.error || 'Caitlyn no pudo procesar el consejo.' });
         }
 
     } catch (error: any) {
-        console.error('❌ Error en broker de Caitlyn:', error.message);
-        res.status(500).json({ success: false, message: 'Error de conexión con IA' });
+        console.error('❌ Error GLOBAL en broker de Caitlyn Node:', error);
+        res.status(500).json({ success: false, message: 'Falla total en el enlace con inteligencia artificial.' });
     }
 };
 
@@ -167,9 +229,9 @@ export const consultarCosteoPorNombre = async (req: AuthRequest, res: Response) 
         const { nombre } = req.params;
         const negocioId = req.negocioId;
 
-        const producto = await Producto.findOne({ 
-            nombre: new RegExp(nombre, 'i'), 
-            negocioId 
+        const producto = await Producto.findOne({
+            nombre: new RegExp(nombre, 'i'),
+            negocioId
         }).populate('ingredientes.inventario');
 
         if (!producto) return res.status(404).json({ message: 'No encontré ese producto.' });
@@ -248,18 +310,18 @@ export const guardarGastoFactura = async (req: AuthRequest, res: Response) => {
             for (const item of items) {
                 // Buscamos si el item ya existe en el inventario por nombre (o si tiene un ID vinculado)
                 // En el futuro Kitchy usará IDs, por ahora buscamos por nombre exacto en el negocio
-                const itemInv = await Inventario.findOne({ 
-                    negocioId, 
-                    nombre: new RegExp(`^${item.nombre}$`, 'i') 
+                const itemInv = await Inventario.findOne({
+                    negocioId,
+                    nombre: new RegExp(`^${item.nombre}$`, 'i')
                 });
 
                 if (itemInv) {
                     const multi = item.unidadesPorEmpaque || 1;
                     const cantidadRealAAgregar = item.cantidad * multi;
-                    
+
                     // Actualizar Stock
                     itemInv.cantidad += cantidadRealAAgregar;
-                    
+
                     // Actualizar Costo Unitario (Nuevo costo / Multiplicador)
                     const nuevoCostoReportado = item.precioUnitario || 0;
                     itemInv.costoUnitario = nuevoCostoReportado / multi;
@@ -296,21 +358,67 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
         const negocio = await Negocio.findById(negocioId);
         const margenObjetivo = negocio?.config?.margenObjetivo || 65;
 
-        // 2. Obtener TODO el inventario con COSTOS
+        // 2. Obtener TODO el inventario con COSTOS y el contexto de mercado
         const inventario = await Inventario.find({ negocioId }).select('nombre unidad cantidad costoUnitario _id');
-        
-        // 3. Consultar a Caitlyn (IA)
+        const marketContext = await getLatestContext();
+
+        // 💡 PASO EXTRA: MEMORIA MAESTRA - Consultar si ya existe esta receta en la DB
+        const recetaCache = await RecetaSugerida.findOne({ nombrePlato: new RegExp(`^${nombrePlato}$`, 'i') });
+
+        if (recetaCache) {
+            console.log(`🧠 [CACHE] Caitlyn recuperó "${nombrePlato}" de su Memoria Maestra (DB).`);
+            
+            // Recalcular costos con el inventario actual para que los precios sean frescos
+            let costoTotalCache = 0;
+            const recipeWithFreshCosts = recetaCache.ingredientes.map((ing: any) => {
+                const itemInv: any = (ing.idInventario && typeof ing.idInventario === 'string' && ing.idInventario.length === 24)
+                    ? inventario.find((i: any) => i._id.toString() === ing.idInventario.toString())
+                    : null;
+                
+                const costoItem = itemInv ? itemInv.costoUnitario : (ing.costoEstimado || 0);
+                const subtotal = (ing.cantidad || 0) * costoItem;
+                costoTotalCache += subtotal;
+
+                return {
+                    nombre: ing.nombre,
+                    cantidad: ing.cantidad,
+                    unidad: ing.unidad,
+                    inventario: ing.idInventario,
+                    costo_estimado: costoItem,
+                    stock_status: itemInv ? (itemInv.cantidad > 0 ? 'checkmark-circle' : 'alert-circle') : 'help-circle'
+                };
+            });
+
+            const precioSugeridoCache = Math.ceil((costoTotalCache / (1 - (margenObjetivo / 100))));
+
+            const faltantesCache = recipeWithFreshCosts
+                .filter((i: any) => i.stock_status !== 'checkmark-circle')
+                .map((i: any) => i.nombre);
+
+            return res.json({
+                success: true,
+                recipe: recipeWithFreshCosts,
+                costoTotal: costoTotalCache,
+                precioSugerido: precioSugeridoCache,
+                margenAplicado: margenObjetivo,
+                faltantes: faltantesCache,
+                from_cache: true
+            });
+        }
+
+        // 3. Consultar a Caitlyn (IA) - Si no estaba en cache
         const response = await axios.post(`${CAITLYN_URL}/agent/recipe/suggest`, {
             dish_name: nombrePlato,
             serving_size: servingSize,
-            category: categoria, // Pasamos la categoría (ej. 'bebida')
-            inventory: inventario,
+            category: categoria,
+            inventory: inventario.map(i => i.toObject()),
+            market_context: marketContext,
             target_margin: margenObjetivo
         });
 
         if (response.data.success) {
             const recipeSuggestions = response.data.recipe || [];
-            
+
             // 4. Identificar Faltantes (Insumos que no están en inventario o tienen stock 0)
             const faltantes = recipeSuggestions.filter((ingSuggested: any) => {
                 const nombreSugerido = (ingSuggested.nombre || ingSuggested.insumo || "").toLowerCase();
@@ -321,15 +429,43 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
                 return !enInventario || enInventario.cantidad <= 0;
             }).map((f: any) => f.nombre || f.insumo);
 
+            console.log(`✅ [NODE] Caitlyn respondió con éxito. Procediendo a guardar en Memoria Maestra...`);
             res.json({
                 success: true,
                 recipe: recipeSuggestions,
                 costoTotal: response.data.costoTotal,
                 precioSugerido: response.data.precioSugerido,
                 margenAplicado: margenObjetivo,
-                faltantes 
+                faltantes
             });
+
+            // 💡 PASO EXTRA: GUARDAR EN MEMORIA MAESTRA para la próxima vez
+            try {
+                console.log(`💾 [MEMORIA] Intentando guardar receta para: ${nombrePlato}...`);
+                await RecetaSugerida.create({
+                    nombrePlato: nombrePlato,
+                    categoria: categoria,
+                    servingSize: servingSize,
+                    ingredientes: recipeSuggestions.map((ing: any) => ({
+                        nombre: ing.nombre,
+                        cantidad: ing.cantidad,
+                        unidad: ing.unidad,
+                        idInventario: ing.inventario && ing.inventario !== 'null' && ing.inventario !== 'NONE' ? ing.inventario : null,
+                        costoEstimado: ing.costo_estimado
+                    })),
+                    costoTotal: response.data.costoTotal,
+                    precioSugerido: response.data.precioSugerido,
+                    negocioId: negocioId
+                });
+                console.log(`✨ [MEMORIA] ¡Receta de "${nombrePlato}" guardada exitosamente en DB!`);
+            } catch (saveErr: any) {
+                console.warn(`⚠️ [MEMORIA] Error al guardar en cache (${nombrePlato}):`, saveErr.message);
+                if (saveErr.code === 11000) {
+                    console.log(`ℹ️ [MEMORIA] La receta ya existía en la base de datos.`);
+                }
+            }
         } else {
+            console.warn(`❌ [NODE] Caitlyn respondió con error:`, response.data.error);
             res.status(400).json({ success: false, error: response.data.error || 'Caitlyn no pudo generar la receta' });
         }
 
@@ -363,5 +499,42 @@ export const analizarAlertasDashboard = async (req: AuthRequest, res: Response) 
     } catch (error: any) {
         console.error('❌ Error en broker de alertas Caitlyn:', error.message);
         res.status(500).json({ success: false, message: 'Caitlyn no pudo procesar el resumen de alertas hoy.' });
+    }
+};
+
+/**
+ * Pide a Caitlyn ideas de menú basadas en el inventario actual.
+ */
+export const sugerirMenuIdeas = async (req: AuthRequest, res: Response) => {
+    try {
+        const negocioId = (req as any).negocioId || req.query.negocioId;
+        if (!negocioId) {
+            return res.status(400).json({ message: 'Negocio ID requerido' });
+        }
+
+        const negocio = await Negocio.findById(negocioId);
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
+
+        // Obtener inventario
+        const inventario = await Inventario.find({ negocioId });
+        
+        console.log(`🤖 Caitlyn analizando inventario (${inventario.length} items) para sugerir nuevas recetas...`);
+        const response = await axios.post(`${CAITLYN_URL}/agent/menu-ideas/suggest`, {
+            inventory_list: inventario.map(i => i.toObject()), // Pasamos crudo
+            target_margin: margenObjetivo
+        });
+
+        if (response.data.success) {
+            res.json({
+                success: true,
+                ideas: response.data.data,
+                message: response.data.message
+            });
+        } else {
+            res.status(400).json({ success: false, message: response.data.message || 'Error consultando al Chef Maestro.' });
+        }
+    } catch (error: any) {
+        console.error('❌ Error pidiendo ideas de menú a Caitlyn:', error.message);
+        res.status(500).json({ success: false, message: 'No se pudo conectar con Caitlyn para las ideas de menú.' });
     }
 };

@@ -7,16 +7,20 @@ let cachedInsight: string | null = null;
 let lastFetchTime: number = 0;
 const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 horas (Ajustado por Angel)
 
+// Cache para consejos de productos (Mismo producto, misma configuración = instantáneo)
+let productAdviceCache: Record<string, { message: string, reasoning: string | null, hash: string }> = {};
+
 export const useCaitlyn = () => {
     const [loading, setLoading] = useState(false);
     const [advice, setAdvice] = useState<string | null>(cachedInsight); // PARA EL DASHBOARD
     const [productAdvice, setProductAdvice] = useState<string | null>(null); // PARA PRODUCTOS/RECETAS
+    const [productReasoning, setProductReasoning] = useState<string | null>(null); // DETALLE DEL RAZONAMIENTO ESTRATEGICO
     const [error, setError] = useState<string | null>(null);
 
     // Insight Autom\u00e1tico del D\u00eda (Con Cach\u00e9!)
     const getDailyInsight = useCallback(async (force = false) => {
         const now = Date.now();
-        
+
         // 1. Si tenemos caché en RAM y no ha pasado el tiempo, usarlo
         if (!force && cachedInsight && (now - lastFetchTime < CACHE_DURATION)) {
             setAdvice(cachedInsight);
@@ -44,11 +48,11 @@ export const useCaitlyn = () => {
         setError(null);
         try {
             const response = await api.post('/agente/advice', {});
-            
+
             if (response.data.success) {
                 const message = response.data.message;
                 setAdvice(message);
-                
+
                 // Actualizar caché en RAM y Disco
                 cachedInsight = message;
                 lastFetchTime = now;
@@ -62,14 +66,29 @@ export const useCaitlyn = () => {
         }
     }, [advice]);
 
-    const getBusinessAdvice = async (productName: string) => {
+    const getBusinessAdvice = async (productName: string, currentData?: any) => {
+        // Generar hash simple para detectar cambios en los datos que ameriten re-análisis
+        const currentHash = JSON.stringify({ productName, ...currentData });
+
+        if (productAdviceCache[productName] && productAdviceCache[productName].hash === currentHash) {
+            setProductAdvice(productAdviceCache[productName].message);
+            setProductReasoning(productAdviceCache[productName].reasoning);
+            return;
+        }
+
         setLoading(true);
         setError(null);
-        setProductAdvice(null);
+
         try {
-            const response = await api.post('/agente/advice', { productName });
+            const response = await api.post('/agente/advice', { productName, currentData });
             if (response.data.success) {
-                setProductAdvice(response.data.message);
+                const message = response.data.message;
+                const reasoning = response.data.caitlyn_reasoning || null;
+                setProductAdvice(message);
+                setProductReasoning(reasoning);
+
+                // Guardar en caché
+                productAdviceCache[productName] = { message, reasoning, hash: currentHash };
             } else {
                 setError(response.data.message || 'Caitlyn no pudo analizar este producto.');
             }
@@ -100,15 +119,41 @@ export const useCaitlyn = () => {
         }
     };
 
+    const [menuIdeas, setMenuIdeas] = useState<any[]>([]);
+
+    const generateMenuIdeas = async () => {
+        setLoading(true);
+        setError(null);
+        setMenuIdeas([]);
+        try {
+            const response = await api.post('/agente/menu/ideas');
+            if (response.data.success) {
+                setMenuIdeas(response.data.ideas);
+            } else {
+                setError(response.data.message || 'No se pudieron generar ideas de menú.');
+            }
+        } catch (err: any) {
+            console.error('Error obteniendo ideas de menú de Caitlyn:', err);
+            setError('Error de conexión con el Asistente.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         getDailyInsight,
         getBusinessAdvice,
         getDashboardAlertsAnalysis,
+        generateMenuIdeas,
         advice,
         productAdvice,
+        productReasoning,
+        menuIdeas,
         loading,
         error,
         setAdvice,
-        setProductAdvice
+        setProductAdvice,
+        setProductReasoning,
+        setMenuIdeas
     };
 };

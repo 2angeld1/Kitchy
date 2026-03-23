@@ -14,6 +14,7 @@ import ComisionesScreen from './src/screens/ComisionesScreen';
 import EspecialistasScreen from './src/screens/EspecialistasScreen';
 import ServiciosScreen from './src/screens/ServiciosScreen';
 import SoporteScreen from './src/screens/SoporteScreen';
+import CaitlynStrategyScreen from './src/screens/CaitlynStrategyScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -49,7 +50,7 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   Main: undefined;
-  Productos: undefined;
+  Productos: { editProductId?: string; suggestedPrice?: string } | undefined;
   Usuarios: undefined;
   MenuApp: undefined;
   ConfiguracionMenu: undefined;
@@ -59,6 +60,7 @@ export type RootStackParamList = {
   Especialistas: undefined;
   Servicios: undefined;
   Soporte: undefined;
+  CaitlynStrategy: { alerta: any };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -93,6 +95,7 @@ function RootNavigator() {
             <Stack.Screen name="Especialistas" component={EspecialistasScreen} />
             <Stack.Screen name="Servicios" component={ServiciosScreen} />
             <Stack.Screen name="Soporte" component={SoporteScreen} />
+            <Stack.Screen name="CaitlynStrategy" component={CaitlynStrategyScreen} />
           </>
         ) : (
           <>

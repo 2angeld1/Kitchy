@@ -120,6 +120,27 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         }
     };
 
+    const handleAjustarTodosLosPrecios = async () => {
+        try {
+            setLoading(true);
+            const { autoAjustarPrecio } = await import('../services/api');
+            
+            const alertas = data?.inventario?.alertasRentabilidad || [];
+            if (alertas.length === 0) return true;
+            
+            await Promise.all(alertas.map(a => autoAjustarPrecio(a.id)));
+            
+            setSuccess(`¡${alertas.length} precios actualizados correctamente!`);
+            onRefresh();
+            return true;
+        } catch (err) {
+            setError('Error al actualizar precios en batería');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Lógica de Negocio: Generar notificaciones basadas en la data
     const notifications = useMemo(() => {
         if (!data) return [];
@@ -195,6 +216,7 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         notifications,
         onRefresh,
         handleAjustarPrecio,
+        handleAjustarTodosLosPrecios,
         clearError: () => setError(''),
         clearSuccess: () => setSuccess('')
     };

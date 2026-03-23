@@ -415,7 +415,7 @@ export const createModalStyles = (colors: any) => StyleSheet.create({
         color: colors.textPrimary,
         padding: 0,
         margin: 0,
-        width: 25,
+        width: 60,
         textAlign: 'right',
         marginRight: 4,
     },
@@ -469,5 +469,29 @@ export const createModalStyles = (colors: any) => StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1.5,
         borderColor: colors.border,
+    },
+
+    // Suggestion Button Styles
+    suggestionButton: {
+        flex: 1,
+        backgroundColor: `${colors.primary}15`,
+        borderRadius: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: colors.primary,
+        height: 54,
+    },
+    suggestionButtonLabel: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: colors.primary,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    suggestionButtonValue: {
+        fontSize: 16,
+        fontWeight: '900',
+        color: colors.primary,
     },
 });

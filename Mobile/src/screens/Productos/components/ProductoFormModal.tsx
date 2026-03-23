@@ -12,18 +12,19 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     precio, setPrecio, categoria, setCategoria, disponible, setDisponible,
     imagen, setImagen, ingredientes, itemsInventario, onPickImage, onAddIngrediente,
     onRemoveIngrediente, onChangeIngrediente, onSugerirReceta, onSubmit, loading, colors,
-    productAdvice, loadingCaitlyn, errorCaitlyn, getBusinessAdvice, setProductAdvice,
+    productAdvice, loadingCaitlyn, loadingRecipe, errorCaitlyn, getBusinessAdvice, setProductAdvice,
     sugerenciaIA, handleApplyRecipe,
     backendCostoTotal, backendPrecioSugerido,
     servingSize, onServingSizeChange, showSizePrompt, onShowSizePromptChange,
-    isLiquid, onPreSugerirReceta, onApplySuggestion, faltantesIA
+    isLiquid, onPreSugerirReceta, onApplySuggestion, faltantesIA,
+    suggestedStrategyPrice
 }) => {
 
     const styles = createModalStyles(colors);
 
     const renderRightActions = (index: number) => (
-        <TouchableOpacity 
-            style={styles.deleteAction} 
+        <TouchableOpacity
+            style={styles.deleteAction}
             onPress={() => onRemoveIngrediente(index)}
         >
             <Ionicons name="trash-outline" size={24} color="#fff" />
@@ -33,37 +34,37 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     return (
         <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
             <GestureHandlerRootView style={{ flex: 1 }}>
-                <Animated.View 
-                    entering={FadeIn.duration(300)} 
+                <Animated.View
+                    entering={FadeIn.duration(300)}
                     style={styles.modalOverlay}
                 >
-                    <KeyboardAvoidingView 
-                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         style={styles.keyboardView}
                     >
-                        <Animated.View 
-                            entering={SlideInDown.springify().damping(15)} 
+                        <Animated.View
+                            entering={SlideInDown.springify().damping(15)}
                             style={styles.modalContent}
                         >
-                                {/* HEADER */}
-                                <View style={styles.header}>
-                                    <View style={styles.headerTitleBox}>
-                                        <Text style={styles.headerPrefix}>{editItem ? 'Editando' : 'Nuevo'}</Text>
-                                        <Text style={styles.headerTitle}>Producto</Text>
-                                    </View>
-                                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                                        <Ionicons name="close" size={24} color={colors.textPrimary} />
-                                    </TouchableOpacity>
+                            {/* HEADER */}
+                            <View style={styles.header}>
+                                <View style={styles.headerTitleBox}>
+                                    <Text style={styles.headerPrefix}>{editItem ? 'Editando' : 'Nuevo'}</Text>
+                                    <Text style={styles.headerTitle}>Producto</Text>
                                 </View>
+                                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                                    <Ionicons name="close" size={24} color={colors.textPrimary} />
+                                </TouchableOpacity>
+                            </View>
 
-                            <ScrollView 
-                                contentContainerStyle={styles.scrollContent} 
+                            <ScrollView
+                                contentContainerStyle={styles.scrollContent}
                                 showsVerticalScrollIndicator={false}
                                 keyboardShouldPersistTaps="handled"
                             >
                                 {/* IMAGE UPLOAD */}
-                                <TouchableOpacity 
-                                    style={styles.imageWrapper} 
+                                <TouchableOpacity
+                                    style={styles.imageWrapper}
                                     onPress={onPickImage}
                                     activeOpacity={0.8}
                                 >
@@ -93,13 +94,30 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                     <View style={styles.col}>
                                         <Text style={styles.inputLabel}>Precio ($)</Text>
                                         <TextInput
-                                            style={styles.mainInput}
+                                            style={[styles.mainInput, { marginBottom: suggestedStrategyPrice ? 4 : 20 }]}
                                             placeholder="0.00"
                                             placeholderTextColor={colors.textMuted}
                                             value={precio}
                                             onChangeText={setPrecio}
                                             keyboardType="numeric"
                                         />
+                                        {suggestedStrategyPrice && (
+                                            <Animated.View entering={FadeInDown} style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                marginBottom: 16,
+                                                backgroundColor: 'rgba(217, 119, 6, 0.1)', // Fondo ámbar muy suave
+                                                paddingVertical: 5,
+                                                paddingHorizontal: 8,
+                                                borderRadius: 8,
+                                                alignSelf: 'flex-start'
+                                            }}>
+                                                <Ionicons name="sparkles" size={12} color="#d97706" style={{ marginRight: 4 }} />
+                                                <Text style={{ fontSize: 11, color: '#d97706', fontWeight: '800' }}>
+                                                    Sugerido: ${suggestedStrategyPrice}
+                                                </Text>
+                                            </Animated.View>
+                                        )}
                                     </View>
                                     <View style={styles.col}>
                                         <Text style={styles.inputLabel}>Categoría</Text>
@@ -118,10 +136,10 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                     ]}
                                                     onPress={() => setCategoria(cat.id)}
                                                 >
-                                                    <Ionicons 
-                                                        name={cat.icon as any} 
-                                                        size={20} 
-                                                        color={categoria === cat.id ? '#fff' : colors.textPrimary} 
+                                                    <Ionicons
+                                                        name={cat.icon as any}
+                                                        size={20}
+                                                        color={categoria === cat.id ? '#fff' : colors.textPrimary}
                                                     />
                                                 </TouchableOpacity>
                                             ))}
@@ -152,7 +170,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                     />
                                 </View>
 
-                                {/* 🤖 CAITLYN ASSISTANT CARD (NOW BELOW VISIBILITY) */}
+                                {/* 🤖 CAITLYN ASSISTANT CARD */}
                                 <View style={styles.caitlynCard}>
                                     <View style={styles.caitlynHeader}>
                                         <View style={styles.caitlynIconCircle}>
@@ -161,23 +179,33 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                         <View style={styles.caitlynHeaderText}>
                                             <Text style={styles.caitlynTitle}>Asistente Caitlyn</Text>
                                             <Text style={styles.caitlynSub}>
-                                                {(backendCostoTotal || 0) > 0 ? `Costo receta: $${backendCostoTotal?.toFixed(2)}` : 'Sugerencias inteligentes con IA'}
+                                                {(backendCostoTotal || 0) > 0 ? (
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Ionicons name="stats-chart" size={14} color="#fff" style={{ marginRight: 6 }} />
+                                                        <Text style={styles.caitlynSub}>COSTO REAL: ${backendCostoTotal?.toFixed(2)}</Text>
+                                                    </View>
+                                                ) : 'Sugerencias inteligentes con IA'}
                                             </Text>
                                         </View>
-                                        {ingredientes.length > 0 && (backendPrecioSugerido || 0) > 0 ? (
-                                            <TouchableOpacity 
-                                                style={styles.applySuggestionBtn}
-                                                onPress={onApplySuggestion}
-                                            >
-                                                <Text style={styles.applySuggestionText}>APLICAR ${backendPrecioSugerido?.toFixed(0)}</Text>
-                                            </TouchableOpacity>
-                                        ) : null}
+                                        {/* Precio sugerido movido como Box Boton abajo */}
                                     </View>
 
-                                    {productAdvice && (
+                                    {loadingCaitlyn && !productAdvice && !suggestedStrategyPrice && (
+                                        <View style={{ padding: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
+                                            <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 10 }} />
+                                            <Text style={{ color: colors.textMuted, fontSize: 13, fontStyle: 'italic' }}>Caitlyn está analizando el mercado...</Text>
+                                        </View>
+                                    )}
+
+                                    {productAdvice && editItem && !suggestedStrategyPrice && (
                                         <Animated.View entering={FadeInDown} style={styles.caitlynInsightBox}>
                                             <Ionicons name="bulb-outline" size={18} color={colors.primary} style={{ marginRight: 8, marginTop: 2 }} />
-                                            <Text style={styles.caitlynInsightText}>{productAdvice}</Text>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.caitlynInsightText}>{productAdvice}</Text>
+                                                {loadingCaitlyn && (
+                                                    <ActivityIndicator size="small" color={colors.primary} style={{ alignSelf: 'flex-end', marginTop: 10 }} />
+                                                )}
+                                            </View>
                                         </Animated.View>
                                     )}
 
@@ -187,7 +215,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                             <View style={styles.sugerenciaList}>
                                                 {sugerenciaIA.map((ing, idx) => (
                                                     <Text key={idx} style={styles.sugerenciaItem}>
-                                                        • {ing.nombreDisplay || 'Insumo'}: {ing.cantidad} {ing.unidad}
+                                                        • {ing.nombreDisplay || ing.nombre || 'Insumo'}: {ing.cantidad} {ing.unidad}
                                                     </Text>
                                                 ))}
                                             </View>
@@ -207,12 +235,12 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                 </TouchableOpacity>
 
                                                 {backendPrecioSugerido && backendPrecioSugerido > 0 && (
-                                                    <TouchableOpacity 
-                                                        style={{ flex: 1, backgroundColor: `${colors.primary}20`, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: colors.primary }}
+                                                    <TouchableOpacity
+                                                        style={styles.suggestionButton}
                                                         onPress={onApplySuggestion}
+                                                        activeOpacity={0.7}
                                                     >
-                                                        <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>PRECIO SUGERIDO</Text>
-                                                        <Text style={{ fontSize: 14, fontWeight: '900', color: colors.primary }}>${backendPrecioSugerido.toFixed(2)}</Text>
+                                                        <Text style={styles.suggestionButtonValue}>${backendPrecioSugerido.toFixed(2)}</Text>
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
@@ -233,28 +261,49 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                         value={servingSize}
                                                         onChangeText={onServingSizeChange}
                                                     />
-                                                    <TouchableOpacity style={styles.caitlynActionBtn} onPress={onPreSugerirReceta}>
-                                                        <Ionicons name="arrow-forward" size={20} color="#fff" />
+                                                    <TouchableOpacity
+                                                        style={styles.caitlynActionBtn}
+                                                        onPress={onPreSugerirReceta}
+                                                        disabled={loadingRecipe}
+                                                    >
+                                                        {loadingRecipe ? (
+                                                            <ActivityIndicator size="small" color="#fff" />
+                                                        ) : (
+                                                            <Ionicons name="arrow-forward" size={20} color="#fff" />
+                                                        )}
                                                     </TouchableOpacity>
                                                 </View>
                                             </Animated.View>
                                         ) : (
-                                            <TouchableOpacity 
-                                                style={styles.caitlynSuggestBtn} 
-                                                onPress={onPreSugerirReceta}
-                                                disabled={loadingCaitlyn}
-                                            >
-                                                {loadingCaitlyn ? (
-                                                    <ActivityIndicator size="small" color={colors.primary} />
-                                                ) : (
-                                                    <>
-                                                        <Ionicons name="color-wand-outline" size={20} color={colors.primary} />
-                                                        <Text style={styles.caitlynSuggestText}>
-                                                            {ingredientes.length > 0 ? 'RE-SUGERIR RECETA CON IA' : (isLiquid ? '¿DE QUÉ TAMAÑO ES TU BEBIDA?' : 'SUGERIR RECETA INTELIGENTE')}
-                                                        </Text>
-                                                    </>
+                                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                                <TouchableOpacity
+                                                    style={[styles.caitlynSuggestBtn, { flex: 1.5 }]}
+                                                    onPress={onPreSugerirReceta}
+                                                    disabled={loadingRecipe}
+                                                >
+                                                    {loadingRecipe ? (
+                                                        <ActivityIndicator size="small" color={colors.primary} />
+                                                    ) : (
+                                                        <>
+                                                            <Ionicons name="color-wand-outline" size={20} color={colors.primary} />
+                                                            <Text style={styles.caitlynSuggestText}>
+                                                                {ingredientes.length > 0 ? 'RE-SUGERIR' : (isLiquid ? '¿TAMAÑO?' : '¿SUGERIR RECETA?')}
+                                                            </Text>
+                                                        </>
+                                                    )}
+                                                </TouchableOpacity>
+
+                                                {(backendPrecioSugerido || 0) > 0 && (
+                                                    <TouchableOpacity
+                                                        style={[styles.suggestionButton, { height: 50, borderRadius: 18 }]}
+                                                        onPress={onApplySuggestion}
+                                                        activeOpacity={0.7}
+                                                    >
+                                                        <Text style={[styles.suggestionButtonLabel, { fontSize: 8 }]}>APLICAR PRECIO</Text>
+                                                        <Text style={styles.suggestionButtonValue}>${backendPrecioSugerido?.toFixed(2)}</Text>
+                                                    </TouchableOpacity>
                                                 )}
-                                            </TouchableOpacity>
+                                            </View>
                                         )}
                                     </View>
                                 </View>
@@ -273,8 +322,8 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
 
                                 <View style={styles.recipeContainer}>
                                     {ingredientes.map((ing, index) => {
-                                        const inv = itemsInventario.find(i => i._id === ing.inventario);
-                                        
+                                        const inv = itemsInventario.find(i => i._id === (ing.inventario?._id || ing.inventario));
+
                                         // STOCK STATUS ICONS
                                         let statusIcon = "checkmark-circle";
                                         let statusColor = "#10b981";
@@ -285,10 +334,10 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                             statusIcon = "alert-circle";
                                             statusColor = "#f59e0b";
                                         }
-                                        
+
                                         return (
-                                            <Animated.View 
-                                                layout={Layout.springify()} 
+                                            <Animated.View
+                                                layout={Layout.springify()}
                                                 key={index}
                                                 entering={FadeInDown.delay(index * 50)}
                                             >
@@ -299,7 +348,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                         </View>
                                                         <View style={styles.ingredientInfo}>
                                                             <Text style={styles.ingredientName}>
-                                                                {inv?.nombre || ing.nombreDisplay || 'Seleccionar...'}
+                                                                {inv?.nombre || ing.nombreDisplay || ing.nombre || (typeof ing.inventario === 'object' ? ing.inventario?.nombre : '') || 'Seleccionar...'}
                                                             </Text>
                                                             <View style={styles.qtyUnitRow}>
                                                                 <TextInput
@@ -328,8 +377,8 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                 <TouchableOpacity style={styles.btnCancel} onPress={onClose}>
                                     <Ionicons name="close" size={24} color={colors.textMuted} />
                                 </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={styles.btnSubmit} 
+                                <TouchableOpacity
+                                    style={styles.btnSubmit}
                                     onPress={onSubmit}
                                     disabled={loading}
                                 >

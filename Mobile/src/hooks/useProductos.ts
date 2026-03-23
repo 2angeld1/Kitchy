@@ -109,7 +109,8 @@ export const useProductos = () => {
             setIngredientes(item.ingredientes.map((ing: any) => ({
                 inventario: ing.inventario?._id || ing.inventario,
                 cantidad: ing.cantidad,
-                nombreDisplay: ing.inventario?.nombre
+                nombreDisplay: ing.nombreDisplay || ing.inventario?.nombre,
+                unidad: ing.unidad || ing.inventario?.unidad
             })));
         } else {
             setIngredientes([]);
@@ -139,7 +140,9 @@ export const useProductos = () => {
                 imagen,
                 ingredientes: ingredientes.map(ing => ({
                     inventario: ing.inventario,
-                    cantidad: Number(ing.cantidad)
+                    cantidad: Number(ing.cantidad),
+                    nombreDisplay: ing.nombreDisplay,
+                    unidad: ing.unidad
                 }))
             };
 
@@ -323,10 +326,32 @@ export const useProductos = () => {
             return;
         }
 
-        if (isLiquid() && !servingSize) {
+        let finalSize = servingSize.trim();
+
+        // Inteligencia Kitchy: Si servingSize está vacío, intentar extraerlo del NOMBRE
+        if (!finalSize) {
+            const sizeRegex = /(\d+\s*(ml|oz|g|kg|l|lb|unid|pza|orden|raciones|lt))/i;
+            const match = nombre.match(sizeRegex);
+            if (match) {
+                finalSize = match[0].trim().toLowerCase();
+                setServingSize(finalSize);
+            }
+        }
+
+        if (isLiquid() && !finalSize) {
             setShowSizePrompt(true);
         } else {
-            handleSugerirReceta(servingSize);
+            // Normalizar si solo puso números (ej. el usuario borró la unidad o puso "300")
+            if (finalSize && /^\d+$/.test(finalSize)) {
+                const num = parseInt(finalSize);
+                if (isLiquid()) {
+                    finalSize = num > 32 ? `${num}ml` : `${num}oz`;
+                } else {
+                    finalSize = `${num}g`;
+                }
+                setServingSize(finalSize);
+            }
+            handleSugerirReceta(finalSize);
         }
     };
 

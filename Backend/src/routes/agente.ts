@@ -1,13 +1,6 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import {
-    procesarFactura,
-    consultarCosteoPorNombre,
-    obtenerConsejoNegocio,
-    guardarGastoFactura,
-    sugerirReceta,
-    analizarAlertasDashboard
-} from '../controllers/agenteController';
+import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio, guardarGastoFactura, sugerirReceta, analizarAlertasDashboard, sugerirMenuIdeas } from '../controllers/agenteController';
 
 const router = Router();
 
@@ -19,10 +12,11 @@ router.use(auth);
  * @desc Sube una foto de factura para que Caitlyn la analice
  */
 router.post('/factura', procesarFactura);
-router.post('/advice', auth, obtenerConsejoNegocio);
-router.post('/dashboard-alerts', auth, analizarAlertasDashboard);
-router.post('/invoice', auth, procesarFactura);
-router.post('/invoice/confirm', auth, guardarGastoFactura);
-router.post('/recipe/suggest', auth, sugerirReceta);
+router.post('/advice', obtenerConsejoNegocio);
+router.post('/dashboard-alerts', analizarAlertasDashboard);
+router.post('/invoice', procesarFactura);
+router.post('/invoice/confirm', guardarGastoFactura);
+router.post('/recipe/suggest', sugerirReceta);
+router.post('/menu/ideas', sugerirMenuIdeas);
 
 export default router;

@@ -8,6 +8,7 @@ import User from '../models/User';
 import Gasto from '../models/Gasto';
 import Negocio from '../models/Negocio';
 import Especialista from '../models/Especialista';
+import { getLatestContext } from '../services/marketContextService';
 import { calcularPrecioSugerido, calcularMargenActual } from '../utils/pricing';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 
@@ -167,25 +168,39 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             new Date(item.fechaVencimiento) <= proximaSemana
         ).length;
 
-        // --- CAITLYN: VIGILANCIA DE MÁRGENES ---
+        // --- CAITLYN: VIGILANCIA DE MÁRGENES Y MERCADO ---
         const negocio = await Negocio.findById(req.negocioId);
-        const margenObjetivo = negocio?.config?.margenObjetivo || 65; // Por defecto 65% si no configuró
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
+        const marketContext = await getLatestContext();
         const alertasRentabilidad: any[] = [];
 
         for (const prod of (productos as any[])) {
             if (prod.ingredientes && prod.ingredientes.length > 0) {
                 let costoTotal = 0;
+                let alertasMercado: string[] = [];
+
                 for (const ing of (prod.ingredientes as any[])) {
                     const invItem = (inventario as any[]).find((i: any) => i._id.toString() === (ing.inventario as any).toString());
                     if (invItem) {
                         costoTotal += (invItem.costoUnitario * ing.cantidad);
+
+                        // Comparar con Merca Panamá si existe el dato
+                        if (marketContext.MERCA && marketContext.MERCA.vegetales) {
+                            const nombreNormalizado = invItem.nombre.toLowerCase();
+                            const precioMercado = marketContext.MERCA.vegetales[nombreNormalizado] || 
+                                                marketContext.MERCA.carnes[nombreNormalizado];
+
+                            if (precioMercado && precioMercado > invItem.costoUnitario) {
+                                alertasMercado.push(`El costo de ${invItem.nombre} en Merca Panamá ($${precioMercado}) es mayor a tu costo registrado ($${invItem.costoUnitario}).`);
+                            }
+                        }
                     }
                 }
                 
                 const precio = prod.precio || 0;
                 const margenActual = calcularMargenActual(precio, costoTotal);
 
-                if (precio > 0 && margenActual < margenObjetivo) {
+                if (precio > 0 && (margenActual < margenObjetivo || alertasMercado.length > 0)) {
                     const precioSugerido = calcularPrecioSugerido(costoTotal, margenObjetivo);
                     alertasRentabilidad.push({
                         id: prod._id,
@@ -194,7 +209,9 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                         margenObjetivo,
                         precioActual: precio,
                         precioSugerido: precioSugerido.toFixed(2),
-                        costoTotal: costoTotal.toFixed(2)
+                        costoTotal: costoTotal.toFixed(2),
+                        razon: alertasMercado.length > 0 ? alertasMercado[0] : 'Margen por debajo del objetivo',
+                        alertaMercado: alertasMercado.length > 0
                     });
                 }
             }

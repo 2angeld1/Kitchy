@@ -20,20 +20,23 @@ import { updateNegocioConfig } from '../services/api';
 import { ProductoItemCard } from './Productos/components/ProductoItemCard';
 import { ProductoFormModal } from './Productos/components/ProductoFormModal';
 import { RentabilidadConfigModal } from './Productos/components/RentabilidadConfigModal';
+import { MenuIdeasModal } from './Productos/components/MenuIdeasModal';
 
-export default function ProductosScreen() {
+export default function ProductosScreen({ route }: any) {
     const navigation = useNavigation();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const styles = useMemo(() => createStyles(colors), [colors]);
     const openedSwipeableRef = useRef<any>(null);
 
+    const [showMenuIdeasModal, setShowMenuIdeasModal] = useState(false);
+
     const {
-        productosFiltrados, loading, loadingReceta, refreshing, error, clearError, success, clearSuccess,
+        productos, productosFiltrados, loading, loadingReceta, refreshing, error, clearError, success, clearSuccess,
         showModal, setShowModal, editItem, busqueda, setBusqueda, filtro, setFiltro,
         nombre, setNombre, descripcion, setDescripcion, precio, setPrecio,
         categoria, setCategoria, disponible, setDisponible, imagen, setImagen,
-        ingredientes, handleRefresh, resetForm, openEditModal,
+        ingredientes, setIngredientes, handleRefresh, resetForm, openEditModal,
         handleSubmit, handleDelete, handleToggleDisponible, handleImportCsv,
         handleAddIngrediente, handleRemoveIngrediente, handleChangeIngrediente,
         handleSugerirReceta, backendCostoTotal, backendPrecioSugerido,
@@ -42,7 +45,27 @@ export default function ProductosScreen() {
     } = useProductos();
 
     const { items: itemsInventario } = useInventario();
-    const { getBusinessAdvice, productAdvice, loading: loadingCaitlyn, error: errorCaitlyn, setProductAdvice } = useCaitlyn();
+    const { getBusinessAdvice, productAdvice, loading: loadingCaitlyn, error: errorCaitlyn, setProductAdvice, generateMenuIdeas, menuIdeas } = useCaitlyn();
+
+    const handleUseIdea = (idea: any) => {
+        resetForm();
+        setNombre(idea.nombre_plato);
+        setDescripcion(idea.descripcion);
+        setPrecio(idea.precio_recomendado?.toString() || '');
+        if (idea.ingredientes_a_usar && idea.ingredientes_a_usar.length > 0) {
+            const formateados = idea.ingredientes_a_usar.map((ing: any) => ({
+                id: Math.random().toString(),
+                inventario: ing.inventario || '',
+                nombre: ing.nombre,
+                nombreDisplay: ing.nombre, // Para que se vea el nombre incluso si no hay ID vinculado
+                cantidad: ing.cantidad?.toString(),
+                unidad: ing.unidad
+            }));
+            setIngredientes(formateados);
+        }
+        setShowMenuIdeasModal(false);
+        setTimeout(() => setShowModal(true), 300);
+    };
 
     const handleSwipeOpen = (swipeable: any) => {
         if (openedSwipeableRef.current && openedSwipeableRef.current !== swipeable) {
@@ -50,6 +73,16 @@ export default function ProductosScreen() {
         }
         openedSwipeableRef.current = swipeable;
     };
+
+    // Deep linking interno desde Caitlyn Strategy
+    useEffect(() => {
+        if (route?.params?.editProductId && productos.length > 0) {
+            const prodToEdit = productos.find(p => p._id === route.params.editProductId);
+            if (prodToEdit && !showModal) {
+                openEditModal(prodToEdit);
+            }
+        }
+    }, [route?.params?.editProductId, productos.length]);
 
     // Estado para Configuraci\u00f3n de Margen
     const [showConfigModal, setShowConfigModal] = useState(false);
@@ -79,11 +112,29 @@ export default function ProductosScreen() {
         }
     }, [error, success]);
 
+    // Trigger Automático de Consejos de Caitlyn al abrir/cambiar producto
     useEffect(() => {
-        if (!showModal) {
+        if (!showModal || !editItem) {
             setProductAdvice(null);
+            return;
         }
-    }, [showModal]);
+
+        const currentData = {
+            nombre,
+            descripcion,
+            precio: parseFloat(precio) || 0,
+            precioSugerido: route?.params?.suggestedPrice || undefined,
+            ingredientes: ingredientes.map(i => ({ inventario: i.inventario, cantidad: Number(i.cantidad) }))
+        };
+
+        const timer = setTimeout(() => {
+            if (nombre) {
+                getBusinessAdvice(nombre, currentData);
+            }
+        }, editItem ? 100 : 1000); // 100ms si es abrir, 1s si es editar en caliente (debounce)
+
+        return () => clearTimeout(timer);
+    }, [showModal, nombre, precio, ingredientes.length, route?.params?.suggestedPrice]);
 
     const pickDocument = async () => {
         try {
@@ -207,6 +258,9 @@ export default function ProductosScreen() {
             </ScrollView>
 
             <View style={styles.fabRow}>
+                <TouchableOpacity style={[styles.secFab, { backgroundColor: '#d97706' }]} onPress={() => setShowMenuIdeasModal(true)}>
+                    <Ionicons name="restaurant-outline" size={24} color="#fff" />
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.secFab} onPress={pickDocument}>
                     <Ionicons name="cloud-upload" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
@@ -216,6 +270,17 @@ export default function ProductosScreen() {
             </View>
 
             {/* Modales Extra\u00eddos */}
+            <MenuIdeasModal
+                visible={showMenuIdeasModal}
+                onClose={() => setShowMenuIdeasModal(false)}
+                generateMenuIdeas={generateMenuIdeas}
+                menuIdeas={menuIdeas}
+                loading={loadingCaitlyn}
+                error={errorCaitlyn}
+                colors={colors}
+                onUseIdea={handleUseIdea}
+            />
+
             <ProductoFormModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
@@ -237,7 +302,8 @@ export default function ProductosScreen() {
                 loading={loading}
                 colors={colors}
                 productAdvice={productAdvice}
-                loadingCaitlyn={loadingReceta}
+                loadingCaitlyn={loadingCaitlyn}
+                loadingRecipe={loadingReceta}
                 errorCaitlyn={errorCaitlyn}
                 getBusinessAdvice={getBusinessAdvice}
                 setProductAdvice={setProductAdvice}
@@ -252,6 +318,7 @@ export default function ProductosScreen() {
                 isLiquid={isLiquid()}
                 onPreSugerirReceta={handlePreSugerirReceta}
                 onApplySuggestion={handleApplySuggestion}
+                suggestedStrategyPrice={route?.params?.suggestedPrice}
             />
 
             <RentabilidadConfigModal
