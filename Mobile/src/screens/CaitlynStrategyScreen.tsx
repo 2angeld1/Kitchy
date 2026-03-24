@@ -34,16 +34,16 @@ export default function CaitlynStrategyScreen({ route, navigation }: Props) {
 
     const renderReasoning = () => {
         if (!productReasoning) return null;
-        
+
         // Asumiendo que python nos devuelve viñetas o líneas separadas
         const bullets = productReasoning.split('\n').filter(line => line.trim().length > 0);
 
         return bullets.map((bullet, idx) => (
-            <Animated.View 
-                key={idx} 
+            <Animated.View
+                key={idx}
                 entering={FadeInDown.delay(400 + (idx * 100))}
                 style={{
-                    flexDirection: 'row', 
+                    flexDirection: 'row',
                     alignItems: 'flex-start',
                     marginBottom: 16,
                     backgroundColor: colors.surface,
@@ -64,10 +64,10 @@ export default function CaitlynStrategyScreen({ route, navigation }: Props) {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar title="An\u00e1lisis de Estrategia" onBack={() => navigation.goBack()} />
+            <KitchyToolbar title="Análisis de Estrategia" onBack={() => navigation.goBack()} />
 
             <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
-                
+
                 {/* Header Section */}
                 <Animated.View entering={FadeInDown.duration(400)} style={{ marginBottom: 32, alignItems: 'center' }}>
                     <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: isDark ? 'rgba(251, 191, 36, 0.15)' : '#fef3c7', justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
@@ -101,7 +101,7 @@ export default function CaitlynStrategyScreen({ route, navigation }: Props) {
                     <Animated.View entering={FadeIn} style={{ padding: 40, alignItems: 'center' }}>
                         <ActivityIndicator size="large" color="#fbbf24" />
                         <Text style={{ marginTop: 16, color: colors.textSecondary, fontWeight: '600' }}>
-                            Conectando con el mercado de Panam\u00e1...
+                            Conectando con el mercado de Panama...
                         </Text>
                     </Animated.View>
                 )}
@@ -119,7 +119,7 @@ export default function CaitlynStrategyScreen({ route, navigation }: Props) {
                         <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary, marginBottom: 16 }}>
                             El Veredicto de Caitlyn
                         </Text>
-                        
+
                         <View style={{ backgroundColor: isDark ? 'rgba(251, 191, 36, 0.08)' : '#fffbeb', padding: 20, borderRadius: 20, marginBottom: 24, borderWidth: 1, borderColor: 'rgba(251, 191, 36, 0.3)' }}>
                             <Text style={{ fontSize: 16, color: colors.textPrimary, lineHeight: 24, fontWeight: '600' }}>
                                 "{productAdvice}"
@@ -127,9 +127,9 @@ export default function CaitlynStrategyScreen({ route, navigation }: Props) {
                         </View>
 
                         <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textSecondary, textTransform: 'uppercase', marginBottom: 16, letterSpacing: 0.5 }}>
-                            Factores que impulsan esta decisi\u00f3n
+                            Factores que impulsan esta decisión
                         </Text>
-                        
+
                         {renderReasoning()}
                     </Animated.View>
                 )}
@@ -139,16 +139,16 @@ export default function CaitlynStrategyScreen({ route, navigation }: Props) {
             {/* Sticky Action Footer */}
             {!loading && (
                 <Animated.View entering={FadeInDown.delay(500)} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border }}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={{ backgroundColor: colors.primary, height: 56, borderRadius: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                         onPress={() => {
                             // Enviaremos al usuario a la pantalla de Productos
                             // idealmente filtrando o buscando automáticamente el producto en cuestión.
                             navigation.navigate('Main');
                             setTimeout(() => {
-                                navigation.navigate('Productos', { 
-                                    editProductId: alerta.id, 
-                                    suggestedPrice: alerta.precioSugerido 
+                                navigation.navigate('Productos', {
+                                    editProductId: alerta.id,
+                                    suggestedPrice: alerta.precioSugerido
                                 });
                             }, 100);
                         }}

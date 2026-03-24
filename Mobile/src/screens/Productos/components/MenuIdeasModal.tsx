@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -8,18 +8,29 @@ interface MenuIdeasModalProps {
     onClose: () => void;
     generateMenuIdeas: () => void;
     menuIdeas: any[];
+    menuSource?: string | null;
     loading: boolean;
     error: string | null;
     colors: any;
     onUseIdea: (idea: any) => void;
 }
 
-export function MenuIdeasModal({ visible, onClose, generateMenuIdeas, menuIdeas, loading, error, colors, onUseIdea }: MenuIdeasModalProps) {
+export function MenuIdeasModal({ 
+    visible, onClose, generateMenuIdeas, menuIdeas, menuSource, loading, error, colors, onUseIdea 
+}: MenuIdeasModalProps) {
+    const hasRequestedRef = useRef(false);
+
     useEffect(() => {
-        if (visible && menuIdeas.length === 0 && !loading && !error) {
-            generateMenuIdeas();
+        if (visible) {
+            if (menuIdeas.length === 0 && !loading && !error && !hasRequestedRef.current) {
+                hasRequestedRef.current = true;
+                generateMenuIdeas();
+            }
+        } else {
+            // Reset flag when modal closes
+            hasRequestedRef.current = false;
         }
-    }, [visible]);
+    }, [visible, menuIdeas.length, loading, error]);
 
     return (
         <Modal visible={visible} transparent={true} animationType="slide" onRequestClose={onClose}>
@@ -41,7 +52,14 @@ export function MenuIdeasModal({ visible, onClose, generateMenuIdeas, menuIdeas,
                                 <Ionicons name="sparkles" size={24} color="#d97706" />
                             </View>
                             <View>
-                                <Text style={{ fontSize: 20, fontWeight: '800', color: colors.textPrimary }}>Ingeniería de Menú</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                    <Text style={{ fontSize: 20, fontWeight: '800', color: colors.textPrimary }}>Ingeniería de Menú</Text>
+                                    {menuSource === 'CAITLYN_MEMORY_DB' && (
+                                        <View style={{ backgroundColor: 'rgba(37,99,235,0.1)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                            <Text style={{ fontSize: 10, fontWeight: '800', color: '#2563eb' }}>MEMORIA 🧠</Text>
+                                        </View>
+                                    )}
+                                </View>
                                 <Text style={{ fontSize: 13, color: colors.textSecondary }}>Creando rentabilidad con tu inventario</Text>
                             </View>
                         </View>

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio, guardarGastoFactura, sugerirReceta, analizarAlertasDashboard, sugerirMenuIdeas } from '../controllers/agenteController';
+import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio, guardarGastoFactura, sugerirReceta, analizarAlertasDashboard, sugerirMenuIdeas, aprenderAliasVisual, buscarMatchesVisuales } from '../controllers/agenteController';
 
 const router = Router();
 
@@ -18,5 +18,7 @@ router.post('/invoice', procesarFactura);
 router.post('/invoice/confirm', guardarGastoFactura);
 router.post('/recipe/suggest', sugerirReceta);
 router.post('/menu/ideas', sugerirMenuIdeas);
+router.post('/vision/learn-alias', aprenderAliasVisual);
+router.post('/vision/match-products', buscarMatchesVisuales);
 
 export default router;

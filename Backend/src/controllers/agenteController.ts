@@ -6,6 +6,7 @@ import Gasto from '../models/Gasto';
 import Venta from '../models/Venta';
 import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
+import MovimientoInventario from '../models/MovimientoInventario';
 import { RecetaSugerida } from '../models/RecetaSugerida';
 import axios from 'axios';
 import { getLatestContext, updateFuelContext, updateMarketPrices, updateAcodecoPrices } from '../services/marketContextService';
@@ -114,16 +115,16 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
                          .filter((id: any) => id && typeof id === 'string' && id.length === 24 && id !== 'NONE');
                      const invItems = await Inventario.find({ _id: { $in: invIds } });
                      
-                           enrichedIngredients = currentData.ingredientes.map((ing: any) => {
-                            const targetId = (ing.inventario?._id || ing.inventario)?.toString();
-                            const invItem = targetId ? invItems.find((i: any) => i._id.toString() === targetId) : null;
-                            return {
-                             nombre: invItem?.nombre || 'Desconocido',
-                             costo: invItem?.costoUnitario || 0,
-                             unidad: invItem?.unidad || 'unid',
-                             cantidad: ing.cantidad
-                         };
-                     });
+                            enrichedIngredients = currentData.ingredientes.map((ing: any) => {
+                             const targetId = (ing.inventario?._id || ing.inventario)?.toString();
+                             const invItem = targetId ? invItems.find((i: any) => i._id.toString() === targetId) : null;
+                             return {
+                              nombre: invItem?.nombre || 'Desconocido',
+                              costo: invItem?.costoUnitario || 0,
+                              unidad: invItem?.unidad || 'unid',
+                              cantidad: ing.cantidad
+                          };
+                      });
                  }
 
                  businessStats = {
@@ -143,26 +144,26 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
                      });
                      businessStats.ventas30Dias = ventasRecientes.length;
                  }
-            } else if (producto) {
-                // Comportamiento estándar: leer de DB
-                const ventasRecientes = await Venta.find({
+                // 💡 PASO EXTRA: Consultar Movimientos de Inventario para AUDITORÍA
+                const invIds = businessStats.ingredientes
+                    .map((i: any) => i.inventario?._id || i.idInventario)
+                    .filter(Boolean);
+
+                const movimientosRecientes = await MovimientoInventario.find({
+                    inventario: { $in: invIds },
                     negocioId,
-                    'productos.producto': producto._id,
-                    fecha: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+                    createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
                 });
 
-                businessStats = {
-                    tipo: 'PRODUCTO',
-                    nombre: producto.nombre,
-                    precioActual: producto.precio,
-                    ventas30Dias: ventasRecientes.length,
-                    ingredientes: (producto.ingredientes || []).map((ing: any) => ({
-                        nombre: ing.inventario?.nombre,
-                        costo: ing.inventario?.costoUnitario,
-                        unidad: ing.inventario?.unidad,
-                        cantidad: ing.cantidad
-                    }))
+                // Agrupar movimientos por tipo para Caitlyn
+                businessStats.audit_movimientos = {
+                    entradas: movimientosRecientes.filter(m => m.tipo === 'entrada').length,
+                    mermas: movimientosRecientes.filter(m => m.tipo === 'merma').length,
+                    ajustes: movimientosRecientes.filter(m => m.tipo === 'ajuste').length,
+                    total_cantidad_merma: movimientosRecientes.filter(m => m.tipo === 'merma').reduce((acc, m) => acc + m.cantidad, 0)
                 };
+
+                console.log(`📊 [NODE] Auditoría de Movimientos integrada (${movimientosRecientes.length} registros).`);
             }
         } else {
             // CASO AUTOMÁTICO (Dashboard): Buscar el producto más vendido del mes
@@ -180,6 +181,7 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
 
         // 3. Empaquetar y enviar al Microservicio de IA
         const payload = {
+            negocio_id: negocioId,
             product_name: productName,
             market_context: marketContext,
             business_data: businessStats,
@@ -363,7 +365,7 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
         const marketContext = await getLatestContext();
 
         // 💡 PASO EXTRA: MEMORIA MAESTRA - Consultar si ya existe esta receta en la DB
-        const recetaCache = await RecetaSugerida.findOne({ nombrePlato: new RegExp(`^${nombrePlato}$`, 'i') });
+        const recetaCache: any = await (RecetaSugerida as any).findOne({ nombrePlato: new RegExp(`^${nombrePlato}$`, 'i') });
 
         if (recetaCache) {
             console.log(`🧠 [CACHE] Caitlyn recuperó "${nombrePlato}" de su Memoria Maestra (DB).`);
@@ -408,6 +410,7 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
 
         // 3. Consultar a Caitlyn (IA) - Si no estaba en cache
         const response = await axios.post(`${CAITLYN_URL}/agent/recipe/suggest`, {
+            negocio_id: negocioId,
             dish_name: nombrePlato,
             serving_size: servingSize,
             category: categoria,
@@ -422,7 +425,7 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
             // 4. Identificar Faltantes (Insumos que no están en inventario o tienen stock 0)
             const faltantes = recipeSuggestions.filter((ingSuggested: any) => {
                 const nombreSugerido = (ingSuggested.nombre || ingSuggested.insumo || "").toLowerCase();
-                const enInventario = inventario.find(inv => {
+                const enInventario = inventario.find((inv: any) => {
                     const nombreInv = (inv.nombre || "").toLowerCase();
                     return nombreInv.includes(nombreSugerido) || nombreSugerido.includes(nombreInv);
                 });
@@ -442,7 +445,7 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
             // 💡 PASO EXTRA: GUARDAR EN MEMORIA MAESTRA para la próxima vez
             try {
                 console.log(`💾 [MEMORIA] Intentando guardar receta para: ${nombrePlato}...`);
-                await RecetaSugerida.create({
+                await (RecetaSugerida as any).create({
                     nombrePlato: nombrePlato,
                     categoria: categoria,
                     servingSize: servingSize,
@@ -474,6 +477,7 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error de conexión con el Chef Caitlyn' });
     }
 };
+
 /**
  * Pide a Caitlyn un resumen de las alertas del dashboard.
  */
@@ -485,13 +489,17 @@ export const analizarAlertasDashboard = async (req: AuthRequest, res: Response) 
         }
 
         // 1. Delegar a Caitlyn en Python (8000)
-        console.log(`🤖 Caitlyn analizando ${alerts.length} alertas del Dashboard...`);
-        const response = await axios.post(`${CAITLYN_URL}/agent/business/dashboard-alerts`, { alerts });
+        console.log(`🤖 Caitlyn analizando ${alerts.length} alertas del Dashboard (Negocio: ${req.negocioId})...`);
+        const response = await axios.post(`${CAITLYN_URL}/agent/business/dashboard-alerts`, { 
+            alerts,
+            negocio_id: req.negocioId 
+        });
 
         if (response.data.success) {
             res.json({
                 success: true,
-                message: response.data.message
+                message: response.data.message,
+                source: response.data.source // <--- Nuevo: Pasar la fuente (MEMORY/AI)
             });
         } else {
             res.status(400).json({ success: false, message: response.data.message || 'Error analizando alertas con Caitlyn.' });
@@ -520,6 +528,7 @@ export const sugerirMenuIdeas = async (req: AuthRequest, res: Response) => {
         
         console.log(`🤖 Caitlyn analizando inventario (${inventario.length} items) para sugerir nuevas recetas...`);
         const response = await axios.post(`${CAITLYN_URL}/agent/menu-ideas/suggest`, {
+            negocio_id: negocioId,
             inventory_list: inventario.map(i => i.toObject()), // Pasamos crudo
             target_margin: margenObjetivo
         });
@@ -527,14 +536,65 @@ export const sugerirMenuIdeas = async (req: AuthRequest, res: Response) => {
         if (response.data.success) {
             res.json({
                 success: true,
-                ideas: response.data.data,
+                ideas: response.data.ideas, // <--- CAMBIO: Python ahora devuelve 'ideas'
+                source: response.data.source,
                 message: response.data.message
             });
         } else {
-            res.status(400).json({ success: false, message: response.data.message || 'Error consultando al Chef Maestro.' });
+            console.error('❌ Error devuelto por Caitlyn Python:', response.data.error || response.data.message);
+            res.status(400).json({ 
+                success: false, 
+                message: response.data.message || 'Error consultando al Chef Maestro.',
+                detail: response.data.error
+            });
         }
     } catch (error: any) {
         console.error('❌ Error pidiendo ideas de menú a Caitlyn:', error.message);
         res.status(500).json({ success: false, message: 'No se pudo conectar con Caitlyn para las ideas de menú.' });
+    }
+};
+/**
+ * Permite que Caitlyn aprenda la relación entre un texto de factura y un ID de inventario.
+ */
+export const aprenderAliasVisual = async (req: AuthRequest, res: Response) => {
+    try {
+        const { invoice_text, product_id } = req.body;
+        if (!invoice_text || !product_id) return res.status(400).json({ success: false, message: 'Faltan datos' });
+
+        const response = await axios.post(`${CAITLYN_URL}/agent/vision/learn-alias`, { 
+            invoice_text, 
+            product_id,
+            negocio_id: req.negocioId 
+        });
+        return res.json(response.data);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: 'Error de aprendizaje visual' });
+    }
+};
+
+/**
+ * Cruza los productos extraídos de una factura con el inventario real del negocio.
+ */
+export const buscarMatchesVisuales = async (req: AuthRequest, res: Response) => {
+    try {
+        const { extracted_items } = req.body;
+        const negocioId = req.negocioId;
+
+        if (!extracted_items || !Array.isArray(extracted_items)) {
+            return res.status(400).json({ success: false, message: 'Datos de factura inválidos' });
+        }
+
+        // Obtener inventario actual para comparar
+        const inventario = await Inventario.find({ negocioId }).select('nombre unidad _id');
+
+        const response = await axios.post(`${CAITLYN_URL}/agent/vision/match-products`, {
+            extracted_items,
+            inventory_items: inventario,
+            negocio_id: negocioId
+        });
+
+        return res.json(response.data);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: 'Error cruzando productos con inventario' });
     }
 };

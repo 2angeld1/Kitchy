@@ -234,78 +234,99 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                     <Text style={styles.applyRecipeText}>APLICAR RECETA</Text>
                                                 </TouchableOpacity>
 
-                                                {backendPrecioSugerido && backendPrecioSugerido > 0 && (
+                                            {(() => {
+                                                const isPriceApplied = Number(precio) > 0 && (backendPrecioSugerido || 0) > 0 && Math.abs(Number(precio) - (backendPrecioSugerido || 0)) < 0.01;
+
+                                                return (backendPrecioSugerido || 0) > 0 && (
                                                     <TouchableOpacity
-                                                        style={styles.suggestionButton}
+                                                        style={[
+                                                            styles.suggestionButton,
+                                                            isPriceApplied && { backgroundColor: '#10b98120', borderColor: '#10b981' }
+                                                        ]}
                                                         onPress={onApplySuggestion}
                                                         activeOpacity={0.7}
                                                     >
-                                                        <Text style={styles.suggestionButtonValue}>${backendPrecioSugerido.toFixed(2)}</Text>
+                                                        <Text style={[
+                                                            styles.suggestionButtonLabel,
+                                                            { fontSize: 8 },
+                                                            isPriceApplied && { color: '#10b981' }
+                                                        ]}>
+                                                            {isPriceApplied ? '¡PRECIO APLICADO!' : 'APLICAR PRECIO'}
+                                                        </Text>
+                                                        <Text style={[
+                                                            styles.suggestionButtonValue, 
+                                                            isPriceApplied && { color: '#10b981' }
+                                                        ]}>
+                                                            ${(backendPrecioSugerido || 0).toFixed(2)}
+                                                        </Text>
                                                     </TouchableOpacity>
-                                                )}
+                                                );
+                                            })()}
                                             </View>
                                         </Animated.View>
                                     )}
 
-                                    <View>
-                                        {showSizePrompt ? (
-                                            <Animated.View entering={FadeInDown} style={styles.caitlynPromptBox}>
-                                                <Text style={[styles.caitlynSub, { marginBottom: 8, color: colors.primary }]}>
-                                                    {isLiquid ? '¿De qué tamaño es tu bebida para calcularla?' : '¿Cuál es el tamaño de la ración?'}
-                                                </Text>
-                                                <View style={styles.caitlynInputRow}>
-                                                    <TextInput
-                                                        style={styles.caitlynInput}
-                                                        placeholder={isLiquid ? "Ej: 16oz, 500ml, Jumbo" : "Ej: 250g, 1 ración"}
-                                                        placeholderTextColor={colors.textMuted}
-                                                        value={servingSize}
-                                                        onChangeText={onServingSizeChange}
-                                                    />
+                                    {!sugerenciaIA && (
+                                        <View>
+                                            {showSizePrompt ? (
+                                                <Animated.View entering={FadeInDown} style={styles.caitlynPromptBox}>
+                                                    <Text style={[styles.caitlynSub, { marginBottom: 8, color: colors.primary }]}>
+                                                        {isLiquid ? '¿De qué tamaño es tu bebida para calcularla?' : '¿Cuál es el tamaño de la ración?'}
+                                                    </Text>
+                                                    <View style={styles.caitlynInputRow}>
+                                                        <TextInput
+                                                            style={styles.caitlynInput}
+                                                            placeholder={isLiquid ? "Ej: 16oz, 500ml, Jumbo" : "Ej: 250g, 1 ración"}
+                                                            placeholderTextColor={colors.textMuted}
+                                                            value={servingSize}
+                                                            onChangeText={onServingSizeChange}
+                                                        />
+                                                        <TouchableOpacity
+                                                            style={styles.caitlynActionBtn}
+                                                            onPress={onPreSugerirReceta}
+                                                            disabled={loadingRecipe}
+                                                        >
+                                                            {loadingRecipe ? (
+                                                                <ActivityIndicator size="small" color="#fff" />
+                                                            ) : (
+                                                                <Ionicons name="arrow-forward" size={20} color="#fff" />
+                                                            )}
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </Animated.View>
+                                            ) : (
+                                                <View style={{ flexDirection: 'row', gap: 10 }}>
                                                     <TouchableOpacity
-                                                        style={styles.caitlynActionBtn}
+                                                        style={[styles.caitlynSuggestBtn, { flex: 1.5 }]}
                                                         onPress={onPreSugerirReceta}
                                                         disabled={loadingRecipe}
                                                     >
                                                         {loadingRecipe ? (
-                                                            <ActivityIndicator size="small" color="#fff" />
+                                                            <ActivityIndicator size="small" color={colors.primary} />
                                                         ) : (
-                                                            <Ionicons name="arrow-forward" size={20} color="#fff" />
+                                                            <>
+                                                                <Ionicons name="color-wand-outline" size={20} color={colors.primary} />
+                                                                <Text style={styles.caitlynSuggestText}>
+                                                                    {ingredientes.length > 0 ? 'RE-SUGERIR' : (isLiquid ? '¿TAMAÑO?' : '¿SUGERIR RECETA?')}
+                                                                </Text>
+                                                            </>
                                                         )}
                                                     </TouchableOpacity>
-                                                </View>
-                                            </Animated.View>
-                                        ) : (
-                                            <View style={{ flexDirection: 'row', gap: 10 }}>
-                                                <TouchableOpacity
-                                                    style={[styles.caitlynSuggestBtn, { flex: 1.5 }]}
-                                                    onPress={onPreSugerirReceta}
-                                                    disabled={loadingRecipe}
-                                                >
-                                                    {loadingRecipe ? (
-                                                        <ActivityIndicator size="small" color={colors.primary} />
-                                                    ) : (
-                                                        <>
-                                                            <Ionicons name="color-wand-outline" size={20} color={colors.primary} />
-                                                            <Text style={styles.caitlynSuggestText}>
-                                                                {ingredientes.length > 0 ? 'RE-SUGERIR' : (isLiquid ? '¿TAMAÑO?' : '¿SUGERIR RECETA?')}
-                                                            </Text>
-                                                        </>
-                                                    )}
-                                                </TouchableOpacity>
 
-                                                {(backendPrecioSugerido || 0) > 0 && (
-                                                    <TouchableOpacity
-                                                        style={[styles.suggestionButton, { height: 50, borderRadius: 18 }]}
-                                                        onPress={onApplySuggestion}
-                                                        activeOpacity={0.7}
-                                                    >
-                                                        <Text style={[styles.suggestionButtonLabel, { fontSize: 8 }]}>APLICAR PRECIO</Text>
-                                                        <Text style={styles.suggestionButtonValue}>${backendPrecioSugerido?.toFixed(2)}</Text>
-                                                    </TouchableOpacity>
-                                                )}
-                                            </View>
-                                        )}
-                                    </View>
+                                                    {(backendPrecioSugerido || 0) > 0 && (
+                                                        <TouchableOpacity
+                                                            style={[styles.suggestionButton, { height: 50, borderRadius: 18 }]}
+                                                            onPress={onApplySuggestion}
+                                                            activeOpacity={0.7}
+                                                        >
+                                                            <Text style={[styles.suggestionButtonLabel, { fontSize: 8 }]}>APLICAR PRECIO</Text>
+                                                            <Text style={styles.suggestionButtonValue}>${backendPrecioSugerido?.toFixed(2)}</Text>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+                                            )}
+                                        </View>
+                                    )}
                                 </View>
 
                                 {/* RECIPE SECTION */}

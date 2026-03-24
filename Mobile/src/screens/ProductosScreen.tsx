@@ -45,7 +45,7 @@ export default function ProductosScreen({ route }: any) {
     } = useProductos();
 
     const { items: itemsInventario } = useInventario();
-    const { getBusinessAdvice, productAdvice, loading: loadingCaitlyn, error: errorCaitlyn, setProductAdvice, generateMenuIdeas, menuIdeas } = useCaitlyn();
+    const { getBusinessAdvice, productAdvice, loading: loadingCaitlyn, error: errorCaitlyn, setProductAdvice, generateMenuIdeas, menuIdeas, menuSource } = useCaitlyn();
 
     const handleUseIdea = (idea: any) => {
         resetForm();
@@ -114,7 +114,7 @@ export default function ProductosScreen({ route }: any) {
 
     // Trigger Automático de Consejos de Caitlyn al abrir/cambiar producto
     useEffect(() => {
-        if (!showModal || !editItem) {
+        if (!showModal) {
             setProductAdvice(null);
             return;
         }
@@ -127,11 +127,14 @@ export default function ProductosScreen({ route }: any) {
             ingredientes: ingredientes.map(i => ({ inventario: i.inventario, cantidad: Number(i.cantidad) }))
         };
 
+        // Escudo de Cuota: Un debounce sano de 2.5 segundos (2500ms).
+        // Si pulsas muchas teclas (editItem p.ej.), se reinicia. Caitlyn solo hablará
+        // cuando te detengas de escribir y pensar por 2.5 segundos.
         const timer = setTimeout(() => {
             if (nombre) {
                 getBusinessAdvice(nombre, currentData);
             }
-        }, editItem ? 100 : 1000); // 100ms si es abrir, 1s si es editar en caliente (debounce)
+        }, 2500); 
 
         return () => clearTimeout(timer);
     }, [showModal, nombre, precio, ingredientes.length, route?.params?.suggestedPrice]);
@@ -275,6 +278,7 @@ export default function ProductosScreen({ route }: any) {
                 onClose={() => setShowMenuIdeasModal(false)}
                 generateMenuIdeas={generateMenuIdeas}
                 menuIdeas={menuIdeas}
+                menuSource={menuSource}
                 loading={loadingCaitlyn}
                 error={errorCaitlyn}
                 colors={colors}

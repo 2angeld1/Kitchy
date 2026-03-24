@@ -10,6 +10,9 @@ const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 horas (Ajustado por Angel)
 // Cache para consejos de productos (Mismo producto, misma configuración = instantáneo)
 let productAdviceCache: Record<string, { message: string, reasoning: string | null, hash: string }> = {};
 
+// Cache global para las alertas del Dashboard (Evita Rate Limit al navegar entre pestañas)
+let dashboardAlertsCache: { hash: string, message: string } | null = null;
+
 export const useCaitlyn = () => {
     const [loading, setLoading] = useState(false);
     const [advice, setAdvice] = useState<string | null>(cachedInsight); // PARA EL DASHBOARD
@@ -101,13 +104,26 @@ export const useCaitlyn = () => {
     };
 
     const getDashboardAlertsAnalysis = async (alerts: any[]) => {
+        // Generar hash de las alertas actuales
+        const currentHash = JSON.stringify(alerts.map(a => a.id + a.margenActual));
+
+        // 1. ¿Ya tenemos este análisis específico en la memoria global de RAM?
+        if (dashboardAlertsCache && dashboardAlertsCache.hash === currentHash) {
+            setProductAdvice(dashboardAlertsCache.message);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         setProductAdvice(null);
         try {
             const response = await api.post('/agente/dashboard-alerts', { alerts });
             if (response.data.success) {
-                setProductAdvice(response.data.message);
+                const msg = response.data.message;
+                setProductAdvice(msg);
+
+                // Guardar en caché global
+                dashboardAlertsCache = { hash: currentHash, message: msg };
             } else {
                 setError(response.data.message || 'Caitlyn no pudo analizar las alertas.');
             }
@@ -120,6 +136,7 @@ export const useCaitlyn = () => {
     };
 
     const [menuIdeas, setMenuIdeas] = useState<any[]>([]);
+    const [menuSource, setMenuSource] = useState<string | null>(null);
 
     const generateMenuIdeas = async () => {
         setLoading(true);
@@ -129,6 +146,7 @@ export const useCaitlyn = () => {
             const response = await api.post('/agente/menu/ideas');
             if (response.data.success) {
                 setMenuIdeas(response.data.ideas);
+                setMenuSource(response.data.source || 'GEMINI_CHEF_AI');
             } else {
                 setError(response.data.message || 'No se pudieron generar ideas de menú.');
             }
@@ -140,15 +158,47 @@ export const useCaitlyn = () => {
         }
     };
 
+    const learnInvoiceAlias = async (invoiceText: string, productId: string) => {
+        try {
+            await api.post('/agente/vision/learn-alias', {
+                invoice_text: invoiceText,
+                product_id: productId
+            });
+            return true;
+        } catch (err) {
+            console.error('Error enseñando alias a Caitlyn:', err);
+            return false;
+        }
+    };
+
+    const matchInvoiceProducts = async (extractedItems: any[], inventoryItems: any[]) => {
+        setLoading(true);
+        try {
+            const response = await api.post('/agente/vision/match-products', {
+                extracted_items: extractedItems,
+                inventory_items: inventoryItems
+            });
+            return response.data.matches || [];
+        } catch (err) {
+            console.error('Error en match visual de productos:', err);
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         getDailyInsight,
         getBusinessAdvice,
         getDashboardAlertsAnalysis,
         generateMenuIdeas,
+        learnInvoiceAlias,
+        matchInvoiceProducts,
         advice,
         productAdvice,
         productReasoning,
         menuIdeas,
+        menuSource,
         loading,
         error,
         setAdvice,

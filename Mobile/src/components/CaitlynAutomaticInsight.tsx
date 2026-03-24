@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Dimensions, ScrollView, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { 
     FadeInDown, 
@@ -18,6 +19,7 @@ import api from '../services/api';
 const { width } = Dimensions.get('window');
 
 export const CaitlynAutomaticInsight = () => {
+    const navigation = useNavigation<any>();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const { getDailyInsight, advice, loading, setAdvice } = useCaitlyn();
@@ -44,19 +46,6 @@ export const CaitlynAutomaticInsight = () => {
         }
     };
 
-    // Efecto de pulso para el botón flotante
-    const pulseStyle = useAnimatedStyle(() => ({
-        transform: [{
-            scale: withRepeat(
-                withSequence(
-                    withTiming(1.08, { duration: 1500 }),
-                    withTiming(1, { duration: 1500 })
-                ),
-                -1,
-                true
-            )
-        }]
-    }));
 
     if (dismissed || (!loading && !advice)) return null;
 
@@ -94,18 +83,14 @@ export const CaitlynAutomaticInsight = () => {
 
                             {!success && (advice.toLowerCase().includes('precio') || advice.toLowerCase().includes('ajust')) && (
                                 <TouchableOpacity 
-                                    onPress={handleAutoAdjust}
+                                    onPress={() => {
+                                        setExpanded(false);
+                                        navigation.navigate('MenuApp');
+                                    }}
                                     style={[styles.actionButton, { backgroundColor: colors.primary }]}
-                                    disabled={updating}
                                 >
-                                    {updating ? (
-                                        <ActivityIndicator size="small" color="#FFF" />
-                                    ) : (
-                                        <>
-                                            <Ionicons name="flash" size={16} color="#FFF" />
-                                            <Text style={styles.actionText}>Ajustar Menú Ahora</Text>
-                                        </>
-                                    )}
+                                    <Ionicons name="restaurant" size={16} color="#FFF" />
+                                    <Text style={styles.actionText}>Ir al Menú</Text>
                                 </TouchableOpacity>
                             )}
                         </ScrollView>
@@ -123,7 +108,7 @@ export const CaitlynAutomaticInsight = () => {
 
             {/* El Botón Flotante (Avatar de Caitlyn) */}
             <View style={styles.buttonAlignment}>
-                <Animated.View style={[pulseStyle, { padding: 4 }]}>
+                <View style={{ padding: 4 }}>
                     <TouchableOpacity 
                         onPress={() => setExpanded(!expanded)}
                         activeOpacity={0.8}
@@ -132,10 +117,14 @@ export const CaitlynAutomaticInsight = () => {
                         {loading ? (
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
-                            <Ionicons name="sparkles" size={24} color="#FFF" />
+                            <Image 
+                                source={require('../../assets/caitlyn_avatar.png')} 
+                                style={{ width: 56, height: 56, borderRadius: 28 }} 
+                                resizeMode="cover"
+                            />
                         )}
                     </TouchableOpacity>
-                </Animated.View>
+                </View>
             </View>
         </View>
     );

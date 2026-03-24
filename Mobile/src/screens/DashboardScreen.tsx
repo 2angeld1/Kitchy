@@ -47,17 +47,16 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const [showGastoModal, setShowGastoModal] = useState(false);
     const [showCaitlynAlerts, setShowCaitlynAlerts] = useState(false);
 
-    const [hasAnalyzed, setHasAnalyzed] = useState(false);
+    const hasAnalyzedRef = React.useRef(false);
 
     useEffect(() => {
         const alertas = data?.inventario?.alertasRentabilidad;
-        // Solo intentamos analizar si hay alertas, no hemos analizado ya en esta carga,
-        // no hay consejo previo, no estamos cargando Y no hay un error previo
-        if (alertas && alertas.length > 0 && !hasAnalyzed && !advice && !analyzingAlerts && !caitlynError) {
-            setHasAnalyzed(true);
+        // Candado Síncrono: evita ráfagas en re-renders concurrentes
+        if (alertas && alertas.length > 0 && !hasAnalyzedRef.current && !advice && !analyzingAlerts && !caitlynError) {
+            hasAnalyzedRef.current = true;
             getDashboardAlertsAnalysis(alertas);
         }
-    }, [data?.inventario?.alertasRentabilidad, advice, analyzingAlerts, caitlynError, hasAnalyzed]);
+    }, [data?.inventario?.alertasRentabilidad, advice, analyzingAlerts, caitlynError]);
 
     useEffect(() => {
         if (error) {
