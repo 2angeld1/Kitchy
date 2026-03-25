@@ -129,4 +129,11 @@ export const confirmInvoice = (metadata: any, items: any[]) =>
 export const suggestRecipe = (nombrePlato: string, servingSize?: string) =>
     api.post('/agente/recipe/suggest', { nombrePlato, servingSize });
 
+// --- Presupuestario ---
+export const parseShoppingList = (text?: string, image?: string) =>
+    api.post('/agente/shopping/parse', { text, image });
+
+export const learnPrice = (item_name: string, price: number) =>
+    api.post('/agente/shopping/learn-price', { item_name, price });
+
 export default api;

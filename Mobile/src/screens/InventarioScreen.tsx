@@ -50,7 +50,7 @@ export default function InventarioScreen() {
     } = useInventario();
 
     const [isFabOpen, setIsFabOpen] = useState(false);
-    
+
     const fabRotation = useSharedValue(0);
     useEffect(() => {
         fabRotation.value = withSpring(isFabOpen ? 45 : 0, { damping: 15, stiffness: 150 });
@@ -96,8 +96,8 @@ export default function InventarioScreen() {
             </View>
 
             <Text style={[styles.smartHint, { color: isListening ? colors.primary : colors.textMuted }]}>
-                {isListening 
-                    ? '🎙️ Te escucho... Ej: "Gasté 1 litro de shampoo"' 
+                {isListening
+                    ? '🎙️ Te escucho... Ej: "Gasté 1 litro de shampoo"'
                     : `💡 Escribe o dicta: "${categoriaNegocio === 'BELLEZA' ? '5 tintes a 10 dólares' : '5 tomates a 10 dólares'}" o "${categoriaNegocio === 'BELLEZA' ? 'usé 1 pote de cera' : 'usé 2 libras de carne'}"`}
             </Text>
 
@@ -127,14 +127,14 @@ export default function InventarioScreen() {
                     </View>
                 ) : (
                     itemsFiltrados.map((item, i) => (
-                        <InventarioItemCard 
-                            key={item._id} 
-                            item={item} index={i} 
-                            categoriaNegocio={categoriaNegocio} 
-                            colors={colors} styles={styles} 
-                            onEdit={openEditModal} 
-                            onDelete={handleDelete} 
-                            onMovimiento={openMovModal} 
+                        <InventarioItemCard
+                            key={item._id}
+                            item={item} index={i}
+                            categoriaNegocio={categoriaNegocio}
+                            colors={colors} styles={styles}
+                            onEdit={openEditModal}
+                            onDelete={handleDelete}
+                            onMovimiento={openMovModal}
                         />
                     ))
                 )}

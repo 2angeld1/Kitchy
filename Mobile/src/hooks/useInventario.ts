@@ -97,7 +97,7 @@ export const useInventario = () => {
     const [cantidadMinima, setCantidadMinima] = useState('');
     const [costoUnitario, setCostoUnitario] = useState('');
     const [precioVenta, setPrecioVenta] = useState('');
-    
+
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user as any), [user]);
     const [categoria, setCategoria] = useState(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
 

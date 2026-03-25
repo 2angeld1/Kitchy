@@ -598,3 +598,47 @@ export const buscarMatchesVisuales = async (req: AuthRequest, res: Response) => 
         res.status(500).json({ success: false, message: 'Error cruzando productos con inventario' });
     }
 };
+
+/**
+ * M\u00d3DULO PRESUPUESTARIO: Procesa una lista de compras y estima precios (Node Proxy)
+ */
+export const parseShoppingList = async (req: AuthRequest, res: Response) => {
+    try {
+        const { text, image } = req.body;
+        console.log(`🤖 Caitlyn analizando lista de compras para el presupuesto...`);
+        
+        const response = await axios.post(`${CAITLYN_URL}/agent/shopping/parse`, {
+            text,
+            image
+        });
+
+        if (response.data.success) {
+            res.json(response.data);
+        } else {
+            res.status(400).json({ success: false, message: response.data.error || 'Error procesando presupuesto.' });
+        }
+    } catch (error: any) {
+        console.error('❌ Error pidiendo presupuesto a Caitlyn:', error.message);
+        res.status(500).json({ success: false, message: 'Caitlyn no pudo parsear el presupuesto hoy.' });
+    }
+};
+
+/**
+ * Reportar un precio real para que Caitlyn aprenda (Node Proxy)
+ */
+export const aprenderPrecio = async (req: AuthRequest, res: Response) => {
+    try {
+        const { item_name, price } = req.body;
+        const negocioId = req.negocioId;
+
+        const response = await axios.post(`${CAITLYN_URL}/agent/shopping/learn-price`, {
+            item_name,
+            price,
+            negocio_id: negocioId
+        });
+
+        res.json(response.data);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: 'Error en aprendizaje de precio' });
+    }
+};

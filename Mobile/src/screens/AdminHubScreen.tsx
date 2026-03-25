@@ -62,6 +62,13 @@ export default function AdminHubScreen() {
                 icon: 'analytics-outline',
                 color: '#f59e0b'
             },
+            {
+                id: 'presupuestario',
+                title: 'Presupuestario',
+                desc: 'Carrito Inteligente',
+                icon: 'cart-outline',
+                color: '#ec4899'
+            },
         ];
 
         // Solo para BELLEZA: Comisiones
@@ -139,6 +146,10 @@ export default function AdminHubScreen() {
         }
         if (id === 'comisiones') {
             navigation.navigate('Comisiones');
+            return;
+        }
+        if (id === 'presupuestario') {
+            navigation.navigate('Presupuestario');
             return;
         }
     };

@@ -21,4 +21,8 @@ router.post('/menu/ideas', sugerirMenuIdeas);
 router.post('/vision/learn-alias', aprenderAliasVisual);
 router.post('/vision/match-products', buscarMatchesVisuales);
 
+// --- Presupuestario ---
+router.post('/shopping/parse', require('../controllers/agenteController').parseShoppingList);
+router.post('/shopping/learn-price', require('../controllers/agenteController').aprenderPrecio);
+
 export default router;

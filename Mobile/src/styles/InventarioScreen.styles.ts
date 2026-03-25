@@ -75,7 +75,7 @@ export const createStyles = (colors: any) => StyleSheet.create({
     },
     listContainer: {
         paddingHorizontal: 24,
-        paddingBottom: 120, 
+        paddingBottom: 120,
     },
     itemCard: {
         flexDirection: 'row',

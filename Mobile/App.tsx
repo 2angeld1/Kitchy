@@ -15,6 +15,7 @@ import EspecialistasScreen from './src/screens/EspecialistasScreen';
 import ServiciosScreen from './src/screens/ServiciosScreen';
 import SoporteScreen from './src/screens/SoporteScreen';
 import CaitlynStrategyScreen from './src/screens/CaitlynStrategyScreen';
+import PresupuestarioScreen from './src/screens/PresupuestarioScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -61,6 +62,7 @@ export type RootStackParamList = {
   Servicios: undefined;
   Soporte: undefined;
   CaitlynStrategy: { alerta: any };
+  Presupuestario: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -96,6 +98,7 @@ function RootNavigator() {
             <Stack.Screen name="Servicios" component={ServiciosScreen} />
             <Stack.Screen name="Soporte" component={SoporteScreen} />
             <Stack.Screen name="CaitlynStrategy" component={CaitlynStrategyScreen} />
+            <Stack.Screen name="Presupuestario" component={PresupuestarioScreen} />
           </>
         ) : (
           <>
