@@ -37,7 +37,7 @@ export const DashboardGastoModal: React.FC<Props> = ({ visible, onClose, onSave,
                     </View>
 
                     <KitchyInput label="Descripci\u00f3n" value={form.desc} onChangeText={(t) => setForm({ ...form, desc: t })} placeholder="Luz, Gas, Renta..." />
-                    <KitchyInput label="Monto ($)" value={form.monto} onChangeText={(t) => setForm({ ...form, monto: t })} keyboardType="numeric" placeholder="0.00" />
+                    <KitchyInput label="Monto ($)" value={form.monto} onChangeText={(t) => setForm({ ...form, monto: t })} keyboardType="decimal-pad" placeholder="0.00" />
 
                     <Text style={[styles.cardLabel, { color: colors.textMuted, marginTop: 10, marginBottom: 10 }]}>Categor\u00eda</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>

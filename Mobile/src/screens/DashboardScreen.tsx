@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions, TouchableOpacity, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/MainAppNavigator';
 import { useAuth, Negocio } from '../context/AuthContext';
@@ -150,7 +150,12 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             </Animated.View>
 
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(400)} style={[styles.glassCardGrid, { width: cardWidth }]}>
-                                <View style={[styles.glassIconContainerPrimary, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}><Ionicons name="sparkles-outline" size={20} color="#10b981" /></View>
+                                <View style={[styles.glassIconContainerPrimary, { backgroundColor: 'rgba(16, 185, 129, 0.1)', overflow: 'hidden' }]}>
+                                    <Image
+                                        source={require('../../assets/caitlyn_avatar.png')}
+                                        style={{ width: 44, height: 44, borderRadius: 22 }}
+                                    />
+                                </View>
                                 <Text style={styles.gridCardLabel}>Ahorro Kitchy</Text>
                                 <Text style={styles.gridCardValue}>{data.ahorro.tiempoHoras}h</Text>
                                 <Text style={styles.gridCardSubtitle}>{data.ahorro.hojasPapel} hojas 📝</Text>
@@ -209,17 +214,17 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
             <DashboardGastoModal visible={showGastoModal} onClose={() => setShowGastoModal(false)} onSave={handleGuardarGasto} loading={creatingGasto} colors={colors} styles={styles} />
 
-            <CaitlynAlertsModal 
-                visible={showCaitlynAlerts} 
-                onClose={() => setShowCaitlynAlerts(false)} 
-                alertas={data?.inventario?.alertasRentabilidad || []} 
+            <CaitlynAlertsModal
+                visible={showCaitlynAlerts}
+                onClose={() => setShowCaitlynAlerts(false)}
+                alertas={data?.inventario?.alertasRentabilidad || []}
                 onViewStrategy={(alerta) => {
                     setShowCaitlynAlerts(false);
                     (navigation as any).navigate('CaitlynStrategy', { alerta });
                 }}
                 onAplicarTodo={handleAjustarTodosLosPrecios}
             />
-            
+
             <CaitlynAutomaticInsight />
         </View>
     );

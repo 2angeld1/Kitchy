@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth, Negocio } from '../context/AuthContext';
-import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/KitchyToolbar.styles';
 import { NotificationModal } from './NotificationModal';
-import Toast from 'react-native-toast-message';
-import { useTheme } from '../context/ThemeContext';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { RootStackParamList } from '../../App';
+import { useKitchyToolbar } from '../hooks/useKitchyToolbar';
 
 interface KitchyToolbarProps {
     title: string;
@@ -31,60 +26,23 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     showUserMenuButton = true,
     showSwitchNegocioButton = true
 }) => {
-    const { logout, user, switchNegocioContext } = useAuth();
-    const { isDark } = useTheme();
-    const [showNotif, setShowNotif] = useState(false);
-    const [showUserMenu, setShowUserMenu] = useState(false);
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
-    // Helper to get active business data safely
-    const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo as Negocio : null;
-
-    // Explicit theme colors based on context
-    const colors = isDark ? darkTheme : lightTheme;
-
-    const handleLogout = () => {
-        logout();
-        Toast.show({
-            type: 'info',
-            text1: 'Sesión Cerrada',
-            text2: 'Vuelve pronto',
-            position: 'top'
-        });
-    }
-
-    // Check if user has multiple businesses
-    const hasMultipleNegocios = user?.negocioIds && user.negocioIds.length > 1;
-
-    // Add API logic locally for switching (or use from useUsuarios if preferred)
-    const [isSwitching, setIsSwitching] = useState(false);
-    const [showSwitchModal, setShowSwitchModal] = useState(false);
-
-    const handleSwitchNegocio = async (negocioId: string) => {
-        if (negocioId === user?.negocioActivo) {
-            setShowSwitchModal(false);
-            return;
-        }
-
-        setIsSwitching(true);
-        try {
-            // we need to call the switch API
-            // using api directly since we are in the toolbar
-            const api = require('../services/api').default;
-            const res = await api.put(`/negocios/switch/${negocioId}`);
-
-            if (res.data.success && res.data.user) {
-                await switchNegocioContext(res.data.user, res.data.token);
-                setShowSwitchModal(false);
-                setShowUserMenu(false);
-                Toast.show({ type: 'success', text1: 'Éxito', text2: 'Has cambiado de negocio.' });
-            }
-        } catch (err: any) {
-            Toast.show({ type: 'error', text1: 'Error', text2: err.response?.data?.message || 'Error al cambiar de negocio' });
-        } finally {
-            setIsSwitching(false);
-        }
-    };
+    const {
+        user,
+        colors,
+        isDark,
+        navigation,
+        showNotif,
+        setShowNotif,
+        showUserMenu,
+        setShowUserMenu,
+        isSwitching,
+        showSwitchModal,
+        setShowSwitchModal,
+        negocioActual,
+        hasMultipleNegocios,
+        handleLogout,
+        handleSwitchNegocio
+    } = useKitchyToolbar();
 
     return (
         <View style={[
@@ -103,7 +61,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
                     {user?.negocioActivo && title === 'Dashboard' && (
                         <Text numberOfLines={1} ellipsizeMode="tail" style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: -2, textTransform: 'uppercase' }}>
-                            {negocioActual?.categoria === 'BELLEZA' ? 'Mi Local' : 'Mi Sucursal'}
+                            {negocioActual?.nombre || (negocioActual?.categoria === 'BELLEZA' ? 'Mi Local' : 'Mi Sucursal')}
                         </Text>
                     )}
                 </View>

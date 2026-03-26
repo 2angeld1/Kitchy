@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../IonicNotif"
+		},
+		{
+			"path": "../AgroLink"
+		}
+	],
+	"settings": {}
+}

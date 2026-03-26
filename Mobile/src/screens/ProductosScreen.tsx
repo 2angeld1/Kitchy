@@ -86,7 +86,7 @@ export default function ProductosScreen({ route }: any) {
 
     // Estado para Configuraci\u00f3n de Margen
     const [showConfigModal, setShowConfigModal] = useState(false);
-    const [margenInput, setMargenInput] = useState('65');
+    const [margenInput, setMargenInput] = useState('50');
     const [savingConfig, setSavingConfig] = useState(false);
 
     const handleSaveMargen = async () => {

@@ -14,8 +14,8 @@ interface Props {
     styles: any;
 }
 
-export const RentabilidadConfigModal: React.FC<Props> = ({ 
-    visible, onClose, margenInput, setMargenInput, savingConfig, onSave, colors, styles 
+export const RentabilidadConfigModal: React.FC<Props> = ({
+    visible, onClose, margenInput, setMargenInput, savingConfig, onSave, colors, styles
 }) => {
     return (
         <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
@@ -26,15 +26,27 @@ export const RentabilidadConfigModal: React.FC<Props> = ({
                     </View>
                     <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>Rentabilidad Deseada</Text>
                     <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center', marginBottom: 20 }}>
-                        Establece el <Text style={{ fontWeight: 'bold' }}>Margen de Ganancia Objetivo</Text>. Caitlyn te avisar\u00e1 si alg\u00fan producto cae por debajo de esta meta.
+                        Establece el <Text style={{ fontWeight: 'bold' }}>Margen de Ganancia Objetivo</Text>. Caitlyn te avisará si algún producto cae por debajo de esta meta.
                     </Text>
-                    
+
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingHorizontal: 16, width: '100%', marginBottom: 24 }}>
-                        <TextInput 
-                            style={{ height: 56, fontSize: 32, fontWeight: '900', color: colors.textPrimary, textAlign: 'center', minWidth: 60 }}
+                        <TextInput
+                            style={{
+                                height: 56,
+                                fontSize: 32,
+                                fontWeight: '900',
+                                color: colors.textPrimary,
+                                textAlign: 'center',
+                                minWidth: 60,
+                                // @ts-ignore
+                                outlineStyle: 'none',
+                            } as any}
                             value={margenInput}
                             onChangeText={setMargenInput}
-                            keyboardType="numeric"
+                            keyboardType="decimal-pad"
+                            underlineColorAndroid="transparent"
+                            autoFocus={true}
+                            selectTextOnFocus={true}
                             maxLength={2}
                         />
                         <Text style={{ fontSize: 32, fontWeight: '900', color: colors.textMuted }}>%</Text>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
@@ -48,8 +48,11 @@ export function MenuIdeasModal({
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <View style={{ backgroundColor: 'rgba(217,119,6,0.15)', padding: 8, borderRadius: 12, marginRight: 12 }}>
-                                <Ionicons name="sparkles" size={24} color="#d97706" />
+                            <View style={{ marginRight: 12, overflow: 'hidden' }}>
+                                <Image 
+                                    source={require('../../../../assets/caitlyn_avatar.png')} 
+                                    style={{ width: 44, height: 44, borderRadius: 22 }} 
+                                />
                             </View>
                             <View>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

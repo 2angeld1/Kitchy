@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { parseShoppingList, learnPrice } from '../services/api';
 import * as ImagePicker from 'expo-image-picker';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
-import { ShoppingItem } from '../screens/PresupuestarioScreen'; // Reutilizamos la interfaz
+import { ShoppingItem } from '../types/shopping.types';
 import Toast from 'react-native-toast-message';
 
 export const useShoppingList = () => {
@@ -59,39 +59,35 @@ export const useShoppingList = () => {
         }
     };
 
-    const handlePhotoInput = async () => {
-        Alert.alert(
-            "📷 Añadir lista por foto",
-            "¿Quieres tomar una foto nueva o elegir una de tu galería?",
-            [
-                { text: "Cancelar", style: "cancel" },
-                { 
-                    text: "Tomar Foto", 
-                    onPress: async () => {
-                        const { granted } = await ImagePicker.requestCameraPermissionsAsync();
-                        if (!granted) return Toast.show({ type: 'error', text1: 'Permiso denegado', text2: 'No podemos abrir la cámara.' });
-                        
-                        const result = await ImagePicker.launchCameraAsync({
-                            allowsEditing: true,
-                            quality: 0.8,
-                            base64: true
-                        });
-                        if (!result.canceled) processImage(result.assets[0].base64!);
-                    } 
-                },
-                { 
-                    text: "Elegir Galería", 
-                    onPress: async () => {
-                        const result = await ImagePicker.launchImageLibraryAsync({
-                            allowsEditing: true,
-                            quality: 0.8,
-                            base64: true
-                        });
-                        if (!result.canceled) processImage(result.assets[0].base64!);
-                    } 
-                }
-            ]
-        );
+    const takePhoto = async () => {
+        try {
+            const { granted } = await ImagePicker.requestCameraPermissionsAsync();
+            if (!granted) return Toast.show({ type: 'error', text1: 'Permiso denegado', text2: 'No podemos abrir la cámara.' });
+            
+            const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true
+            });
+            if (!result.canceled && result.assets[0].base64) processImage(result.assets[0].base64);
+        } catch (err) {
+            console.error("Error al tomar foto:", err);
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo abrir la cámara.' });
+        }
+    };
+
+    const pickImage = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                allowsEditing: true,
+                quality: 0.8,
+                base64: true
+            });
+            if (!result.canceled && result.assets[0].base64) processImage(result.assets[0].base64);
+        } catch (err) {
+            console.error("Error al elegir imagen:", err);
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo abrir la galería.' });
+        }
     };
 
     const processImage = async (base64: string) => {
@@ -142,7 +138,8 @@ export const useShoppingList = () => {
         isAnalyzing,
         startListening,
         handleTextParse,
-        handlePhotoInput,
+        takePhoto,
+        pickImage,
         toggleConfirm,
         removeItem,
         setItems

@@ -7,6 +7,7 @@ import Venta from '../models/Venta';
 import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
 import MovimientoInventario from '../models/MovimientoInventario';
+import User from '../models/User';
 import { RecetaSugerida } from '../models/RecetaSugerida';
 import axios from 'axios';
 import { getLatestContext, updateFuelContext, updateMarketPrices, updateAcodecoPrices } from '../services/marketContextService';
@@ -85,8 +86,12 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
     try {
         const { productName, currentData } = req.body;
         const negocioId = req.negocioId;
+        const userId = req.userId;
 
-        console.log(`🧠 Caitlyn generando insight automático (Negocio: ${negocioId}, Producto: ${productName || 'Dashboard'})`);
+        const user = await User.findById(userId).select('nombre');
+        const userName = user?.nombre || 'Socio/a';
+
+        console.log(`🧠 Caitlyn generando insight automático (Negocio: ${negocioId}, Usuario: ${userName})`);
 
         // 1. Recolectar Contexto del Mercado de Panamá
         let marketContext: any = {};
@@ -185,6 +190,7 @@ export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => 
             product_name: productName,
             market_context: marketContext,
             business_data: businessStats,
+            user_name: userName,
             config: {
                 tipo_negocio: (req as any).userRole || 'GASTRONOMIA'
             }
@@ -484,6 +490,8 @@ export const sugerirReceta = async (req: AuthRequest, res: Response) => {
 export const analizarAlertasDashboard = async (req: AuthRequest, res: Response) => {
     try {
         const { alerts } = req.body;
+        const user = await User.findById(req.userId).select('nombre');
+        const userName = user?.nombre || 'Socio/a';
         if (!alerts || !Array.isArray(alerts)) {
             return res.status(400).json({ success: false, message: 'No se enviaron alertas válidas.' });
         }
@@ -492,7 +500,8 @@ export const analizarAlertasDashboard = async (req: AuthRequest, res: Response) 
         console.log(`🤖 Caitlyn analizando ${alerts.length} alertas del Dashboard (Negocio: ${req.negocioId})...`);
         const response = await axios.post(`${CAITLYN_URL}/agent/business/dashboard-alerts`, { 
             alerts,
-            negocio_id: req.negocioId 
+            negocio_id: req.negocioId,
+            user_name: userName
         });
 
         if (response.data.success) {
@@ -516,6 +525,9 @@ export const analizarAlertasDashboard = async (req: AuthRequest, res: Response) 
 export const sugerirMenuIdeas = async (req: AuthRequest, res: Response) => {
     try {
         const negocioId = (req as any).negocioId || req.query.negocioId;
+        const user = await User.findById(req.userId).select('nombre');
+        const userName = user?.nombre || 'Socio/a';
+
         if (!negocioId) {
             return res.status(400).json({ message: 'Negocio ID requerido' });
         }
@@ -530,7 +542,8 @@ export const sugerirMenuIdeas = async (req: AuthRequest, res: Response) => {
         const response = await axios.post(`${CAITLYN_URL}/agent/menu-ideas/suggest`, {
             negocio_id: negocioId,
             inventory_list: inventario.map(i => i.toObject()), // Pasamos crudo
-            target_margin: margenObjetivo
+            target_margin: margenObjetivo,
+            user_name: userName
         });
 
         if (response.data.success) {

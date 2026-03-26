@@ -99,7 +99,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                             placeholderTextColor={colors.textMuted}
                                             value={precio}
                                             onChangeText={setPrecio}
-                                            keyboardType="numeric"
+                                            keyboardType="decimal-pad"
                                         />
                                         {suggestedStrategyPrice && (
                                             <Animated.View entering={FadeInDown} style={{
@@ -112,7 +112,10 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                 borderRadius: 8,
                                                 alignSelf: 'flex-start'
                                             }}>
-                                                <Ionicons name="sparkles" size={12} color="#d97706" style={{ marginRight: 4 }} />
+                                                <Image 
+                                                    source={require('../../../../assets/caitlyn_avatar.png')} 
+                                                    style={{ width: 14, height: 14, borderRadius: 7, marginRight: 4 }} 
+                                                />
                                                 <Text style={{ fontSize: 11, color: '#d97706', fontWeight: '800' }}>
                                                     Sugerido: ${suggestedStrategyPrice}
                                                 </Text>
@@ -173,8 +176,11 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                 {/* 🤖 CAITLYN ASSISTANT CARD */}
                                 <View style={styles.caitlynCard}>
                                     <View style={styles.caitlynHeader}>
-                                        <View style={styles.caitlynIconCircle}>
-                                            <Ionicons name="sparkles" size={20} color="#fff" />
+                                        <View style={[styles.caitlynIconCircle, { overflow: 'hidden' }]}>
+                                            <Image 
+                                                source={require('../../../../assets/caitlyn_avatar.png')} 
+                                                style={{ width: 44, height: 44, borderRadius: 22 }} 
+                                            />
                                         </View>
                                         <View style={styles.caitlynHeaderText}>
                                             <Text style={styles.caitlynTitle}>Asistente Caitlyn</Text>
@@ -376,7 +382,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                                     style={styles.qtyInput}
                                                                     value={ing.cantidad.toString()}
                                                                     onChangeText={(v) => onChangeIngrediente(index, 'cantidad', v)}
-                                                                    keyboardType="numeric"
+                                                                    keyboardType="decimal-pad"
                                                                 />
                                                                 <Text style={styles.unitLabel}>
                                                                     {ing.unidad || inv?.unit || inv?.unidad || 'unid'}

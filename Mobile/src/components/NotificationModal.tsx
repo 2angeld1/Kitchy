@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
@@ -58,14 +58,21 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, o
                             >
                                 <View style={[
                                     styles.iconCircle, 
-                                    { backgroundColor: colors.background },
-                                    notif.type === 'ai' && { backgroundColor: colors.primary }
+                                    { backgroundColor: colors.background, overflow: 'hidden' },
+                                    notif.type === 'ai' && { backgroundColor: 'transparent' }
                                 ]}>
-                                    <Ionicons
-                                        name={notif.type === 'ai' ? 'sparkles' : notif.title === 'Stock Bajo' ? 'alert-circle' : 'information-circle'}
-                                        size={notif.type === 'ai' ? 18 : 22}
-                                        color={notif.type === 'ai' ? '#fff' : notif.title === 'Stock Bajo' ? colors.error : colors.primary}
-                                    />
+                                    {notif.type === 'ai' ? (
+                                        <Image 
+                                            source={require('../../assets/caitlyn_avatar.png')} 
+                                            style={{ width: 44, height: 44, borderRadius: 22 }} 
+                                        />
+                                    ) : (
+                                        <Ionicons
+                                            name={notif.title === 'Stock Bajo' ? 'alert-circle' : 'information-circle'}
+                                            size={22}
+                                            color={notif.title === 'Stock Bajo' ? colors.error : colors.primary}
+                                        />
+                                    )}
                                 </View>
                                 <View style={styles.body}>
                                     <View style={styles.itemHeader}>

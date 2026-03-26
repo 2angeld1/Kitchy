@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring, FadeOutDown, FadeOut } from 'react-native-reanimated';
@@ -224,7 +224,10 @@ export default function InventarioScreen() {
                 <View style={styles.iaOverlay}>
                     <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
                     <Animated.View entering={FadeIn} style={styles.iaCard}>
-                        <Ionicons name="sparkles" size={50} color={colors.primary} />
+                        <Image
+                            source={require('../../assets/caitlyn_avatar.png')}
+                            style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 10 }}
+                        />
                         <Text style={styles.iaTitle}>Caitlyn está analizando...</Text>
                         <Text style={styles.iaSubtitle}>Extrayendo productos de tu factura</Text>
                     </Animated.View>
