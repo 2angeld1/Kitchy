@@ -28,6 +28,7 @@ interface Props {
     codigoBarras: string; setCodigoBarras: (v: string) => void;
     fechaVencimiento: string; setFechaVencimiento: (v: string) => void;
     onSubmit: () => void;
+    error?: string;
 }
 
 export const InventarioFormModal: React.FC<Props> = ({
@@ -35,7 +36,7 @@ export const InventarioFormModal: React.FC<Props> = ({
     nombre, setNombre, descripcion, setDescripcion, cantidad, setCantidad, unidad, setUnidad,
     cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario, precioVenta, setPrecioVenta,
     categoria, setCategoria, codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
-    onSubmit
+    onSubmit, error
 }) => {
     const [showPicker, setShowPicker] = React.useState(false);
 
@@ -52,9 +53,13 @@ export const InventarioFormModal: React.FC<Props> = ({
                 <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
                     <Animated.View entering={SlideInDown.springify().damping(15)} style={styles.modalContent}>
                         <View style={styles.modalHeader}>
-                            <View>
+                            <View style={{ flex: 1 }}>
                                 <Text style={styles.modalTitle}>{editItem ? 'Editar Item' : 'Nuevo Item'}</Text>
-                                {searchingGlobal && (
+                                {error ? (
+                                    <Text style={{ color: '#ef4444', fontSize: 10, fontWeight: '700', marginTop: 4 }}>
+                                        ⚠️ {error}
+                                    </Text>
+                                ) : searchingGlobal && (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                         <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 6 }} />
                                         <Text style={{ fontSize: 10, color: colors.textMuted }}>Buscando informació...</Text>

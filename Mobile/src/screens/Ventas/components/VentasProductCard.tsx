@@ -62,7 +62,7 @@ export const VentasProductCard: React.FC<Props> = ({ producto, index, onPress, c
                     )}
 
                     <Text style={[styles.productPrice, { color: colors.primary }]}>
-                        ${producto.precio.toFixed(2)}
+                        ${(Number(producto.precio) || 0).toFixed(2)}
                     </Text>
                 </View>
             </TouchableOpacity>

@@ -259,8 +259,9 @@ export const useInventario = () => {
     };
 
     const handleSubmit = async () => {
-        if (!nombre || !costoUnitario) {
-            setError('Nombre y costo unitario son requeridos');
+        const parsedCosto = parseFloat(costoUnitario);
+        if (!nombre || isNaN(parsedCosto)) {
+            setError('Ingresa el nombre y un costo unitario válido');
             return;
         }
         setLoading(true);

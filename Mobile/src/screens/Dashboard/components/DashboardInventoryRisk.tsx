@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -7,9 +7,10 @@ interface Props {
     data: any;
     colors: any;
     styles: any;
+    onAddPress: () => void;
 }
 
-export const DashboardInventoryRisk: React.FC<Props> = ({ data, colors, styles }) => {
+export const DashboardInventoryRisk: React.FC<Props> = ({ data, colors, styles, onAddPress }) => {
     return (
         <Animated.View entering={FadeInDown.springify().damping(15).delay(450)} style={styles.glassSection}>
             <View style={styles.sectionHeader}>
@@ -55,9 +56,19 @@ export const DashboardInventoryRisk: React.FC<Props> = ({ data, colors, styles }
                 ) : (
                     <View style={{ paddingVertical: 10, alignItems: 'center' }}>
                         <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(16, 185, 129, 0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
-                            <Ionicons name="checkmark-circle" size={24} color="#10b981" />
+                            <Ionicons name={data.inventario.totalItems === 0 ? "cube-outline" : "checkmark-circle"} size={24} color={data.inventario.totalItems === 0 ? colors.primary : "#10b981"} />
                         </View>
-                        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center' }}>Todos tus productos tienen stock suficiente ✅</Text>
+                        <Text style={{ color: colors.textMuted, fontSize: 12, textAlign: 'center', marginBottom: 12 }}>
+                            {data.inventario.totalItems === 0 ? 'No tienes productos en tu inventario' : 'Todos tus productos tienen stock suficiente ✅'}
+                        </Text>
+                        {data.inventario.totalItems === 0 && (
+                            <TouchableOpacity 
+                                onPress={onAddPress}
+                                style={{ backgroundColor: colors.primary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
+                            >
+                                <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>Agregar Productos</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 )}
             </View>

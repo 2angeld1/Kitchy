@@ -130,18 +130,34 @@ export const VentasCartModal: React.FC<Props> = ({
                                     value={cliente}
                                     onChangeText={setCliente}
                                 />
-                                <View style={{ flexDirection: 'row', gap: 8 }}>
-                                    {['efectivo', 'yappy', 'ach', 'tarjeta'].map((metodo) => (
+                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                                    {[
+                                        { id: 'efectivo', label: 'Efectivo', icon: 'cash-outline' },
+                                        { id: 'yappy', label: 'Yappy', icon: 'qr-code-outline' },
+                                        { id: 'ach', label: 'ACH', icon: 'business-outline' },
+                                        { id: 'tarjeta', label: 'Tarjeta', icon: 'card-outline' }
+                                    ].map((metodo) => (
                                         <TouchableOpacity
-                                            key={metodo}
-                                            onPress={() => setMetodoPago(metodo)}
+                                            key={metodo.id}
+                                            onPress={() => setMetodoPago(metodo.id)}
+                                            activeOpacity={0.7}
                                             style={[
                                                 styles.metodoTag, 
-                                                metodoPago === metodo && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
+                                                { flex: 1, minWidth: '45%', paddingVertical: 12, alignItems: 'center', justifyContent: 'center', opacity: metodoPago === metodo.id ? 1 : 0.6 },
+                                                metodoPago === metodo.id && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary, borderWidth: 2 }
                                             ]}
                                         >
-                                            <Text style={[styles.metodoTagText, metodoPago === metodo && { color: colors.primary }]}>
-                                                {metodo === 'efectivo' ? '💵' : metodo === 'yappy' ? '💸' : metodo === 'ach' ? '🏦' : '💳'}
+                                            <Ionicons 
+                                                name={metodo.icon as any} 
+                                                size={20} 
+                                                color={metodoPago === metodo.id ? colors.primary : colors.textMuted} 
+                                            />
+                                            <Text style={[
+                                                styles.metodoTagText, 
+                                                { fontSize: 10, marginTop: 4 },
+                                                metodoPago === metodo.id && { color: colors.primary, fontWeight: '900' }
+                                            ]}>
+                                                {metodo.label}
                                             </Text>
                                         </TouchableOpacity>
                                     ))}

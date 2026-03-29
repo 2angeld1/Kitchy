@@ -163,7 +163,12 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                         </View>
 
                         {/* Secciones Modulares */}
-                        <DashboardInventoryRisk data={data} colors={colors} styles={styles} />
+                        <DashboardInventoryRisk 
+                            data={data} 
+                            colors={colors} 
+                            styles={styles} 
+                            onAddPress={() => navigation.navigate('Inventario')}
+                        />
                         <DashboardFinancialSummary data={data} colors={colors} styles={styles} />
 
                         {/* Merma / Gasto R\u00e1pido */}

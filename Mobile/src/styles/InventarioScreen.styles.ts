@@ -203,8 +203,9 @@ export const createStyles = (colors: any) => StyleSheet.create({
     },
     formRow: {
         flexDirection: 'row',
-        gap: 12,
-        marginBottom: 12,
+        flexWrap: 'wrap',
+        gap: 10,
+        marginBottom: 8,
     },
     inputSmall: {
         flex: 1,

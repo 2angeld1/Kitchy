@@ -188,6 +188,7 @@ export default function InventarioScreen() {
                 codigoBarras={codigoBarras} setCodigoBarras={setCodigoBarras}
                 fechaVencimiento={fechaVencimiento} setFechaVencimiento={setFechaVencimiento}
                 onSubmit={handleSubmit}
+                error={error}
             />
 
             <InventarioMovimientoModal

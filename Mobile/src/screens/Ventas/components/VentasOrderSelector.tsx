@@ -22,7 +22,7 @@ export const VentasOrderSelector: React.FC<Props> = ({
     styles
 }) => {
     const calcularSubtotal = (items: any[]) => {
-        return items.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+        return items.reduce((sum, item) => sum + (Number(item.producto?.precio || 0) * item.cantidad), 0);
     };
 
     return (
