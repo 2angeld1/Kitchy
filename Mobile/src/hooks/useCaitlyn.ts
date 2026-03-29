@@ -20,7 +20,7 @@ export const useCaitlyn = () => {
     const [productReasoning, setProductReasoning] = useState<string | null>(null); // DETALLE DEL RAZONAMIENTO ESTRATEGICO
     const [error, setError] = useState<string | null>(null);
 
-    // Insight Autom\u00e1tico del D\u00eda (Con Cach\u00e9!)
+    // Insight Autom\u00e1tico del Dí (Con Cach\u00e9!)
     const getDailyInsight = useCallback(async (force = false) => {
         const now = Date.now();
 

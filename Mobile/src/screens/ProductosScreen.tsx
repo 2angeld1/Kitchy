@@ -84,7 +84,7 @@ export default function ProductosScreen({ route }: any) {
         }
     }, [route?.params?.editProductId, productos.length]);
 
-    // Estado para Configuraci\u00f3n de Margen
+    // Estado para Configuració de Margen
     const [showConfigModal, setShowConfigModal] = useState(false);
     const [margenInput, setMargenInput] = useState('50');
     const [savingConfig, setSavingConfig] = useState(false);
@@ -134,7 +134,7 @@ export default function ProductosScreen({ route }: any) {
             if (nombre) {
                 getBusinessAdvice(nombre, currentData);
             }
-        }, 2500); 
+        }, 2500);
 
         return () => clearTimeout(timer);
     }, [showModal, nombre, precio, ingredientes.length, route?.params?.suggestedPrice]);

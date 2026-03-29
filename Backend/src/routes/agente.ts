@@ -4,7 +4,7 @@ import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio, guard
 
 const router = Router();
 
-// Todas las rutas requieren autenticaci\u00f3n
+// Todas las rutas requieren autenticació
 router.use(auth);
 
 /**

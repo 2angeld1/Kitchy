@@ -26,7 +26,7 @@ export const useShoppingList = () => {
         if (isListening) return ExpoSpeechRecognitionModule.stop();
         const { granted } = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
         if (!granted) return Toast.show({ type: 'error', text1: 'Permiso denegado', text2: 'Necesitamos el micrófono para el presupuesto.' });
-        
+
         try {
             ExpoSpeechRecognitionModule.start({ lang: "es-ES", interimResults: true });
         } catch (err) {
@@ -63,7 +63,7 @@ export const useShoppingList = () => {
         try {
             const { granted } = await ImagePicker.requestCameraPermissionsAsync();
             if (!granted) return Toast.show({ type: 'error', text1: 'Permiso denegado', text2: 'No podemos abrir la cámara.' });
-            
+
             const result = await ImagePicker.launchCameraAsync({
                 allowsEditing: true,
                 quality: 0.8,
@@ -117,7 +117,7 @@ export const useShoppingList = () => {
     const toggleConfirm = (id: string, price?: number) => {
         setItems(prev => prev.map(item => {
             if (item.id === id) {
-                // Si estamos confirmando y hay un precio real, podr\u00edamos reportarlo
+                // Si estamos confirmando y hay un precio real, podrímos reportarlo
                 if (!item.confirmado && price) {
                     learnPrice(item.nombre, price).catch(console.error);
                 }

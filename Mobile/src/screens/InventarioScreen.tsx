@@ -154,7 +154,7 @@ export default function InventarioScreen() {
                             { label: 'Crear Manualmente', color: colors.primary, icon: 'pencil', action: () => { resetForm(); setShowModal(true); } },
                             { label: 'Foto de Factura', color: '#4f46e5', icon: 'camera', action: tomarFotoFactura },
                             { label: 'Factura de Galería', color: '#6366f1', icon: 'images', action: seleccionarImagenGaleria },
-                            { label: 'Escanear Código', color: colors.surface, icon: 'barcode-outline', action: openScanner, dark: true },
+                            // { label: 'Escanear Código', color: colors.surface, icon: 'barcode-outline', action: openScanner, dark: true },
                             { label: 'Subir CSV / Excel', color: colors.surface, icon: 'cloud-download-outline', action: pickDocument, dark: true },
                         ].map((m, i) => (
                             <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

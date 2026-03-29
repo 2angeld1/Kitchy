@@ -47,7 +47,7 @@ export const UserCreateModal: React.FC<Props> = ({
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <KitchyInput label="Nombre Completo" placeholder="Ej. Juan P\u00e9rez" value={form.nombre} onChangeText={(t) => setForm({ ...form, nombre: t })} />
-                            <KitchyInput label="Correo Electr\u00f3nico" placeholder="juan@ejemplo.com" value={form.email} onChangeText={(t) => setForm({ ...form, email: t })} keyboardType="email-address" autoCapitalize="none" />
+                            <KitchyInput label="Correo Electróico" placeholder="juan@ejemplo.com" value={form.email} onChangeText={(t) => setForm({ ...form, email: t })} keyboardType="email-address" autoCapitalize="none" />
                             <KitchyInput label="Contrase\u00f1a" placeholder="Minimo 6 caracteres" value={form.password} onChangeText={(t) => setForm({ ...form, password: t })} secureTextEntry />
 
                             <Text style={[styles.inputHelper, { color: colors.textMuted }]}>

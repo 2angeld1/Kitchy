@@ -5,6 +5,7 @@ import Animated, { SlideInDown, FadeInDown } from 'react-native-reanimated';
 import { KitchyInput } from '../../../components/KitchyInput';
 import { KitchySelect } from '../../../components/KitchySelect';
 import { KitchyButton } from '../../../components/KitchyButton';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface Props {
     visible: boolean;
@@ -36,6 +37,15 @@ export const InventarioFormModal: React.FC<Props> = ({
     categoria, setCategoria, codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
     onSubmit
 }) => {
+    const [showPicker, setShowPicker] = React.useState(false);
+
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        setShowPicker(false);
+        if (selectedDate) {
+            const formatted = selectedDate.toISOString().split('T')[0];
+            setFechaVencimiento(formatted);
+        }
+    };
     return (
         <Modal visible={visible} transparent animationType="fade">
             <View style={styles.modalOverlay}>
@@ -47,7 +57,7 @@ export const InventarioFormModal: React.FC<Props> = ({
                                 {searchingGlobal && (
                                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                         <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 6 }} />
-                                        <Text style={{ fontSize: 10, color: colors.textMuted }}>Buscando informaci\u00f3n...</Text>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted }}>Buscando informació...</Text>
                                     </View>
                                 )}
                             </View>
@@ -55,14 +65,14 @@ export const InventarioFormModal: React.FC<Props> = ({
                         </View>
                         <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
                             <KitchyInput label="Nombre" value={nombre} onChangeText={setNombre} />
-                            <KitchyInput label="Descripci\u00f3n" value={descripcion} onChangeText={setDescripcion} />
+                            <KitchyInput label="Descripció" value={descripcion} onChangeText={setDescripcion} />
                             <View style={styles.formRow}>
                                 <View style={styles.inputSmall}><KitchyInput label="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" /></View>
                                 <View style={styles.inputSmall}>
-                                    <KitchySelect 
-                                        label="Medida" 
-                                        value={unidad} 
-                                        onSelect={setUnidad} 
+                                    <KitchySelect
+                                        label="Medida"
+                                        value={unidad}
+                                        onSelect={setUnidad}
                                         options={[
                                             { label: 'Unidades', value: 'unidades' },
                                             { label: 'Lts', value: 'litros' },
@@ -79,10 +89,10 @@ export const InventarioFormModal: React.FC<Props> = ({
                                 <View style={styles.inputSmall}><KitchyInput label="Costo / Ud" value={costoUnitario} onChangeText={setCostoUnitario} keyboardType="numeric" /></View>
                                 <View style={styles.inputSmall}><KitchyInput label="Min Stock" value={cantidadMinima} onChangeText={setCantidadMinima} keyboardType="numeric" /></View>
                             </View>
-                            <KitchySelect 
-                                label="Categor\u00eda" 
-                                value={categoria} 
-                                onSelect={setCategoria} 
+                            <KitchySelect
+                                label="Categorí"
+                                value={categoria}
+                                onSelect={setCategoria}
                                 options={categoriaNegocio === 'BELLEZA' ? [
                                     { label: 'Insumo (Shampoo, Tintes)', value: 'insumo' },
                                     { label: 'Herramienta', value: 'herramienta' },
@@ -101,8 +111,26 @@ export const InventarioFormModal: React.FC<Props> = ({
                                     <KitchyInput label="Precio Venta P\u00fablico" value={precioVenta} onChangeText={setPrecioVenta} keyboardType="numeric" placeholder="$0.00" />
                                 </Animated.View>
                             )}
-                            <KitchyInput label="C\u00f3digo de Barras" value={codigoBarras} onChangeText={setCodigoBarras} />
-                            <KitchyInput label="Fecha Vencimiento" value={fechaVencimiento} onChangeText={setFechaVencimiento} placeholder="YYYY-MM-DD" />
+                            {/* <KitchyInput label="Código de Barras" value={codigoBarras} onChangeText={setCodigoBarras} /> */}
+                            <TouchableOpacity onPress={() => setShowPicker(true)} activeOpacity={0.7}>
+                                <KitchyInput 
+                                    label="Fecha Vencimiento" 
+                                    value={fechaVencimiento} 
+                                    editable={false} 
+                                    pointerEvents="none" 
+                                    placeholder="Selecciona una fecha" 
+                                />
+                            </TouchableOpacity>
+
+                            {showPicker && (
+                                <DateTimePicker
+                                    value={fechaVencimiento ? new Date(fechaVencimiento) : new Date()}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={onDateChange}
+                                    minimumDate={new Date()}
+                                />
+                            )}
                             <KitchyButton title={editItem ? 'Actualizar' : 'Guardar'} onPress={onSubmit} loading={loading} />
                         </ScrollView>
                     </Animated.View>

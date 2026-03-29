@@ -3,7 +3,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
 /**
- * Funci\u00f3n para generar los estilos del Presupuestario con el tema din\u00e1mico.
+ * Funció para generar los estilos del Presupuestario con el tema din\u00e1mico.
  */
 export const createStyles = (colors: any) => StyleSheet.create({
     container: {

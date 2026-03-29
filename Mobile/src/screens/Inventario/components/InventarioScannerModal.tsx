@@ -21,7 +21,7 @@ interface Props {
 }
 
 export const InventarioScannerModal: React.FC<Props> = ({
-    visible, onClose, hasPermission, requestCameraPermission, onScanned, scanned, 
+    visible, onClose, hasPermission, requestCameraPermission, onScanned, scanned,
     scannerZoom, scannerSettings, tapCoords, onTap, colors, styles
 }) => {
     return (
@@ -52,21 +52,21 @@ export const InventarioScannerModal: React.FC<Props> = ({
                             onBarcodeScanned={scanned ? undefined : (result) => onScanned(result.data)}
                         />
                         {tapCoords && (
-                            <Animated.View 
-                                entering={FadeIn} 
-                                style={{ 
-                                    position: 'absolute', 
-                                    left: tapCoords.x - 30, 
-                                    top: tapCoords.y - 30, 
-                                    width: 60, height: 60, borderRadius: 30, 
-                                    borderWidth: 2, borderColor: colors.primary, 
-                                    backgroundColor: 'rgba(255,255,255,0.1)' 
-                                }} 
+                            <Animated.View
+                                entering={FadeIn}
+                                style={{
+                                    position: 'absolute',
+                                    left: tapCoords.x - 30,
+                                    top: tapCoords.y - 30,
+                                    width: 60, height: 60, borderRadius: 30,
+                                    borderWidth: 2, borderColor: colors.primary,
+                                    backgroundColor: 'rgba(255,255,255,0.1)'
+                                }}
                             />
                         )}
                         <View style={{ position: 'absolute', top: 100, left: 20, right: 20, alignItems: 'center' }}>
                             <View style={{ width: 250, height: 250, borderWidth: 2, borderColor: colors.primary, borderStyle: 'dotted', borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.1)' }} />
-                            <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>Apunta al c\u00f3digo de barras</Text>
+                            <Text style={{ color: '#fff', marginTop: 20, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>Apunta al código de barras</Text>
                             <Text style={{ color: 'rgba(255,255,255,0.6)', marginTop: 10, fontSize: 12 }}>Toca la pantalla para enfocar</Text>
                         </View>
                     </TouchableOpacity>
