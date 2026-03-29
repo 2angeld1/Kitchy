@@ -13,18 +13,21 @@ import BellezaVentasScreen from './BellezaVentasScreen';
 import { VentasProductCard } from './Ventas/components/VentasProductCard';
 import { VentasCartModal } from './Ventas/components/VentasCartModal';
 import { VentasOrderSelector } from './Ventas/components/VentasOrderSelector';
+import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
 
 export default function VentasScreen() {
-    const { 
-        productosFiltrados, carrito, loading, refreshing, onRefresh, 
-        showModal, setShowModal, busqueda, setBusqueda, 
-        categoriaFiltro, setCategoriaFiltro, agregarAlCarrito, 
-        quitarDelCarrito, calcularTotal, procesarVenta, 
-        cliente, setCliente, metodoPago, setMetodoPago, 
-        ordenes, activeOrderId, activeOrder, nuevaOrden, 
-        seleccionarOrden, eliminarOrden 
+    const {
+        productosFiltrados, carrito, loading, refreshing, onRefresh,
+        showModal, setShowModal, busqueda, setBusqueda,
+        categoriaFiltro, setCategoriaFiltro, agregarAlCarrito,
+        quitarDelCarrito, calcularTotal, procesarVenta,
+        cliente, setCliente, metodoPago, setMetodoPago,
+        ordenes, activeOrderId, activeOrder, nuevaOrden,
+        seleccionarOrden, eliminarOrden,
+        showHistorial, setShowHistorial, ventas, abrirHistorial,
+        montoRecibido, setMontoRecibido, cambio
     } = useVentas();
-    
+
     const { user } = useAuth();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
@@ -44,6 +47,7 @@ export default function VentasScreen() {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <KitchyToolbar
                 title="Ventas"
+                onNotificationPress={abrirHistorial}
                 extraButtons={
                     <TouchableOpacity
                         style={[styles.cartButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -61,7 +65,7 @@ export default function VentasScreen() {
                 }
             />
 
-            <VentasOrderSelector 
+            <VentasOrderSelector
                 ordenes={ordenes}
                 activeOrderId={activeOrderId}
                 seleccionarOrden={seleccionarOrden}
@@ -129,7 +133,7 @@ export default function VentasScreen() {
                 ) : (
                     <View style={styles.productsGrid}>
                         {productosFiltrados.map((p: Producto, i: number) => (
-                            <VentasProductCard 
+                            <VentasProductCard
                                 key={p._id}
                                 producto={p}
                                 index={i}
@@ -142,7 +146,7 @@ export default function VentasScreen() {
                 )}
             </ScrollView>
 
-            <VentasCartModal 
+            <VentasCartModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
                 activeOrder={activeOrder}
@@ -156,8 +160,18 @@ export default function VentasScreen() {
                 setCliente={setCliente}
                 metodoPago={metodoPago}
                 setMetodoPago={setMetodoPago}
+                montoRecibido={montoRecibido}
+                setMontoRecibido={setMontoRecibido}
+                cambio={cambio}
                 procesarVenta={procesarVenta}
                 loading={loading}
+            />
+
+            <VentasHistorialModal 
+                visible={showHistorial}
+                onClose={() => setShowHistorial(false)}
+                ventas={ventas}
+                colors={colors}
             />
         </View>
     );

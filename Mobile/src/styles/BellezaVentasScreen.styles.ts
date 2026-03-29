@@ -1,7 +1,8 @@
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
-const CARD_WIDTH = (width - 40 - 24) / 3;
+const IS_TABLET = width > 600;
+const CARD_WIDTH = IS_TABLET ? (width - 40 - 48) / 5 : (width - 40 - 24) / 3;
 
 export const createStyles = (colors: any) => StyleSheet.create({
     container: {

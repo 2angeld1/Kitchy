@@ -10,6 +10,7 @@ import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useAuth, Negocio } from '../context/AuthContext';
 import { createStyles } from '../styles/BellezaVentasScreen.styles';
 import { getBeautyIcon, formatMoney } from '../utils/beauty-helpers';
+import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
 
 export default function BellezaVentasScreen() {
     const { isDark } = useTheme();
@@ -34,6 +35,10 @@ export default function BellezaVentasScreen() {
         setEspecialistaSeleccionado,
         setMetodoPago,
         procesarCobro,
+        abrirHistorial,
+        ventas,
+        showHistorial,
+        setShowHistorial,
         total,
         cambio,
         onRefresh
@@ -71,6 +76,7 @@ export default function BellezaVentasScreen() {
         >
             <KitchyToolbar
                 title="POS Belleza"
+                onNotificationPress={abrirHistorial}
                 extraButtons={
                     lastVentaId && (
                         <TouchableOpacity
@@ -129,9 +135,9 @@ export default function BellezaVentasScreen() {
                                         onPress={() => toggleServicio(ser)}
                                         style={[
                                             styles.serviceCard,
-                                            { 
-                                                backgroundColor: isSelected ? `${colors.primary}15` : colors.card, 
-                                                borderColor: isSelected ? colors.primary : colors.border 
+                                            {
+                                                backgroundColor: isSelected ? `${colors.primary}15` : colors.card,
+                                                borderColor: isSelected ? colors.primary : colors.border
                                             }
                                         ]}
                                     >
@@ -234,6 +240,13 @@ export default function BellezaVentasScreen() {
                     </Animated.View>
                 </View>
             )}
+
+            <VentasHistorialModal 
+                visible={showHistorial}
+                onClose={() => setShowHistorial(false)}
+                ventas={ventas}
+                colors={colors}
+            />
         </KeyboardAvoidingView>
     );
 }

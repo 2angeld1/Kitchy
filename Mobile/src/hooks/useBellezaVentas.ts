@@ -21,13 +21,15 @@ export const useBellezaVentas = () => {
     const [servicios, setServicios] = useState<Producto[]>([]);
     const [productosVenta, setProductosVenta] = useState<Producto[]>([]);
     const [especialistas, setEspecialistas] = useState<(Especialista & { conteoDia?: number })[]>([]);
+    const [ventas, setVentas] = useState<any[]>([]);
+    const [showHistorial, setShowHistorial] = useState(false);
     const [loading, setLoading] = useState(false);
 
     // Estado del "ticket" de belleza (Multiselección)
     const [serviciosSeleccionados, setServiciosSeleccionados] = useState<Producto[]>([]);
     const [especialistaSeleccionado, setEspecialistaSeleccionado] = useState<string | null>(null);
     const [metodoPago, setMetodoPago] = useState<'efectivo' | 'yappy' | 'tarjeta'>('efectivo');
-    
+
     // Sugerencias: Nombre cliente, Calculadora, Undo
     const [clienteNombre, setClienteNombre] = useState('');
     const [montoRecibido, setMontoRecibido] = useState<string>('');
@@ -44,9 +46,9 @@ export const useBellezaVentas = () => {
                 getVentas({ fecha: hoy }),
                 getInventario({ categoria: 'reventa' })
             ]);
-            
+
             setServicios(servRes.data);
-            
+
             // Mapear items de inventario a formato Producto para la UI
             const itemsVenta = invRes.data.map((inv: any) => ({
                 _id: inv._id,
@@ -56,7 +58,7 @@ export const useBellezaVentas = () => {
                 isInventory: true
             }));
             setProductosVenta(itemsVenta);
-            
+
             // Calcular conteo del día para cada barbero
             const ventasHoy = ventRes.data.ventas || ventRes.data || [];
             const especialistasConConteo = espRes.data.map((esp: any) => {
@@ -110,11 +112,11 @@ export const useBellezaVentas = () => {
 
             const res = await createVenta(payload);
             setLastVentaId(res.data._id); // Guardar para posible Undo
-            
+
             if (onSuccess) onSuccess();
-            
+
             Toast.show({ type: 'success', text1: '¡Venta Lista!', text2: 'Cobro registrado correctamente.' });
-            
+
             // Reset y recargar conteos
             setServiciosSeleccionados([]);
             setEspecialistaSeleccionado(null);
@@ -130,7 +132,7 @@ export const useBellezaVentas = () => {
 
     const anularUltimaVenta = useCallback(async () => {
         if (!lastVentaId) return;
-        
+
         setLoading(true);
         try {
             const { deleteVenta } = require('../services/api');
@@ -145,11 +147,28 @@ export const useBellezaVentas = () => {
         }
     }, [lastVentaId, cargarDatos]);
 
+    const cargarVentas = useCallback(async () => {
+        try {
+            const response = await getVentas({ limit: 20 });
+            setVentas(response.data.ventas || response.data);
+        } catch (err) {
+            console.error('Error al cargar ventas');
+        }
+    }, [user?.negocioActivo]);
+
+    const abrirHistorial = useCallback(async () => {
+        await cargarVentas();
+        setShowHistorial(true);
+    }, [cargarVentas]);
+
     return {
         servicios,
         productosVenta,
         especialistas,
+        ventas,
         loading,
+        showHistorial,
+        setShowHistorial,
         serviciosSeleccionados, toggleServicio,
         especialistaSeleccionado, setEspecialistaSeleccionado,
         metodoPago, setMetodoPago,
@@ -157,6 +176,7 @@ export const useBellezaVentas = () => {
         montoRecibido, setMontoRecibido,
         lastVentaId, anularUltimaVenta,
         procesarCobro,
+        abrirHistorial,
         total,
         cambio,
         onRefresh: cargarDatos

@@ -50,9 +50,9 @@ export const useVentas = () => {
     const [refreshing, setRefreshing] = useState(false);
 
     // Get current order and cart
-    const activeOrder = useMemo(() => 
+    const activeOrder = useMemo(() =>
         ordenes.find(o => o.id === activeOrderId) || ordenes[0]
-    , [ordenes, activeOrderId]);
+        , [ordenes, activeOrderId]);
 
     const carrito = activeOrder.items;
     const metodoPago = activeOrder.metodoPago;
@@ -62,6 +62,7 @@ export const useVentas = () => {
     const [showModal, setShowModal] = useState(false);
     const [showHistorial, setShowHistorial] = useState(false);
     const [showOrderSelector, setShowOrderSelector] = useState(false);
+    const [montoRecibido, setMontoRecibido] = useState<string>('');
 
     // Filters
     const [busqueda, setBusqueda] = useState('');
@@ -197,7 +198,7 @@ export const useVentas = () => {
 
         setOrdenes(ordenes.map(o => {
             if (o.id !== activeOrderId) return o;
-            
+
             const existe = o.items.find(item => item.producto._id === producto._id);
             if (existe) {
                 return {
@@ -250,16 +251,26 @@ export const useVentas = () => {
     };
 
     const eliminarDelCarrito = (productoId: string) => {
-        setOrdenes(ordenes.map(o => 
-            o.id === activeOrderId 
+        setOrdenes(ordenes.map(o =>
+            o.id === activeOrderId
                 ? { ...o, items: o.items.filter(item => item.producto._id !== productoId) }
                 : o
         ));
     };
 
     const calcularTotal = () => {
-        return carrito.reduce((sum, item) => sum + (item.producto.precio * item.cantidad), 0);
+        return carrito.reduce((sum, item) => {
+            const precio = Number(item.producto.precio) || 0;
+            const cantidad = Number(item.cantidad) || 0;
+            return sum + (precio * cantidad);
+        }, 0);
     };
+
+    const cambio = useMemo(() => {
+        const total = calcularTotal();
+        const recibido = parseFloat(montoRecibido);
+        return recibido > total ? recibido - total : 0;
+    }, [montoRecibido, carrito]);
 
     const procesarVenta = async () => {
         if (carrito.length === 0) {
@@ -288,7 +299,7 @@ export const useVentas = () => {
             } else {
                 setOrdenes([{ ...ordenes[0], items: [], cliente: '', metodoPago: 'efectivo' }]);
             }
-            
+            setMontoRecibido('');
             setShowModal(false);
         } catch (err: any) {
             const msg = err.response?.data?.message || 'Error al procesar venta';
@@ -314,9 +325,9 @@ export const useVentas = () => {
         if (!prod || !prod.insuficiente) return null;
 
         // Buscar otro de la misma categoría con stock
-        const sugerencia = productos.find(p => 
-            p.categoria === prod.categoria && 
-            !p.insuficiente && 
+        const sugerencia = productos.find(p =>
+            p.categoria === prod.categoria &&
+            !p.insuficiente &&
             p._id !== prod._id
         );
 
@@ -342,6 +353,8 @@ export const useVentas = () => {
         calcularTotal,
         procesarVenta,
         abrirHistorial,
+        montoRecibido, setMontoRecibido,
+        cambio,
         productosFiltrados,
         ordenes,
         activeOrderId,

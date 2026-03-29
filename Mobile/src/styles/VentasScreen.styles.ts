@@ -111,7 +111,7 @@ export const styles = StyleSheet.create({
         paddingBottom: 100,
     },
     productCard: {
-        width: (width - (spacing.xl * 2) - 15) / 2,
+        width: width > 600 ? (width - (spacing.xl * 2) - 60) / 4 : (width - (spacing.xl * 2) - 15) / 2,
         backgroundColor: colors.white,
         borderRadius: 24,
         padding: 12,
@@ -367,5 +367,17 @@ export const styles = StyleSheet.create({
         color: colors.white,
         fontSize: 18,
         fontWeight: '900',
+    },
+    metodoTag: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.surface,
+    },
+    metodoTagText: {
+        fontSize: 16,
+        fontWeight: 'bold',
     }
 });

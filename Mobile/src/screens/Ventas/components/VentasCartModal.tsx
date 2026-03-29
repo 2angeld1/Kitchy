@@ -18,6 +18,9 @@ interface Props {
     setCliente: (c: string) => void;
     metodoPago: string;
     setMetodoPago: (m: string) => void;
+    montoRecibido: string;
+    setMontoRecibido: (m: string) => void;
+    cambio: number;
     procesarVenta: () => void;
     loading: boolean;
 }
@@ -36,6 +39,9 @@ export const VentasCartModal: React.FC<Props> = ({
     setCliente,
     metodoPago,
     setMetodoPago,
+    montoRecibido,
+    setMontoRecibido,
+    cambio,
     procesarVenta,
     loading
 }) => {
@@ -90,7 +96,7 @@ export const VentasCartModal: React.FC<Props> = ({
                                     </View>
                                     <View style={styles.cartItemInfo}>
                                         <Text style={styles.cartItemName} numberOfLines={1}>{item.producto.nombre}</Text>
-                                        <Text style={styles.cartItemPrice}>${item.producto.precio.toFixed(2)}</Text>
+                                        <Text style={styles.cartItemPrice}>${(Number(item.producto.precio) || 0).toFixed(2)}</Text>
                                     </View>
                                     <View style={styles.quantityControls}>
                                         <TouchableOpacity
@@ -124,20 +130,48 @@ export const VentasCartModal: React.FC<Props> = ({
                                     value={cliente}
                                     onChangeText={setCliente}
                                 />
-                                <TouchableOpacity
-                                    onPress={() => setMetodoPago(metodoPago === 'efectivo' ? 'yappy' : 'efectivo')}
-                                    style={styles.selectSmall}
-                                    activeOpacity={0.8}
-                                >
-                                    <Text style={styles.selectText}>
-                                        {metodoPago === 'efectivo' ? '💵 Efectivo' : '💸 Yappy'}
-                                    </Text>
-                                </TouchableOpacity>
+                                <View style={{ flexDirection: 'row', gap: 8 }}>
+                                    {['efectivo', 'yappy', 'ach', 'tarjeta'].map((metodo) => (
+                                        <TouchableOpacity
+                                            key={metodo}
+                                            onPress={() => setMetodoPago(metodo)}
+                                            style={[
+                                                styles.metodoTag, 
+                                                metodoPago === metodo && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }
+                                            ]}
+                                        >
+                                            <Text style={[styles.metodoTagText, metodoPago === metodo && { color: colors.primary }]}>
+                                                {metodo === 'efectivo' ? '💵' : metodo === 'yappy' ? '💸' : metodo === 'ach' ? '🏦' : '💳'}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             </View>
+
+                            {metodoPago === 'efectivo' && (
+                                <View style={[styles.formRow, { marginTop: 8 }]}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 4 }}>RECIBIDO</Text>
+                                        <TextInput
+                                            style={styles.inputSmall}
+                                            placeholder="0.00"
+                                            keyboardType="numeric"
+                                            value={montoRecibido}
+                                            onChangeText={setMontoRecibido}
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'center' }}>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 4 }}>CAMBIO</Text>
+                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>
+                                            ${cambio.toFixed(2)}
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
 
                             <View style={styles.totalRow}>
                                 <Text style={styles.totalLabel}>Total a pagar</Text>
-                                <Text style={styles.totalValue}>${calcularTotal().toFixed(2)}</Text>
+                                <Text style={styles.totalValue}>${(Number(calcularTotal()) || 0).toFixed(2)}</Text>
                             </View>
 
                             <TouchableOpacity
