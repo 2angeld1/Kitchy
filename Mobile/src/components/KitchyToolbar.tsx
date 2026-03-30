@@ -82,10 +82,16 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                 {showNotifications && (
                     <TouchableOpacity
                         style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}
-                        onPress={() => setShowNotif(true)}
+                        onPress={() => {
+                            if (onNotificationPress) {
+                                (onNotificationPress as any)();
+                            } else {
+                                setShowNotif(true);
+                            }
+                        }}
                     >
                         <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
-                        <View style={[styles.badge, { borderColor: isDark ? colors.card : colors.white }]} />
+                        {notifications && notifications.length > 0 && <View style={[styles.badge, { borderColor: isDark ? colors.card : colors.white }]} />}
                     </TouchableOpacity>
                 )}
 

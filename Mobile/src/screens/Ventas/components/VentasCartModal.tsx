@@ -3,6 +3,8 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, Image, Plat
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { Producto } from '../../../hooks/useVentas';
+import { KitchyInput } from '../../../components/KitchyInput';
+import { KitchySelect } from '../../../components/KitchySelect';
 
 interface Props {
     visible: boolean;
@@ -122,65 +124,46 @@ export const VentasCartModal: React.FC<Props> = ({
 
                     {carrito.length > 0 && (
                         <View style={styles.checkoutFooter}>
-                            <View style={styles.formRow}>
-                                <TextInput
-                                    style={styles.inputSmall}
-                                    placeholder="Nombre del Cliente"
-                                    placeholderTextColor={colors.textMuted}
-                                    value={cliente}
-                                    onChangeText={setCliente}
-                                />
-                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                                    {[
-                                        { id: 'efectivo', label: 'Efectivo', icon: 'cash-outline' },
-                                        { id: 'yappy', label: 'Yappy', icon: 'qr-code-outline' },
-                                        { id: 'ach', label: 'ACH', icon: 'business-outline' },
-                                        { id: 'tarjeta', label: 'Tarjeta', icon: 'card-outline' }
-                                    ].map((metodo) => (
-                                        <TouchableOpacity
-                                            key={metodo.id}
-                                            onPress={() => setMetodoPago(metodo.id)}
-                                            activeOpacity={0.7}
-                                            style={[
-                                                styles.metodoTag, 
-                                                { flex: 1, minWidth: '45%', paddingVertical: 12, alignItems: 'center', justifyContent: 'center', opacity: metodoPago === metodo.id ? 1 : 0.6 },
-                                                metodoPago === metodo.id && { backgroundColor: `${colors.primary}20`, borderColor: colors.primary, borderWidth: 2 }
-                                            ]}
-                                        >
-                                            <Ionicons 
-                                                name={metodo.icon as any} 
-                                                size={20} 
-                                                color={metodoPago === metodo.id ? colors.primary : colors.textMuted} 
-                                            />
-                                            <Text style={[
-                                                styles.metodoTagText, 
-                                                { fontSize: 10, marginTop: 4 },
-                                                metodoPago === metodo.id && { color: colors.primary, fontWeight: '900' }
-                                            ]}>
-                                                {metodo.label}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
+                            {/* Nombre del Cliente */}
+                            <KitchyInput
+                                label="Nombre del Cliente"
+                                placeholder="..."
+                                value={cliente}
+                                onChangeText={setCliente}
+                            />
 
+                            {/* Metodo de Pago - Cambiado a Select para mejor UX en móvil */}
+                            <KitchySelect
+                                label="Método de Pago"
+                                value={metodoPago}
+                                options={[
+                                    { label: '💵 Efectivo', value: 'efectivo' },
+                                    { label: '💸 Yappy', value: 'yappy' },
+                                    { label: '🏦 ACH / Transferencia', value: 'ach' },
+                                    { label: '💳 Tarjeta', value: 'tarjeta' }
+                                ]}
+                                onSelect={setMetodoPago}
+                            />
+
+                            {/* Detalle Efectivo */}
                             {metodoPago === 'efectivo' && (
-                                <View style={[styles.formRow, { marginTop: 8 }]}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 4 }}>RECIBIDO</Text>
-                                        <TextInput
-                                            style={styles.inputSmall}
+                                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20, alignItems: 'flex-start' }}>
+                                    <View style={{ flex: 1.2 }}>
+                                        <KitchyInput
+                                            label="RECIBIDO"
                                             placeholder="0.00"
                                             keyboardType="numeric"
                                             value={montoRecibido}
                                             onChangeText={setMontoRecibido}
                                         />
                                     </View>
-                                    <View style={{ flex: 1, alignItems: 'flex-end', justifyContent: 'center' }}>
-                                        <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 4 }}>CAMBIO</Text>
-                                        <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.primary }}>
-                                            ${cambio.toFixed(2)}
-                                        </Text>
+                                    <View style={{ flex: 1, paddingTop: 32 }}>
+                                        <View style={{ alignItems: 'flex-end' }}>
+                                            <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 }}>CAMBIO</Text>
+                                            <Text style={{ fontSize: 26, fontWeight: '900', color: colors.primary }}>
+                                                ${(Number(cambio) || 0).toFixed(2)}
+                                            </Text>
+                                        </View>
                                     </View>
                                 </View>
                             )}

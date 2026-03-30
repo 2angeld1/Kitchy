@@ -47,6 +47,7 @@ export default function VentasScreen() {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <KitchyToolbar
                 title="Ventas"
+                notifications={ventas}
                 onNotificationPress={abrirHistorial}
                 extraButtons={
                     <TouchableOpacity

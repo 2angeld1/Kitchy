@@ -52,7 +52,7 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors }: Venta
                 <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
                     <View style={styles.header}>
                         <View>
-                            <Text style={[styles.title, { color: colors.text }]}>Historial de Hoy</Text>
+                            <Text style={[styles.title, { color: colors.text }]}>Ventas Recientes</Text>
                             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
                                 {ventas.length} ventas registradas
                             </Text>
@@ -71,7 +71,7 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors }: Venta
                             <View style={styles.emptyContainer}>
                                 <Ionicons name="receipt-outline" size={64} color={colors.border} />
                                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                                    Aún no hay ventas registradas para hoy.
+                                    Aún no hay ventas registradas.
                                 </Text>
                             </View>
                         }

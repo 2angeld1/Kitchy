@@ -102,6 +102,7 @@ export const useVentas = () => {
 
     useEffect(() => {
         cargarProductos();
+        cargarVentas();
     }, [user?.negocioActivo]);
 
     const cargarProductos = async () => {
@@ -122,7 +123,7 @@ export const useVentas = () => {
 
     const cargarVentas = async () => {
         try {
-            const response = await getVentas({ limit: 10 });
+            const response = await getVentas({ limit: 50 });
             setVentas(response.data.ventas || response.data);
         } catch (err) {
             console.error('Error al cargar ventas');
@@ -301,6 +302,8 @@ export const useVentas = () => {
             }
             setMontoRecibido('');
             setShowModal(false);
+            // Refrescar historial
+            await cargarVentas();
         } catch (err: any) {
             const msg = err.response?.data?.message || 'Error al procesar venta';
             Toast.show({ type: 'error', text1: 'Error', text2: msg });
