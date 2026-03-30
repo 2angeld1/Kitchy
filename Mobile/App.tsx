@@ -65,6 +65,8 @@ export type RootStackParamList = {
   Presupuestario: undefined;
 };
 
+import { CaitlynOnboardingWizard } from './src/components/CaitlynOnboardingWizard';
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RootNavigator() {
@@ -121,6 +123,7 @@ function RootNavigator() {
           </>
         )}
       </Stack.Navigator>
+      {isAuthenticated && <CaitlynOnboardingWizard />}
     </>
   );
 }

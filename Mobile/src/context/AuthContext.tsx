@@ -24,6 +24,7 @@ export interface Negocio {
         }[];
         cortesPorCiclo: number;
     };
+    onboardingStep?: number;
 }
 
 interface User {
@@ -53,6 +54,7 @@ interface AuthContextType {
     }) => Promise<void>;
     logout: () => void;
     switchNegocioContext: (newUserContext: User, newToken: string) => Promise<void>;
+    updateOnboardingProgress: (step: number) => Promise<void>;
     loading: boolean;
 }
 
@@ -132,6 +134,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     };
 
+    const updateOnboardingProgress = async (step: number) => {
+        try {
+            await api.put('/negocios/onboarding', { step });
+            // Update local user context
+            if (user && user.negocioActivo && typeof user.negocioActivo === 'object') {
+                const updatedNegocioActivo = { ...user.negocioActivo, onboardingStep: step };
+                const updatedUser = { ...user, negocioActivo: updatedNegocioActivo };
+                setUser(updatedUser);
+                await AsyncStorage.setItem('kitchy_user', JSON.stringify(updatedUser));
+            }
+        } catch (err) {
+            console.error('Error updating onboarding progress', err);
+        }
+    };
+
     const isAuthenticated = !!token && !!user;
     const isAdmin = user?.rol === 'admin';
 
@@ -145,6 +162,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             register,
             logout,
             switchNegocioContext,
+            updateOnboardingProgress,
             loading
         }}>
             {children}

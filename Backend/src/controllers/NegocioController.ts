@@ -8,7 +8,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 // Conseguir los negocios del usuario actual
 export const getUserNegocios = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config comisionConfig pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart');
+        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config comisionConfig pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart onboardingStep');
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -66,8 +66,8 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
 
         // Populate para que el usuario tenga los objetos negocio completos
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
         ]);
 
         res.status(201).json({
@@ -118,8 +118,8 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
         // Retornamos el user completo con los negocios parseados si es necesario, 
         // pero basta con actualizar token y context allá
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
         ]);
 
         res.json({
@@ -192,5 +192,30 @@ export const updateConfig = async (req: AuthRequest, res: Response) => {
     } catch (error) {
         console.error('Error updating config:', error);
         res.status(500).json({ message: 'Error al actualizar configuración del negocio' });
+    }
+};
+
+// Actualizar el paso de onboarding del usuario
+export const updateOnboardingStep = async (req: AuthRequest, res: Response) => {
+    try {
+        const { step } = req.body;
+        const negocioId = req.negocioId;
+
+        if (step === undefined || typeof step !== 'number') {
+            return res.status(400).json({ message: 'Paso de onboarding inválido' });
+        }
+
+        const negocio = await Negocio.findById(negocioId);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+
+        negocio.onboardingStep = step;
+        await negocio.save();
+
+        res.json({ success: true, onboardingStep: negocio.onboardingStep, message: 'Paso actualizado' });
+    } catch (error) {
+        console.error('Error updating onboarding step:', error);
+        res.status(500).json({ message: 'Error al actualizar paso de onboarding' });
     }
 };

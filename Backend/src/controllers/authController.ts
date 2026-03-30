@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import User from '../models/User';
 import Negocio from '../models/Negocio';
+import Producto from '../models/Producto';
+import Venta from '../models/Venta';
 import { enviarEmailRecuperacion } from '../services/emailService';
 import { uploadImage } from '../utils/imageUpload';
 import { AuthRequest } from '../middleware/auth';
@@ -9,11 +11,14 @@ import { AuthRequest } from '../middleware/auth';
 export const getProfile = async (req: AuthRequest, res: Response) => {
     try {
         const user = await User.findById(req.userId)
-            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig')
-            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig');
+            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig onboardingStep')
+            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig onboardingStep');
         if (!user) {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
         }
+        
+        await applyOnboardingBypass(user);
+
         res.json({
             success: true,
             data: {
@@ -42,8 +47,8 @@ export const login = async (req: Request, res: Response) => {
         }
 
         const user = await User.findOne({ email })
-            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig')
-            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig');
+            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig onboardingStep')
+            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig onboardingStep');
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
@@ -63,9 +68,11 @@ export const login = async (req: Request, res: Response) => {
 
         // Populate para que el frontend tenga los nombres de los negocios
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
         ]);
+
+        await applyOnboardingBypass(user);
 
         res.json({
             success: true,
@@ -141,8 +148,8 @@ export const register = async (req: Request, res: Response) => {
         );
 
         await savedUser.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
         ]);
 
         res.status(201).json({
@@ -212,5 +219,26 @@ export const resetPassword = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error en resetPassword:', error);
         res.status(500).json({ message: 'Token inválido o expirado' });
+    }
+};
+
+// --- Helper para Smart Bypass de Onboarding ---
+export const applyOnboardingBypass = async (user: any) => {
+    let checkList: any[] = [];
+    if (user.negocioIds && Array.isArray(user.negocioIds)) {
+        checkList = [...user.negocioIds];
+    }
+    if (user.negocioActivo && checkList.findIndex(n => n?._id?.toString() === user.negocioActivo?._id?.toString()) === -1) {
+        checkList.push(user.negocioActivo);
+    }
+
+    for (const n of checkList) {
+        if (n && typeof n === 'object' && n.onboardingStep === 0) {
+            const hasActivity = await Producto.exists({ negocioId: n._id }) || await Venta.exists({ negocioId: n._id });
+            if (hasActivity) {
+                await Negocio.findByIdAndUpdate(n._id, { onboardingStep: 4 });
+                n.onboardingStep = 4; // actualizar en memoria
+            }
+        }
     }
 };

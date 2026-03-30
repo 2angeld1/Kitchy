@@ -42,6 +42,7 @@ export interface INegocio extends Document {
     };
     totalSalesLifetime: number;
     totalCommissionLifetime: number;
+    onboardingStep: number;
 }
 
 const negocioSchema = new Schema({
@@ -136,7 +137,8 @@ const negocioSchema = new Schema({
         notes: { type: String, trim: true }
     },
     totalSalesLifetime: { type: Number, default: 0 },
-    totalCommissionLifetime: { type: Number, default: 0 }
+    totalCommissionLifetime: { type: Number, default: 0 },
+    onboardingStep: { type: Number, default: 0 }
 }, {
     timestamps: true
 });
