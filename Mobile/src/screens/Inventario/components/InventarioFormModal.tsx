@@ -121,14 +121,31 @@ export const InventarioFormModal: React.FC<Props> = ({
                                 </Animated.View>
                             )}
                             
-                            <TouchableOpacity onPress={() => setShowPicker(true)} activeOpacity={1}>
-                                <KitchyInput 
-                                    label="Fecha Vencimiento" 
-                                    value={fechaVencimiento} 
-                                    editable={false} 
-                                    pointerEvents="none"
-                                    placeholder="Selecciona una fecha" 
-                                />
+                            {/* Selector de Fecha - Cambiado a Pressable para evitar bloqueos en Android */}
+                            <TouchableOpacity 
+                                onPress={() => setShowPicker(true)} 
+                                activeOpacity={0.7}
+                                style={{ marginBottom: 16 }}
+                            >
+                                <Text style={{ fontSize: 10, fontWeight: '900', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8, marginLeft: 4 }}>FECHA VENCIMIENTO</Text>
+                                <View style={{
+                                    height: 56,
+                                    width: '100%',
+                                    borderWidth: 1,
+                                    borderRadius: 16,
+                                    borderColor: colors.border,
+                                    backgroundColor: colors.surface,
+                                    paddingHorizontal: 20,
+                                    justifyContent: 'center'
+                                }}>
+                                    <Text style={{ 
+                                        fontSize: 16, 
+                                        fontWeight: '700',
+                                        color: fechaVencimiento ? colors.textPrimary : colors.textMuted
+                                    }}>
+                                        {fechaVencimiento || 'Selecciona una fecha'}
+                                    </Text>
+                                </View>
                             </TouchableOpacity>
 
                             {showPicker && (

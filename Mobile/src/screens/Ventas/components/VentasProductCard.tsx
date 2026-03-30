@@ -7,12 +7,13 @@ import { Producto } from '../../../hooks/useVentas';
 interface Props {
     producto: Producto;
     index: number;
+    cantidadEnCarrito: number;
     onPress: (producto: Producto) => void;
     colors: any;
     styles: any;
 }
 
-export const VentasProductCard: React.FC<Props> = ({ producto, index, onPress, colors, styles }) => {
+export const VentasProductCard: React.FC<Props> = ({ producto, index, cantidadEnCarrito, onPress, colors, styles }) => {
     return (
         <Animated.View
             entering={FadeInDown.delay(index * 50)}
@@ -30,6 +31,32 @@ export const VentasProductCard: React.FC<Props> = ({ producto, index, onPress, c
                 {producto.insuficiente && (
                     <View style={styles.stockBadge}>
                         <Text style={styles.stockBadgeText}>SIN STOCK</Text>
+                    </View>
+                )}
+
+                {cantidadEnCarrito > 0 && (
+                    <View style={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        backgroundColor: colors.primary,
+                        minWidth: 26,
+                        height: 26,
+                        borderRadius: 13,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 10,
+                        borderWidth: 2,
+                        borderColor: colors.card,
+                        elevation: 4,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.2,
+                        shadowRadius: 4,
+                    }}>
+                        <Text style={{ color: 'white', fontSize: 13, fontWeight: '900' }}>
+                            {cantidadEnCarrito}
+                        </Text>
                     </View>
                 )}
                 

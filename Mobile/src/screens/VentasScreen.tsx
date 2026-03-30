@@ -133,16 +133,20 @@ export default function VentasScreen() {
                     </View>
                 ) : (
                     <View style={styles.productsGrid}>
-                        {productosFiltrados.map((p: Producto, i: number) => (
-                            <VentasProductCard
-                                key={p._id}
-                                producto={p}
-                                index={i}
-                                onPress={agregarAlCarrito}
-                                colors={colors}
-                                styles={styles}
-                            />
-                        ))}
+                        {productosFiltrados.map((p: Producto, i: number) => {
+                            const qty = carrito.find(item => item.producto._id === p._id)?.cantidad || 0;
+                            return (
+                                <VentasProductCard
+                                    key={p._id}
+                                    producto={p}
+                                    index={i}
+                                    cantidadEnCarrito={qty}
+                                    onPress={agregarAlCarrito}
+                                    colors={colors}
+                                    styles={styles}
+                                />
+                            );
+                        })}
                     </View>
                 )}
             </ScrollView>
