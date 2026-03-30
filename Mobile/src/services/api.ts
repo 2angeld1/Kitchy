@@ -107,8 +107,12 @@ export const updateNegocioConfig = (data: any) => api.put('/negocios/config', da
 
 // Comisiones (Belleza)
 export const getComisiones = (params?: any) => api.get('/comisiones', { params });
-export const updateComisionConfig = (data: { porcentajeBarbero: number, porcentajeDueno: number, cortesPorCiclo: number }) => 
-    api.put('/negocios/config-comisiones', data);
+export const updateComisionConfig = (data: { 
+    tipo: string, 
+    fijo?: { porcentajeBarbero: number, porcentajeDueno: number }, 
+    escalonado?: any[], 
+    cortesPorCiclo: number 
+}) => api.put('/negocios/config-comisiones', data);
 
 // Especialistas (Belleza)
 export const getEspecialistas = () => api.get('/especialistas');

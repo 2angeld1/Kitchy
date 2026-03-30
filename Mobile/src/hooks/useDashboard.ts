@@ -61,6 +61,7 @@ export interface DashboardData {
             generado: number;
             pago: number;
             eficiencia: string;
+            porcentajeActual: number;
         }[];
     };
     notificaciones?: { id: string; titulo: string; mensaje: string; tipo: string; icon: string }[];

@@ -6,14 +6,15 @@ import { useTheme } from '../context/ThemeContext';
 interface KitchyInputProps extends TextInputProps {
     label?: string;
     error?: string;
+    containerStyle?: any;
 }
 
-export function KitchyInput({ label, error, style, ...rest }: KitchyInputProps) {
+export function KitchyInput({ label, error, style, containerStyle, ...rest }: KitchyInputProps) {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, containerStyle]}>
             {label && <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>}
             <TextInput
                 style={[

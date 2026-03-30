@@ -11,6 +11,7 @@ import { useAuth, Negocio } from '../context/AuthContext';
 import { createStyles } from '../styles/BellezaVentasScreen.styles';
 import { getBeautyIcon, formatMoney } from '../utils/beauty-helpers';
 import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
+import { BellezaCaitlynFAB } from '../components/BellezaCaitlynFAB';
 
 export default function BellezaVentasScreen() {
     const { isDark } = useTheme();
@@ -240,6 +241,11 @@ export default function BellezaVentasScreen() {
                     </Animated.View>
                 </View>
             )}
+
+            <BellezaCaitlynFAB 
+                especialistas={especialistas} 
+                config={(negocio.comisionConfig as any) || { tipo: 'fijo' }} 
+            />
 
             <VentasHistorialModal 
                 visible={showHistorial}

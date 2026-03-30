@@ -62,14 +62,17 @@ export default function AdminHubScreen() {
                 icon: 'analytics-outline',
                 color: '#f59e0b'
             },
-            {
+        ];
+
+        if (!esBelleza) {
+            items.push({
                 id: 'presupuestario',
                 title: 'Presupuestario',
                 desc: 'Carrito Inteligente',
                 icon: 'cart-outline',
                 color: '#ec4899'
-            },
-        ];
+            });
+        }
 
         // Solo para BELLEZA: Comisiones
         if (esBelleza) {

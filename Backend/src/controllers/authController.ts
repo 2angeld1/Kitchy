@@ -8,7 +8,9 @@ import { AuthRequest } from '../middleware/auth';
 
 export const getProfile = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo');
+        const user = await User.findById(req.userId)
+            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig')
+            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig');
         if (!user) {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
         }
@@ -39,7 +41,9 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Por favor ingresa usuario y contraseña' });
         }
 
-        const user = await User.findOne({ email }).populate('negocioIds', 'nombre logo tipo categoria');
+        const user = await User.findOne({ email })
+            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig')
+            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig');
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
@@ -58,7 +62,10 @@ export const login = async (req: Request, res: Response) => {
         );
 
         // Populate para que el frontend tenga los nombres de los negocios
-        await user.populate('negocioIds', 'nombre logo tipo categoria');
+        await user.populate([
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+        ]);
 
         res.json({
             success: true,
@@ -133,7 +140,10 @@ export const register = async (req: Request, res: Response) => {
             { expiresIn: '30d' } as SignOptions
         );
 
-        await savedUser.populate('negocioIds', 'nombre logo tipo categoria');
+        await savedUser.populate([
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+        ]);
 
         res.status(201).json({
             success: true,

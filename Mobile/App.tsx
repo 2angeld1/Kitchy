@@ -72,6 +72,20 @@ function RootNavigator() {
   const { isDark } = useTheme();
   const colors = isDark ? darkTheme : lightTheme;
 
+  React.useEffect(() => {
+    if (Platform.OS === 'web') {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) {
+        meta.setAttribute('content', colors.background);
+      } else {
+        const newMeta = document.createElement('meta');
+        newMeta.name = 'theme-color';
+        newMeta.content = colors.background;
+        document.getElementsByTagName('head')[0].appendChild(newMeta);
+      }
+    }
+  }, [isDark, colors.background]);
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
@@ -82,7 +96,7 @@ function RootNavigator() {
 
   return (
     <>
-      <StatusBar style={isDark ? 'light' : 'dark'} translucent />
+      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} translucent />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <>

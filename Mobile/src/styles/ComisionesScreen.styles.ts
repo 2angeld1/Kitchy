@@ -187,5 +187,117 @@ export const createStyles = (colors: any) => StyleSheet.create({
     infoText: {
         fontSize: 11,
         color: colors.textSecondary,
+    },
+    // New Styles for Tiers
+    tabContainer: {
+        flexDirection: 'row',
+        backgroundColor: colors.surface,
+        padding: 4,
+        borderRadius: 14,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    tab: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    tabActive: {
+        backgroundColor: colors.primary,
+    },
+    tabText: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: colors.textMuted,
+    },
+    tabTextActive: {
+        color: '#fff',
+    },
+    columnHeader: {
+        flexDirection: 'row',
+        paddingHorizontal: 8,
+        marginBottom: 8,
+    },
+    headerLabel: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: colors.textMuted,
+        textTransform: 'uppercase',
+    },
+    tierItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginBottom: 8,
+    },
+    removeTierBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    addTierBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 10,
+        gap: 8,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: colors.primary,
+        borderRadius: 12,
+        marginBottom: 20,
+    },
+    addTierText: {
+        color: colors.primary,
+        fontWeight: 'bold',
+        fontSize: 13,
+    },
+    // New Styles for Screen Tabs
+    mainHeaderTabs: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        backgroundColor: colors.background,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+        gap: 20,
+    },
+    mainTab: {
+        paddingVertical: 12,
+        borderBottomWidth: 3,
+        borderBottomColor: 'transparent',
+    },
+    mainTabActive: {
+        borderBottomColor: colors.primary,
+    },
+    mainTabText: {
+        fontSize: 14,
+        fontWeight: '800',
+        color: colors.textMuted,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    mainTabTextActive: {
+        color: colors.primary,
+    },
+    settingsSection: {
+        padding: 20,
+        backgroundColor: colors.background,
+    },
+    settingsTitle: {
+        fontSize: 22,
+        fontWeight: '900',
+        color: colors.textPrimary,
+        marginBottom: 8,
+    },
+    settingsDesc: {
+        fontSize: 14,
+        color: colors.textMuted,
+        marginBottom: 24,
+        lineHeight: 20,
     }
 });

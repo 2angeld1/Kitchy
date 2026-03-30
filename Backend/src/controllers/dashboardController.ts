@@ -11,43 +11,30 @@ import Especialista from '../models/Especialista';
 import { getLatestContext } from '../services/marketContextService';
 import { calcularPrecioSugerido, calcularMargenActual } from '../utils/pricing';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
+import { getPeriodRanges } from '../utils/date-ranges';
 
 // Dashboard general
 export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
     try {
-        const { periodo = 'mes' } = req.query;
+        const { periodo = 'mes', fechaInicio, fechaFin } = req.query;
         const hoy = new Date();
         
-        // Rangos para métricas generales (se mantienen para el resto del dashboard)
-        const inicioHoy = startOfDay(hoy);
-        const finHoy = endOfDay(hoy);
-        const inicioSemana = startOfWeek(hoy, { weekStartsOn: 1 });
-        const finSemana = endOfWeek(hoy, { weekStartsOn: 1 });
-        const inicioMes = startOfMonth(hoy);
-        const finMes = endOfMonth(hoy);
+        // Rangos para métricas generales (Hoy, Semana, Mes para los widgets superiores)
+        const { inicio: inicioHoy, fin: finHoy } = getPeriodRanges('hoy', hoy);
+        const { inicio: inicioSemana, fin: finSemana } = getPeriodRanges('semana', hoy);
+        const { inicio: inicioMes, fin: finMes } = getPeriodRanges('mes', hoy);
 
-        // Dinamismo para el rango del dashboard/comisiones
-        let inicioFiltro = inicioMes;
-        let finFiltro = finMes;
+        // Rango dinámico para el filtro seleccionado (lo que el usuario cambia en la UI)
+        let inicioFiltro: Date;
+        let finFiltro: Date;
 
-        switch(periodo) {
-            case 'hoy':
-                inicioFiltro = inicioHoy;
-                finFiltro = finHoy;
-                break;
-            case 'semana':
-                inicioFiltro = inicioSemana;
-                finFiltro = finSemana;
-                break;
-            case 'quincena':
-                // Últimos 15 días para ser prácticos
-                inicioFiltro = subDays(hoy, 15);
-                finFiltro = finHoy;
-                break;
-            case 'mes':
-                inicioFiltro = inicioMes;
-                finFiltro = finMes;
-                break;
+        if (fechaInicio && fechaFin) {
+            inicioFiltro = new Date(fechaInicio as string);
+            finFiltro = new Date(fechaFin as string);
+        } else {
+            const ranges = getPeriodRanges(periodo as any, hoy);
+            inicioFiltro = ranges.inicio;
+            finFiltro = ranges.fin;
         }
 
         // Ventas del día
@@ -303,16 +290,23 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
         // --- DASHBOARD ESPECÍFICO DE BELLEZA (COMISIONES) ---
         let comisionesResumen = undefined;
         
-        if (negocio?.categoria === 'BELLEZA') {
-            const config = negocio.comisionConfig || { porcentajeBarbero: 50, porcentajeDueno: 50, cortesPorCiclo: 5 };
+        if (negocio?.categoria?.toUpperCase() === 'BELLEZA') {
+            const config = (negocio.comisionConfig as any) || { 
+                tipo: 'fijo', 
+                fijo: { porcentajeBarbero: 50, porcentajeDueno: 50 }, 
+                escalonado: [], 
+                cortesPorCiclo: 5 
+            };
             
-            // Agrupar ventas por especialista del rango seleccionado
+            const mongoose = require('mongoose');
+
+            // Agrupar ventas por especialista del rango seleccionado usando agregación nativa
             const comisionesData = await Venta.aggregate([
                 { 
                     $match: { 
-                        negocioId: req.negocioId, 
+                        negocioId: new mongoose.Types.ObjectId(req.negocioId as string), 
                         createdAt: { $gte: inicioFiltro, $lte: finFiltro },
-                        especialista: { $ne: null }
+                        especialista: { $exists: true, $ne: null }
                     } 
                 },
                 {
@@ -331,8 +325,43 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             const especialistasDetalle = await Promise.all(comisionesData.map(async (item) => {
                 const espInfo = await Especialista.findById(item._id).select('nombre');
                 
-                const montoEspecialista = item.totalGenerado * (config.porcentajeBarbero / 100);
-                const montoDueno = item.totalGenerado * (config.porcentajeDueno / 100);
+                let montoEspecialista = 0;
+                let montoDueno = 0;
+                let pctActual = 0;
+                let totalServiciosReales = 0; // Contador por ítem/cantidad
+
+                const esEscalonado = (config.tipo === 'escalonado' || (config.escalonado?.length > 0));
+
+                const ventasEsp = await Venta.find({
+                    negocioId: req.negocioId,
+                    especialista: item._id,
+                    createdAt: { $gte: inicioFiltro, $lte: finFiltro }
+                }).sort({ createdAt: 1 });
+
+                if (esEscalonado && config.escalonado?.length > 0) {
+                    const tramos = [...config.escalonado].sort((a, b) => a.desde - b.desde);
+                    
+                    ventasEsp.forEach((v) => {
+                        v.items.forEach(ítem => {
+                            const valorUnitario = ítem.subtotal / ítem.cantidad;
+                            for (let q = 0; q < ítem.cantidad; q++) {
+                                totalServiciosReales++;
+                                const tramo = tramos.find(t => totalServiciosReales >= t.desde && totalServiciosReales <= t.hasta) || tramos[tramos.length - 1];
+                                montoEspecialista += valorUnitario * (tramo.porcentajeBarbero / 100);
+                                montoDueno += valorUnitario * (tramo.porcentajeDueno / 100);
+                                pctActual = tramo.porcentajeBarbero;
+                            }
+                        });
+                    });
+                } else {
+                    ventasEsp.forEach(v => {
+                        v.items.forEach(ítem => totalServiciosReales += ítem.cantidad);
+                    });
+                    pctActual = config.fijo?.porcentajeBarbero || config.porcentajeBarbero || 50;
+                    const pctDueno = config.fijo?.porcentajeDueno || config.porcentajeDueno || 50;
+                    montoEspecialista = item.totalGenerado * (pctActual / 100);
+                    montoDueno = item.totalGenerado * (pctDueno / 100);
+                }
 
                 totalEspecialistas += montoEspecialista;
                 totalDueno += montoDueno;
@@ -341,10 +370,11 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
                 return {
                     id: item._id,
                     nombre: espInfo?.nombre || 'Desconocido',
-                    servicios: item.cantidadServicios,
+                    servicios: totalServiciosReales, // <--- AHORA SÍ SON SERVICIOS REALES
                     generado: item.totalGenerado,
                     pago: montoEspecialista,
-                    eficiencia: (item.cantidadServicios / (periodo === 'hoy' ? 1 : periodo === 'semana' ? 7 : 15)).toFixed(1)
+                    eficiencia: (totalServiciosReales / (periodo === 'hoy' ? 1 : periodo === 'semana' ? 7 : 15)).toFixed(1),
+                    porcentajeActual: pctActual
                 };
             }));
 
@@ -370,20 +400,53 @@ export const obtenerDashboard = async (req: AuthRequest, res: Response) => {
             });
         }
         
-        if (negocio?.categoria === 'BELLEZA' && comisionesResumen) {
-            const config = negocio.comisionConfig || { cortesPorCiclo: 5 };
-            comisionesResumen.especialistas.forEach((esp: any) => {
-                const ciclos = Math.floor(esp.servicios / config.cortesPorCiclo);
-                if (ciclos > 0) {
-                    notificaciones.push({
-                        id: `ciclo-${esp.id}`,
-                        titulo: 'Meta Alcanzada',
-                        mensaje: `${esp.nombre} completó ${ciclos} ciclo(s) de meta.`,
-                        tipo: 'info',
-                        icon: 'ribbon-outline'
-                    });
-                }
+        if (negocio?.categoria?.toUpperCase() === 'BELLEZA') {
+            // Caitlyn AI: Mirada estratégica SIEMPRE focalizada en hoy para el insight
+            const config = (negocio.comisionConfig as any) || { escalonado: [] };
+            const tramos = (config.escalonado || []).sort((a: any, b: any) => a.desde - b.desde);
+
+            // Buscamos las ventas de HOY específicamente para este insight
+            const ventasHoyBeauty = await Venta.find({
+                negocioId: req.negocioId,
+                createdAt: { $gte: inicioHoy, $lte: finHoy },
+                especialista: { $exists: true, $ne: null }
             });
+
+            const conteoHoy: { [key: string]: { nombre: string, servicios: number } } = {};
+            
+            for (const v of ventasHoyBeauty) {
+                const espId = v.especialista!.toString();
+                if (!conteoHoy[espId]) {
+                    const esp = await Especialista.findById(espId).select('nombre');
+                    conteoHoy[espId] = { nombre: esp?.nombre || 'Especialista', servicios: 0 };
+                }
+                
+                let servsVenta = 0;
+                v.items.forEach(i => servsVenta += i.cantidad);
+                conteoHoy[espId].servicios += servsVenta;
+            }
+
+            const topEspHoy = Object.values(conteoHoy).sort((a, b) => b.servicios - a.servicios)[0];
+
+            if (topEspHoy && topEspHoy.servicios >= 1) {
+                let mensajeContext = `¡${topEspHoy.nombre.split(' ')[0]} lleva ${topEspHoy.servicios} servicios hoy!`;
+                
+                // Calcular si alcanzó un tramo hoy
+                if (tramos.length > 0) {
+                    const tramo = tramos.find((t: any) => topEspHoy.servicios >= t.desde && topEspHoy.servicios <= t.hasta) || tramos[tramos.length - 1];
+                    if (tramo && tramo.porcentajeBarbero > 50) {
+                        mensajeContext += ` Ya está en su tramo del ${tramo.porcentajeBarbero}%. 🚀`;
+                    }
+                }
+                
+                notificaciones.push({
+                    id: 'caitlyn-beauty-insight',
+                    titulo: 'Insight de Caitlyn AI ✨',
+                    mensaje: mensajeContext,
+                    tipo: 'info',
+                    icon: 'flash-outline'
+                });
+            }
         }
 
         res.json({

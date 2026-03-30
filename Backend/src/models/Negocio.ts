@@ -13,8 +13,17 @@ export interface INegocio extends Document {
         margenObjetivo: number;
     };
     comisionConfig?: {
-        porcentajeBarbero: number;
-        porcentajeDueno: number;
+        tipo: 'fijo' | 'escalonado';
+        fijo?: {
+            porcentajeBarbero: number;
+            porcentajeDueno: number;
+        };
+        escalonado?: {
+            desde: number;
+            hasta: number;
+            porcentajeBarbero: number;
+            porcentajeDueno: number;
+        }[];
         cortesPorCiclo: number;
     };
     direccion?: string;
@@ -65,8 +74,24 @@ const negocioSchema = new Schema({
         margenObjetivo: { type: Number, default: 65 }
     },
     comisionConfig: {
-        porcentajeBarbero: { type: Number, default: 50 },
-        porcentajeDueno: { type: Number, default: 50 },
+        tipo: { type: String, enum: ['fijo', 'escalonado'], default: 'escalonado' },
+        fijo: {
+            porcentajeBarbero: { type: Number, default: 50 },
+            porcentajeDueno: { type: Number, default: 50 }
+        },
+        escalonado: {
+            type: [{
+                desde: Number,
+                hasta: Number,
+                porcentajeBarbero: Number,
+                porcentajeDueno: Number
+            }],
+            default: [
+                { desde: 1, hasta: 4, porcentajeBarbero: 50, porcentajeDueno: 50 },
+                { desde: 5, hasta: 8, porcentajeBarbero: 60, porcentajeDueno: 40 },
+                { desde: 9, hasta: 99, porcentajeBarbero: 70, porcentajeDueno: 30 }
+            ]
+        },
         cortesPorCiclo: { type: Number, default: 5 }
     },
     propietario: {

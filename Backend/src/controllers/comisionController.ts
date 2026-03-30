@@ -3,41 +3,55 @@ import { AuthRequest } from '../middleware/auth';
 import Venta from '../models/Venta';
 import Producto from '../models/Producto';
 import Negocio from '../models/Negocio';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { getPeriodRanges } from '../utils/date-ranges';
 
 /**
  * Calcula las comisiones de los especialistas (barberos/estilistas).
  * Lógica: Por cada N cortes (ciclo), se divide el ingreso según el porcentaje configurado.
- * Default: 50/50 cada 5 cortes.
+ * Default: 50/50 cada 5 cortes o escalonado por volumen.
  */
 export const calcularComisiones = async (req: AuthRequest, res: Response) => {
     try {
-        const { mes, anio } = req.query;
+        const { mes, anio, periodo = 'mes', fechaInicio, fechaFin } = req.query;
 
         const negocio = await Negocio.findById(req.negocioId);
-        if (!negocio || negocio.categoria !== 'BELLEZA') {
+        if (!negocio || negocio.categoria?.toUpperCase() !== 'BELLEZA') {
             return res.status(400).json({ message: 'Este módulo solo está disponible para negocios de Salud y Bienestar.' });
         }
 
-        const config = negocio.comisionConfig || {
-            porcentajeBarbero: 50,
-            porcentajeDueno: 50,
+        const config = (negocio.comisionConfig as any) || {
+            tipo: 'fijo',
+            fijo: {
+                porcentajeBarbero: 50,
+                porcentajeDueno: 50
+            },
+            escalonado: [],
             cortesPorCiclo: 5
         };
 
         // Determinar rango de fechas
+        let inicio: Date;
+        let fin: Date;
         const ahora = new Date();
         const year = anio ? parseInt(anio as string) : ahora.getFullYear();
         const month = mes ? parseInt(mes as string) - 1 : ahora.getMonth();
-        const inicio = startOfMonth(new Date(year, month));
-        const fin = endOfMonth(new Date(year, month));
+        const baseDate = new Date(year, month);
+
+        if (fechaInicio && fechaFin) {
+            inicio = new Date(fechaInicio as string);
+            fin = new Date(fechaFin as string);
+        } else {
+            const ranges = getPeriodRanges(periodo as any, baseDate);
+            inicio = ranges.inicio;
+            fin = ranges.fin;
+        }
 
         // Obtener todas las ventas del mes que tengan especialista asignado
         const ventas = await Venta.find({
             negocioId: req.negocioId,
             especialista: { $ne: null },
             createdAt: { $gte: inicio, $lte: fin }
-        }).populate('especialista', 'nombre imagen');
+        }).populate('especialista', 'nombre imagen').sort({ createdAt: 1 });
 
         // Agrupar por especialista
         const comisionesPorEspecialista: {
@@ -50,6 +64,7 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
                 ciclosCompletos: number;
                 montoEspecialista: number;
                 montoDueno: number;
+                porcentajeActual?: number;
                 serviciosDetalle: { fecha: string; servicio: string; monto: number }[];
             }
         } = {};
@@ -76,7 +91,14 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
             }
 
             const entry = comisionesPorEspecialista[espId];
-            entry.totalServicios += 1;
+            
+            // Sumar cada ítem por separado para el conteo real
+            let serviciosEnEstaVenta = 0;
+            venta.items.forEach(item => {
+                serviciosEnEstaVenta += item.cantidad;
+            });
+
+            entry.totalServicios += serviciosEnEstaVenta;
             entry.totalIngreso += venta.total;
 
             // Detalle de cada servicio
@@ -88,12 +110,46 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
             });
         }
 
-        // Calcular comisiones por ciclos
+        // Calcular comisiones finales aplicando lógica escalonada o fija
         for (const espId in comisionesPorEspecialista) {
             const entry = comisionesPorEspecialista[espId];
+            const esEscalonado = (config.tipo === 'escalonado' || (config.escalonado?.length > 0));
+
+            if (esEscalonado && config.escalonado?.length > 0) {
+                const tramos = [...config.escalonado].sort((a, b) => a.desde - b.desde);
+                let contadorServiciosGlobal = 0;
+                let montoEsp = 0;
+                let montoLocal = 0;
+                let ultimoPct = tramos[0].porcentajeBarbero;
+
+                // Recuperamos las ventas de este especialista ordenadas
+                const ventasBarbero = ventas.filter(v => (v.especialista as any)._id?.toString() === espId || v.especialista?.toString() === espId);
+
+                ventasBarbero.forEach(v => {
+                    v.items.forEach(item => {
+                        const valorUnitario = item.subtotal / item.cantidad;
+                        for (let q = 0; q < item.cantidad; q++) {
+                            contadorServiciosGlobal++;
+                            const tramo = tramos.find(t => contadorServiciosGlobal >= t.desde && contadorServiciosGlobal <= t.hasta) || tramos[tramos.length - 1];
+                            montoEsp += valorUnitario * (tramo.porcentajeBarbero / 100);
+                            montoLocal += valorUnitario * (tramo.porcentajeDueno / 100);
+                            ultimoPct = tramo.porcentajeBarbero;
+                        }
+                    });
+                });
+
+                entry.montoEspecialista = montoEsp;
+                entry.montoDueno = montoLocal;
+                entry.porcentajeActual = ultimoPct;
+            } else {
+                const pctBarbero = config.fijo?.porcentajeBarbero || config.porcentajeBarbero || 50;
+                const pctDueno = config.fijo?.porcentajeDueno || config.porcentajeDueno || 50;
+                entry.montoEspecialista = entry.totalIngreso * (pctBarbero / 100);
+                entry.montoDueno = entry.totalIngreso * (pctDueno / 100);
+                entry.porcentajeActual = pctBarbero;
+            }
+
             entry.ciclosCompletos = Math.floor(entry.totalServicios / config.cortesPorCiclo);
-            entry.montoEspecialista = entry.totalIngreso * (config.porcentajeBarbero / 100);
-            entry.montoDueno = entry.totalIngreso * (config.porcentajeDueno / 100);
         }
 
         const resultado = Object.values(comisionesPorEspecialista).sort(
@@ -111,11 +167,7 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
                 desde: inicio.toISOString(),
                 hasta: fin.toISOString()
             },
-            config: {
-                porcentajeBarbero: config.porcentajeBarbero,
-                porcentajeDueno: config.porcentajeDueno,
-                cortesPorCiclo: config.cortesPorCiclo
-            },
+            config: config,
             resumen: {
                 totalGeneral: totalGeneral.toFixed(2),
                 totalEspecialistas: totalEspecialistas.toFixed(2),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Dimensions, TouchableOpacity, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../navigation/MainAppNavigator';
 import { useAuth } from '../context/AuthContext';
@@ -105,6 +105,35 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                     ))}
                 </View>
 
+                {/* Caitlyn AI Highlight */}
+                {notifications.find(n => n.id === 'caitlyn-beauty-insight') && (
+                    <Animated.View 
+                        entering={FadeInDown.duration(400).delay(200)}
+                        style={{ marginHorizontal: 20, marginBottom: 20 }}
+                    >
+                        <View style={{ 
+                            backgroundColor: colors.primary + '15', 
+                            padding: 16, 
+                            borderRadius: 20, 
+                            borderWidth: 1, 
+                            borderColor: colors.primary + '30',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            gap: 12
+                        }}>
+                            <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', borderWidth: 2, borderColor: colors.primary }}>
+                                <Image source={require('../../assets/caitlyn_beauty_avatar.png')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 14 }}>Caitlyn AI Insight</Text>
+                                <Text style={{ color: colors.textPrimary, fontSize: 13, marginTop: 2 }}>
+                                    {notifications.find(n => n.id === 'caitlyn-beauty-insight')?.message}
+                                </Text>
+                            </View>
+                        </View>
+                    </Animated.View>
+                )}
+
                 {data && (
                     <View style={styles.content}>
 
@@ -155,7 +184,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                     </View>
                                     <Text style={[styles.gridCardLabel, { color: colors.textSecondary }]}>Servicios</Text>
                                     <Text style={[styles.gridCardValue, { color: colors.textPrimary }]}>
-                                        {data.comisiones?.totalServicios || data.ventas.hoy.cantidad}
+                                        {data.comisiones?.totalServicios ?? 0}
                                     </Text>
                                     <Text style={[styles.gridCardSubtitle, { color: colors.textMuted }]}>En este periodo</Text>
                                 </View>
@@ -190,7 +219,7 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                                             {idx === 0 && <Ionicons name="medal" size={14} color="#FFD700" />}
                                                         </View>
                                                         <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>
-                                                            {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día
+                                                            {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día • {esp.porcentajeActual}% com.
                                                         </Text>
                                                     </View>
                                                     <View

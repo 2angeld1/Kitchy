@@ -13,6 +13,17 @@ export interface Negocio {
         denominaciones: number[];
         impuesto: number;
     };
+    comisionConfig?: {
+        tipo: 'fijo' | 'escalonado';
+        fijo?: { porcentajeBarbero: number; porcentajeDueno: number };
+        escalonado?: {
+            desde: number;
+            hasta: number;
+            porcentajeBarbero: number;
+            porcentajeDueno: number;
+        }[];
+        cortesPorCiclo: number;
+    };
 }
 
 interface User {

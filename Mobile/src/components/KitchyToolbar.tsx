@@ -178,9 +178,15 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
 
                             <View style={{ gap: 12 }}>
                                 {user?.negocioIds?.map((n: any, index: number) => {
-                                    const nId = n._id || n; // Handle if it's an object or just a string
-                                    const nNombre = n.nombre || `Sucursal ${index + 1}`;
-                                    const isActivo = user?.negocioActivo?.toString() === nId.toString();
+                                    // Extraemos IDs tanto de n como del activo
+                                    const nId = typeof n === 'object' ? n._id : n;
+                                    const nNombre = typeof n === 'object' ? n.nombre : `Sucursal ${index + 1}`;
+                                    
+                                    const activeId = typeof user?.negocioActivo === 'object' 
+                                        ? (user.negocioActivo as any)._id 
+                                        : user?.negocioActivo;
+                                        
+                                    const isActivo = activeId?.toString() === nId?.toString();
 
                                     return (
                                         <TouchableOpacity

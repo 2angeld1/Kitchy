@@ -4,6 +4,7 @@ import Producto from '../models/Producto';
 import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
 import { AuthRequest } from '../middleware/auth';
+import { getPeriodRanges } from '../utils/date-ranges';
 
 // Crear una nueva venta
 export const crearVenta = async (req: AuthRequest, res: Response) => {
@@ -152,10 +153,24 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
 // Obtener todas las ventas (con filtros)
 export const obtenerVentas = async (req: AuthRequest, res: Response) => {
     try {
-        const { fechaInicio, fechaFin, usuario, metodoPago, limite = 50 } = req.query;
+        const { fecha, fechaInicio, fechaFin, usuario, metodoPago, limite = 50 } = req.query;
         const filtro: any = { negocioId: req.negocioId };
 
-        if (fechaInicio && fechaFin) {
+        if (fecha) {
+            // Ajuste para Panamá (-5h): Para ver "Hoy" local, buscamos desde las 05:00 UTC de hoy hasta las 04:59 UTC de mañana
+            const base = new Date(fecha as string);
+            const inicio = new Date(base);
+            inicio.setUTCHours(5, 0, 0, 0); // 00:00 AM Panamá
+            
+            const fin = new Date(inicio);
+            fin.setUTCDate(fin.getUTCDate() + 1);
+            fin.setUTCMilliseconds(-1); // 23:59:59 PM Panamá
+
+            filtro.createdAt = {
+                $gte: inicio,
+                $lte: fin
+            };
+        } else if (fechaInicio && fechaFin) {
             filtro.createdAt = {
                 $gte: new Date(fechaInicio as string),
                 $lte: new Date(fechaFin as string)

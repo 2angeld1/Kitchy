@@ -42,7 +42,8 @@ export const useKitchyToolbar = () => {
     };
 
     const handleSwitchNegocio = async (negocioId: string) => {
-        if (!user || negocioId === user.negocioActivo) {
+        const activeId = typeof user?.negocioActivo === 'object' ? (user.negocioActivo as any)._id : user?.negocioActivo;
+        if (!user || negocioId === activeId) {
             setShowSwitchModal(false);
             return;
         }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getProductos, createVenta, getEspecialistas, getVentas } from '../services/api';
 import Toast from 'react-native-toast-message';
+import { getTodayLocalString } from '../utils/date-helpers';
 
 export interface Producto {
     _id: string;
@@ -38,7 +39,7 @@ export const useBellezaVentas = () => {
     const cargarDatos = useCallback(async () => {
         setLoading(true);
         try {
-            const hoy = new Date().toISOString().split('T')[0];
+            const hoy = getTodayLocalString();
             const { getInventario } = require('../services/api');
             const [servRes, espRes, ventRes, invRes] = await Promise.all([
                 getProductos({ disponible: true }),
@@ -59,10 +60,21 @@ export const useBellezaVentas = () => {
             }));
             setProductosVenta(itemsVenta);
 
-            // Calcular conteo del día para cada barbero
-            const ventasHoy = ventRes.data.ventas || ventRes.data || [];
+            // Calcular conteo del día para cada barbero de forma robusta
+            const ventasHoy = Array.isArray(ventRes.data) ? ventRes.data : (ventRes.data.ventas || []);
+            
             const especialistasConConteo = espRes.data.map((esp: any) => {
-                const conteo = ventasHoy.filter((v: any) => v.especialista === esp._id || v.especialista?._id === esp._id).length;
+                const espId = String(esp._id);
+                // Sumar la cantidad de ítems de cada venta que pertenezca a este especialista
+                const conteo = ventasHoy.reduce((total: number, v: any) => {
+                    const vEspId = v.especialista?._id ? String(v.especialista._id) : String(v.especialista);
+                    if (vEspId === espId) {
+                        // Sumamos la cantidad de todos los ítems de esa venta
+                        const cantItems = v.items?.reduce((sum: number, item: any) => sum + (item.cantidad || 1), 0) || 1;
+                        return total + cantItems;
+                    }
+                    return total;
+                }, 0);
                 return { ...esp, conteoDia: conteo };
             });
 

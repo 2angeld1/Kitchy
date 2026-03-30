@@ -5,7 +5,7 @@ import Animated, { SlideInDown, FadeInDown } from 'react-native-reanimated';
 import { KitchyInput } from '../../../components/KitchyInput';
 import { KitchySelect } from '../../../components/KitchySelect';
 import { KitchyButton } from '../../../components/KitchyButton';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { KitchyDatePicker } from '../../../components/KitchyDatePicker';
 
 interface Props {
     visible: boolean;
@@ -38,15 +38,7 @@ export const InventarioFormModal: React.FC<Props> = ({
     categoria, setCategoria, codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
     onSubmit, error
 }) => {
-    const [showPicker, setShowPicker] = React.useState(false);
 
-    const onDateChange = (event: any, selectedDate?: Date) => {
-        setShowPicker(false);
-        if (selectedDate) {
-            const formatted = selectedDate.toISOString().split('T')[0];
-            setFechaVencimiento(formatted);
-        }
-    };
     return (
         <Modal visible={visible} transparent animationType="fade">
             <View style={styles.modalOverlay}>
@@ -121,42 +113,11 @@ export const InventarioFormModal: React.FC<Props> = ({
                                 </Animated.View>
                             )}
                             
-                            {/* Selector de Fecha - Cambiado a Pressable para evitar bloqueos en Android */}
-                            <TouchableOpacity 
-                                onPress={() => setShowPicker(true)} 
-                                activeOpacity={0.7}
-                                style={{ marginBottom: 16 }}
-                            >
-                                <Text style={{ fontSize: 10, fontWeight: '900', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8, marginLeft: 4 }}>FECHA VENCIMIENTO</Text>
-                                <View style={{
-                                    height: 56,
-                                    width: '100%',
-                                    borderWidth: 1,
-                                    borderRadius: 16,
-                                    borderColor: colors.border,
-                                    backgroundColor: colors.surface,
-                                    paddingHorizontal: 20,
-                                    justifyContent: 'center'
-                                }}>
-                                    <Text style={{ 
-                                        fontSize: 16, 
-                                        fontWeight: '700',
-                                        color: fechaVencimiento ? colors.textPrimary : colors.textMuted
-                                    }}>
-                                        {fechaVencimiento || 'Selecciona una fecha'}
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            {showPicker && (
-                                <DateTimePicker
-                                    value={fechaVencimiento ? new Date(fechaVencimiento) : new Date()}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={onDateChange}
-                                    minimumDate={new Date()}
-                                />
-                            )}
+                            <KitchyDatePicker 
+                                label="Fecha Vencimiento"
+                                value={fechaVencimiento}
+                                onChange={setFechaVencimiento}
+                            />
                             <View style={{ marginTop: 24 }}>
                                 <KitchyButton title={editItem ? 'Actualizar' : 'Guardar'} onPress={onSubmit} loading={loading} />
                             </View>

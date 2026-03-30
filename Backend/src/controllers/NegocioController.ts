@@ -8,7 +8,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 // Conseguir los negocios del usuario actual
 export const getUserNegocios = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart');
+        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config comisionConfig pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart');
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -65,7 +65,10 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
         );
 
         // Populate para que el usuario tenga los objetos negocio completos
-        await user.populate('negocioIds', 'nombre logo tipo categoria');
+        await user.populate([
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+        ]);
 
         res.status(201).json({
             success: true,
@@ -114,7 +117,10 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
 
         // Retornamos el user completo con los negocios parseados si es necesario, 
         // pero basta con actualizar token y context allá
-        await user.populate('negocioIds', 'nombre logo tipo categoria');
+        await user.populate([
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig' }
+        ]);
 
         res.json({
             success: true,
@@ -135,10 +141,10 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
     }
 };
 
-// Actualizar configuración de comisiones (solo para BELLEZA)
+// Actualizar configuración de comisiones (BELLEZA: Fijo o Escalonado)
 export const updateComisionConfig = async (req: AuthRequest, res: Response) => {
     try {
-        const { porcentajeBarbero, porcentajeDueno, cortesPorCiclo } = req.body;
+        const { tipo, fijo, escalonado, cortesPorCiclo } = req.body;
 
         const negocio = await Negocio.findById(req.negocioId);
         if (!negocio) {
@@ -146,9 +152,10 @@ export const updateComisionConfig = async (req: AuthRequest, res: Response) => {
         }
 
         negocio.comisionConfig = {
-            porcentajeBarbero: Number(porcentajeBarbero),
-            porcentajeDueno: Number(porcentajeDueno),
-            cortesPorCiclo: Number(cortesPorCiclo)
+            tipo: tipo || 'escalonado',
+            fijo: fijo || { porcentajeBarbero: 50, porcentajeDueno: 50 },
+            escalonado: escalonado || [],
+            cortesPorCiclo: Number(cortesPorCiclo || 5)
         };
 
         await negocio.save();
