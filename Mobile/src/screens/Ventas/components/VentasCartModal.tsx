@@ -72,7 +72,7 @@ export const VentasCartModal: React.FC<Props> = ({
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView contentContainerStyle={styles.carritoList} showsVerticalScrollIndicator={false}>
+                    <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.carritoList} showsVerticalScrollIndicator={false}>
                         {carrito.length === 0 ? (
                             <View style={[styles.emptyContainer, { paddingTop: 100 }]}>
                                 <Ionicons name="cart-outline" size={64} color={colors.border} />
