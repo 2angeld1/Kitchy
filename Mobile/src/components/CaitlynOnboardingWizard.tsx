@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, StyleSheet, TextInput, TouchableOpacity, Image, ActivityIndicator, ScrollView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -25,12 +25,50 @@ export const CaitlynOnboardingWizard = () => {
 
     const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
     const step = negocioActual?.onboardingStep;
+    const isBelleza = negocioActual?.categoria === 'BELLEZA';
+
+    const validatedRef = React.useRef(false);
+
+    useEffect(() => {
+        if (step === undefined || step >= 4 || validatedRef.current) return;
+
+        const validateOnboarding = async () => {
+            validatedRef.current = true;
+            try {
+                if (isBelleza) {
+                    await updateOnboardingProgress(4);
+                    return;
+                }
+
+                const [prodRes, invRes, venRes] = await Promise.all([
+                    api.get('/productos', { params: { limit: 1 } }),
+                    api.get('/inventario', { params: { limit: 1 } }),
+                    api.get('/ventas', { params: { limit: 1 } })
+                ]);
+
+                const tieneProductos = prodRes.data && prodRes.data.length > 0;
+                const tieneInventario = invRes.data && invRes.data.length > 0;
+                const tieneHistorial = venRes.data && venRes.data.length > 0;
+
+                // Si ya tiene algún registro (productos OR inventario OR historial),
+                // asumimos que no necesita el onboarding para nuevos usuarios desde 0.
+                if (tieneProductos || tieneInventario || tieneHistorial) {
+                    await updateOnboardingProgress(4);
+                }
+            } catch (error) {
+                console.error('Error validando onboarding:', error);
+                validatedRef.current = false;
+            }
+        };
+        
+        validateOnboarding();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [step, isBelleza]);
 
     if (step === undefined || step >= 4) {
         return null;
     }
 
-    const isBelleza = negocioActual?.categoria === 'BELLEZA';
     const avatarSource = isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png');
 
     const handleNextStep = async (nextStep: number) => {
@@ -265,6 +303,14 @@ export const CaitlynOnboardingWizard = () => {
                                     <Text style={styles.primaryButtonText}>Liberar a la Bestia 🔥</Text>
                                 </TouchableOpacity>
                             </>
+                        )}
+
+                        {step < 3 && (
+                            <TouchableOpacity onPress={() => handleNextStep(4)} style={{ marginTop: 16, alignItems: 'center' }} disabled={loading}>
+                                <Text style={{ color: colors.textMuted, fontSize: 14, fontWeight: '600', textDecorationLine: 'underline' }}>
+                                    Saltar tutorial
+                                </Text>
+                            </TouchableOpacity>
                         )}
                     </View>
 
