@@ -21,9 +21,12 @@ export default function AdminHubScreen() {
 
     // Detectar categoría del negocio activo
     const categoriaNegocio = useMemo(() => {
-        const negocios = (user as any)?.negocioIds || [];
-        const activo = negocios.find((n: any) => n._id === user?.negocioActivo) || negocios[0];
-        return activo?.categoria || 'COMIDA';
+        if (!user) return 'COMIDA';
+        const negocioActual = typeof user.negocioActivo === 'object' 
+            ? user.negocioActivo 
+            : (user as any).negocioIds?.find((n: any) => (typeof n === 'object' ? n._id : n) === user.negocioActivo);
+        
+        return (negocioActual as any)?.categoria || 'COMIDA';
     }, [user]);
     
     // States para reportes
