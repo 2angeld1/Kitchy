@@ -234,6 +234,10 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                 </View>
                                             )}
 
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 8, fontStyle: 'italic', textAlign: 'center' }}>
+                                                * Caitlyn puede equivocarse. Ella intenta armar la receta combinando insumos de tu inventario local y buscando referencias de internet. Revísala bien.
+                                            </Text>
+
                                             <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
                                                 <TouchableOpacity style={[styles.applyRecipeBtn, { flex: 1.5 }]} onPress={handleApplyRecipe}>
                                                     <Ionicons name="checkmark-done" size={20} color="#fff" style={{ marginRight: 8 }} />

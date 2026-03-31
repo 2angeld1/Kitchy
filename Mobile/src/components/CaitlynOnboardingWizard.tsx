@@ -266,18 +266,23 @@ export const CaitlynOnboardingWizard = () => {
                                         </TouchableOpacity>
                                     </>
                                 ) : (
-                                    <ScrollView style={{ maxHeight: 200, backgroundColor: `${colors.primary}05`, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.textPrimary, marginBottom: 8 }}>{recetaGenerada.nombre}</Text>
-                                        {recetaGenerada.ingredientes.map((ing: any, i: number) => (
-                                            <Text key={i} style={{ color: colors.textSecondary, marginBottom: 4 }}>
-                                                • {ing.cantidad} {ing.unidad} {ing.nombre}
-                                            </Text>
-                                        ))}
-                                        <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12 }}>
-                                            <Text style={{ color: colors.textSecondary }}>Costo Elaboración: ${recetaGenerada.costoTotal.toFixed(2)}</Text>
-                                            <Text style={{ fontWeight: 'bold', color: colors.primary, fontSize: 18, marginTop: 4 }}>Precio Sugerido: ${recetaGenerada.precioSugerido.toFixed(2)}</Text>
-                                        </View>
-                                    </ScrollView>
+                                    <>
+                                        <ScrollView style={{ maxHeight: 200, backgroundColor: `${colors.primary}05`, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 16, color: colors.textPrimary, marginBottom: 8 }}>{recetaGenerada.nombre}</Text>
+                                            {recetaGenerada.ingredientes.map((ing: any, i: number) => (
+                                                <Text key={i} style={{ color: colors.textSecondary, marginBottom: 4 }}>
+                                                    • {ing.cantidad} {ing.unidad} {ing.nombre}
+                                                </Text>
+                                            ))}
+                                            <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12 }}>
+                                                <Text style={{ color: colors.textSecondary }}>Costo Elaboración: ${recetaGenerada.costoTotal.toFixed(2)}</Text>
+                                                <Text style={{ fontWeight: 'bold', color: colors.primary, fontSize: 18, marginTop: 4 }}>Precio Sugerido: ${recetaGenerada.precioSugerido.toFixed(2)}</Text>
+                                            </View>
+                                        </ScrollView>
+                                        <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 16, textAlign: 'center', fontStyle: 'italic', paddingHorizontal: 10 }}>
+                                            * Caitlyn a veces se equivoca. Combina tus compras con referencias de internet. Modifícala más tarde en Productos si es necesario.
+                                        </Text>
+                                    </>
                                 )}
 
                                 {recetaGenerada && (
