@@ -266,6 +266,13 @@ export const useInventario = () => {
         }
         setLoading(true);
         try {
+            const formatToISO = (dateStr: string) => {
+                if (!dateStr || !dateStr.includes('/')) return dateStr;
+                const [day, month, year] = dateStr.split('/');
+                if (day && month && year) return `${year}-${month}-${day}`;
+                return dateStr;
+            };
+
             const data = {
                 nombre, descripcion,
                 cantidad: parseFloat(cantidad) || 0,
@@ -274,7 +281,7 @@ export const useInventario = () => {
                 costoUnitario: parseFloat(costoUnitario),
                 precioVenta: precioVenta ? parseFloat(precioVenta) : undefined,
                 categoria, proveedor, codigoBarras,
-                fechaVencimiento: fechaVencimiento || undefined
+                fechaVencimiento: fechaVencimiento ? formatToISO(fechaVencimiento) : undefined
             };
             if (editItem) {
                 await updateInventario(editItem._id, data);

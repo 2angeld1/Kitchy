@@ -45,8 +45,20 @@ export default function UsuariosScreen() {
     }, [error, success]);
 
     const handleSwitchContext = async (user: any, token: string) => {
+        const activeNegocio = typeof user.negocioActivo === 'object' 
+            ? user.negocioActivo 
+            : (user.negocioIds?.find((n: any) => (n._id || n) === user.negocioActivo));
+
+        const categoria = (activeNegocio?.categoria || '').toUpperCase();
+
         await switchNegocioContext(user, token);
-        Toast.show({ type: 'success', text1: '\u00c9xito', text2: `Cambiado a su nuevo negocio.` });
+        
+        (navigation as any).reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+        });
+
+        Toast.show({ type: 'success', text1: '\u00c9xito', text2: `Cambiado a ${activeNegocio?.nombre || 'nuevo negocio'}` });
     };
 
     return (

@@ -56,10 +56,25 @@ export const useKitchyToolbar = () => {
             const res = await api.put(`/negocios/switch/${negocioId}`);
 
             if (res.data.success && res.data.user) {
-                await switchNegocioContext(res.data.user, res.data.token);
+                const newUser = res.data.user;
+                const activeNegocio = typeof newUser.negocioActivo === 'object' 
+                    ? newUser.negocioActivo 
+                    : (newUser.negocioIds?.find((n: any) => (n._id || n) === newUser.negocioActivo));
+
+                const categoria = (activeNegocio?.categoria || '').toUpperCase();
+
+                await switchNegocioContext(newUser, res.data.token);
                 setShowSwitchModal(false);
                 setShowUserMenu(false);
-                Toast.show({ type: 'success', text1: 'Éxito', text2: 'Has cambiado de negocio.' });
+                
+                // Redirigir automáticamente al Dashboard principal
+                // El MainAppNavigator se encargará de mostrar el dashboard correcto según la categoría
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Main' as any }],
+                });
+
+                Toast.show({ type: 'success', text1: 'Negocio Actualizado', text2: `Entrando a ${activeNegocio?.nombre || 'tu negocio'}` });
             }
         } catch (err: any) {
             Toast.show({ 
