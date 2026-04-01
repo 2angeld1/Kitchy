@@ -13,8 +13,8 @@ interface Props {
     styles: any;
 }
 
-export const UserRoleModal: React.FC<Props> = ({ 
-    visible, onClose, selectedUser, onConfirm, colors, styles 
+export const UserRoleModal: React.FC<Props> = ({
+    visible, onClose, selectedUser, onConfirm, colors, styles
 }) => {
     const [tempRole, setTempRole] = useState<string>('usuario');
 
@@ -43,7 +43,7 @@ export const UserRoleModal: React.FC<Props> = ({
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             {[
-                                { id: 'admin', name: 'Administrador', icon: 'options', desc: 'Acceso total para editar cat\u00e1logo y modificar ventas', color: '#3b82f6' },
+                                { id: 'admin', name: 'Administrador', icon: 'options', desc: 'Acceso total para editar catálogo y modificar ventas', color: '#3b82f6' },
                                 { id: 'usuario', name: 'Cajero/Mesero', icon: 'person', desc: 'Acceso solamente al Punto de Venta (POS)', color: '#10b981' },
                             ].map((rol) => {
                                 const isSelected = tempRole === rol.id;

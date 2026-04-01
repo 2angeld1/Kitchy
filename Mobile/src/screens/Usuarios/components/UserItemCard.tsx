@@ -17,8 +17,8 @@ interface Props {
     getRoleInfo: (rol: string) => { label: string, color: string, icon: string };
 }
 
-export const UserItemCard: React.FC<Props> = ({ 
-    user, index, isMe, colors, styles, onEditRole, onDelete, getRoleInfo 
+export const UserItemCard: React.FC<Props> = ({
+    user, index, isMe, colors, styles, onEditRole, onDelete, getRoleInfo
 }) => {
     const roleInfo = getRoleInfo(user.rol);
     const isProtected = user.rol === 'admin';
@@ -56,7 +56,7 @@ export const UserItemCard: React.FC<Props> = ({
 
                     <View style={styles.infoContainer}>
                         <Text style={[styles.nameText, { color: colors.textPrimary }]} numberOfLines={1}>
-                            {user.nombre} {isMe && <Text style={{ color: colors.primary, fontSize: 12 }}> (T\u00fa)</Text>}
+                            {user.nombre} {isMe && <Text style={{ color: colors.primary, fontSize: 12 }}> (Tú)</Text>}
                         </Text>
 
                         <View style={[styles.roleTag, { backgroundColor: `${roleInfo.color}15` }]}>

@@ -42,19 +42,19 @@ export const createStyles = (colors: any) => StyleSheet.create({
         fontStyle: 'italic',
     },
     filterContainer: {
-        flexGrow: 0,
-        height: 50,
+        width: '100%',
         marginBottom: 8,
     },
     filterOptions: {
         flexDirection: 'row',
         paddingHorizontal: 24,
-        gap: 8,
+        gap: 6,
+        justifyContent: 'space-between',
         alignItems: 'center',
     },
     filterChip: {
         paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingVertical: 6, // Filtros un poco más bajitos
         borderRadius: 20,
         borderWidth: 1,
         backgroundColor: colors.card,
@@ -65,8 +65,8 @@ export const createStyles = (colors: any) => StyleSheet.create({
         borderColor: colors.primary,
     },
     filterText: {
-        fontSize: 11,
-        fontWeight: '700',
+        fontSize: 10, // Un pelín más pequeño para que quepa "Limpieza"
+        fontWeight: '800',
         textTransform: 'uppercase',
         color: colors.textSecondary,
     },
@@ -75,6 +75,7 @@ export const createStyles = (colors: any) => StyleSheet.create({
     },
     listContainer: {
         paddingHorizontal: 24,
+        paddingTop: 15, // Margen de seguridad para badges
         paddingBottom: 120,
     },
     itemCard: {

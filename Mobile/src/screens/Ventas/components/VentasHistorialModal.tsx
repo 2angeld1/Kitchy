@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth, Negocio } from '../../../context/AuthContext';
 
 const { height, width } = Dimensions.get('window');
 
@@ -12,43 +13,62 @@ interface VentasHistorialModalProps {
 }
 
 export const VentasHistorialModal = ({ visible, onClose, ventas, colors }: VentasHistorialModalProps) => {
+    const { user } = useAuth();
     const [ventaSeleccionada, setVentaSeleccionada] = useState<any>(null);
 
-    const renderItem = ({ item }: { item: any }) => (
-        <TouchableOpacity 
-            activeOpacity={0.7}
-            onPress={() => setVentaSeleccionada(item)}
-            style={[styles.ventaCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-            <View style={styles.ventaHeader}>
-                <View style={styles.ventaBadge}>
-                    <Text style={[styles.ventaBadgeText, { color: colors.primary }]}>
-                        {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+    const esBelleza = useMemo(() => {
+        const negocioActual = typeof user?.negocioActivo === 'object'
+            ? user.negocioActivo as Negocio
+            : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
+        return negocioActual?.categoria === 'BELLEZA';
+    }, [user]);
+
+    const renderItem = ({ item }: { item: any }) => {
+        const nombreEspecialista = item.especialista?.nombre || 'General';
+        
+        return (
+            <TouchableOpacity 
+                activeOpacity={0.7}
+                onPress={() => setVentaSeleccionada(item)}
+                style={[styles.ventaCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+                <View style={styles.ventaHeader}>
+                    <View style={styles.ventaBadge}>
+                        <Text style={[styles.ventaBadgeText, { color: colors.primary }]}>
+                            {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                        <Text style={[styles.ventaMetodo, { color: colors.textSecondary }]}>
+                            {item.metodoPago?.toUpperCase()}
+                        </Text>
+                        <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+                    </View>
+                </View>
+                
+                <View style={styles.ventaBody}>
+                    <View style={styles.ventaInfo}>
+                        <Text style={[styles.ventaCliente, { color: colors.textPrimary }]} numberOfLines={1}>
+                            {item.cliente || 'Consumidor Final'}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                            {esBelleza && (
+                                <View style={{ backgroundColor: colors.primary + '10', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                                    <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }}>{nombreEspecialista.split(' ')[0]}</Text>
+                                </View>
+                            )}
+                            <Text style={[styles.ventaFecha, { color: colors.textSecondary }]}>
+                                {new Date(item.createdAt).toLocaleDateString()}
+                            </Text>
+                        </View>
+                    </View>
+                    <Text style={[styles.ventaTotal, { color: colors.primary }]}>
+                        ${(Number(item.total) || 0).toFixed(2)}
                     </Text>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Text style={[styles.ventaMetodo, { color: colors.textSecondary }]}>
-                        {item.metodoPago?.toUpperCase()}
-                    </Text>
-                    <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
-                </View>
-            </View>
-            
-            <View style={styles.ventaBody}>
-                <View style={styles.ventaInfo}>
-                    <Text style={[styles.ventaCliente, { color: colors.textPrimary }]} numberOfLines={1}>
-                        {item.cliente || 'Consumidor Final'}
-                    </Text>
-                    <Text style={[styles.ventaFecha, { color: colors.textSecondary }]}>
-                        {new Date(item.createdAt).toLocaleDateString()}
-                    </Text>
-                </View>
-                <Text style={[styles.ventaTotal, { color: colors.primary }]}>
-                    ${(Number(item.total) || 0).toFixed(2)}
-                </Text>
-            </View>
-        </TouchableOpacity>
-    );
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <Modal
@@ -61,9 +81,11 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors }: Venta
                 <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
                     <View style={styles.header}>
                         <View>
-                            <Text style={[styles.title, { color: colors.textPrimary }]}>Ventas Recientes</Text>
+                            <Text style={[styles.title, { color: colors.textPrimary }]}>
+                                {esBelleza ? 'Servicios Recientes' : 'Ventas Recientes'}
+                            </Text>
                             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                                {ventas.length} ventas registradas
+                                {ventas.length} {esBelleza ? 'servicios registrados' : 'ventas registradas'}
                             </Text>
                         </View>
                         <TouchableOpacity style={styles.closeButton} onPress={onClose}>

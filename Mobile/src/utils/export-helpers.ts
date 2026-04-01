@@ -6,36 +6,41 @@ import { formatMoney } from './beauty-helpers';
 
 export const exportComisionesCsv = async (data: any, periodo: string) => {
     try {
+        const safeNum = (val: any) => Number(val || 0);
+        
         const headers = ['Especialista', 'Servicios', 'Ingreso Total', 'Pago Especialista', 'Pago Dueño', 'Comisión %'];
         const rows = (data.especialistas || []).map((esp: any) => [
             esp.nombre,
             esp.totalServicios,
-            esp.totalIngreso.toFixed(2),
-            esp.montoEspecialista.toFixed(2),
-            esp.montoDueno.toFixed(2),
+            safeNum(esp.totalIngreso).toFixed(2),
+            safeNum(esp.montoEspecialista).toFixed(2),
+            safeNum(esp.montoDueno).toFixed(2),
             esp.porcentajeActual
         ]);
 
         const csvContent = [
-            `Reporte de Comisiones - Periodo: ${periodo.toUpperCase()}`,
+            `\uFEFFReporte de Comisiones - Periodo: ${periodo.toUpperCase()}`,
             `Resumen General:`,
-            `Total Generado:;${data.resumen.totalGeneral.toFixed(2)}`,
-            `Total Especialistas:;${data.resumen.totalEspecialistas.toFixed(2)}`,
-            `Total Dueño/Local:;${data.resumen.totalDueno.toFixed(2)}`,
+            `Total Generado:;${safeNum(data.resumen.totalGeneral).toFixed(2)}`,
+            `Total Especialistas:;${safeNum(data.resumen.totalEspecialistas).toFixed(2)}`,
+            `Total Dueño/Local:;${safeNum(data.resumen.totalDueno).toFixed(2)}`,
             '',
             headers.join(';'),
             ...rows.map((row: any[]) => row.join(';'))
         ].join('\n');
 
         if (Platform.OS === 'web') {
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `Comisiones_${periodo}_${new Date().toISOString().split('T')[0]}.csv`);
+            link.download = `Comisiones_${periodo}_${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(link);
             link.click();
-            link.remove();
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 100);
         } else {
             // Intentar usar API nueva o legacy según disponibilidad
             const docDir = (FileSystem as any).documentDirectory || (FileSystem as any).Paths?.document;
@@ -176,8 +181,19 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
         `;
 
         if (Platform.OS === 'web') {
-            const { uri } = await Print.printToFileAsync({ html });
-            window.open(uri, '_blank');
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.focus();
+                // Dar un pequeño respiro para que el navegador procese el HTML
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            } else {
+                alert('Por favor, permite las ventanas emergentes (pop-ups) para generar el PDF.');
+            }
         } else {
             const { uri } = await Print.printToFileAsync({ html });
             await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, SlideInDown, ZoomIn, useSharedValue, useAnimatedStyle, withSpring, withSequence, withDelay } from 'react-native-reanimated';
 import { useBellezaVentas } from '../hooks/useBellezaVentas';
@@ -16,6 +16,7 @@ import { BellezaCaitlynFAB } from '../components/BellezaCaitlynFAB';
 export default function BellezaVentasScreen() {
     const { isDark } = useTheme();
     const { user } = useAuth();
+    const navigation = useNavigation();
     const colors = isDark ? darkTheme : lightTheme;
     const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -160,42 +161,100 @@ export default function BellezaVentasScreen() {
                     </View>
                 </View>
 
-                {/* 2.5 SELECCIONAR PRODUCTOS (REVENTA) - GRID */}
-                {productosVenta.length > 0 && (
-                    <View style={[styles.section, { paddingTop: 0 }]}>
-                        <Text style={styles.sectionTitle}>Productos vendidos (Reventa)</Text>
-                        <View style={styles.grid}>
-                            {productosVenta.map((prod, idx) => {
-                                const isSelected = itemsSeleccionados.some(s => s._id === prod._id);
-                                return (
-                                    <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 40)}>
-                                        <TouchableOpacity
-                                            onPress={() => toggleItem(prod)}
-                                            style={[
-                                                styles.serviceCard,
-                                                {
-                                                    backgroundColor: isSelected ? `${colors.primary}15` : colors.card,
-                                                    borderColor: isSelected ? colors.primary : colors.border
-                                                }
-                                            ]}
-                                        >
-                                            <View style={styles.cardHeader}>
-                                                <View style={[styles.iconContainer, { backgroundColor: isSelected ? colors.primary : colors.surface }]}>
-                                                    <Ionicons name={getInventoryIcon('reventa', 'BELLEZA')} size={18} color={isSelected ? '#fff' : colors.primary} />
+                {/* 2.5 PRODUCTOS EN VENTA (REVENTA) */}
+                <View style={[styles.section, { paddingTop: 0 }]}>
+                    {productosVenta.length > 0 ? (
+                        <>
+                            <Text style={styles.sectionTitle}>Productos en Venta</Text>
+                            <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 12, marginTop: -8, fontStyle: 'italic' }}>
+                                Estos productos vienen de tu inventario (categoría Reventa)
+                            </Text>
+                            <View style={styles.grid}>
+                                {productosVenta.map((prod, idx) => {
+                                    const isSelected = itemsSeleccionados.some(s => s._id === prod._id);
+                                    return (
+                                        <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 40)}>
+                                            <TouchableOpacity
+                                                onPress={() => toggleItem(prod)}
+                                                style={[
+                                                    styles.serviceCard,
+                                                    {
+                                                        backgroundColor: isSelected ? `${colors.primary}15` : colors.card,
+                                                        borderColor: isSelected ? colors.primary : colors.border
+                                                    }
+                                                ]}
+                                            >
+                                                <View style={styles.cardHeader}>
+                                                    <View style={[styles.iconContainer, { backgroundColor: isSelected ? colors.primary : colors.surface }]}>
+                                                        <Ionicons name={getInventoryIcon('reventa', 'BELLEZA')} size={18} color={isSelected ? '#fff' : colors.primary} />
+                                                    </View>
+                                                    {isSelected && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
                                                 </View>
-                                                {isSelected && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
-                                            </View>
-                                            <View style={styles.serviceInfo}>
-                                                <Text style={[styles.serviceName, { color: colors.textPrimary }]} numberOfLines={1}>{prod.nombre}</Text>
-                                                <Text style={[styles.servicePrice, { color: colors.primary }]}>{formatMoney(prod.precio)}</Text>
-                                            </View>
-                                        </TouchableOpacity>
-                                    </Animated.View>
-                                );
-                            })}
-                        </View>
-                    </View>
-                )}
+                                                <View style={styles.serviceInfo}>
+                                                    <Text style={[styles.serviceName, { color: colors.textPrimary }]} numberOfLines={1}>{prod.nombre}</Text>
+                                                    <Text style={[styles.servicePrice, { color: colors.primary }]}>{formatMoney(prod.precio)}</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </Animated.View>
+                                    );
+                                })}
+                            </View>
+                        </>
+                    ) : (
+                        <Animated.View entering={FadeInDown.delay(200)}>
+                            <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={() => (navigation as any).navigate('Inventario')}
+                                style={{
+                                    backgroundColor: colors.card,
+                                    borderRadius: 20,
+                                    padding: 20,
+                                    borderWidth: 1.5,
+                                    borderColor: colors.border,
+                                    borderStyle: 'dashed',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                }}
+                            >
+                                <View style={{
+                                    width: 48, height: 48, borderRadius: 16,
+                                    backgroundColor: colors.primary + '10',
+                                    justifyContent: 'center', alignItems: 'center',
+                                }}>
+                                    <Ionicons name="bag-add-outline" size={24} color={colors.primary} />
+                                </View>
+                                <Text style={{
+                                    fontSize: 15, fontWeight: '800',
+                                    color: colors.textPrimary, textAlign: 'center',
+                                }}>
+                                    ¿Vendes productos?
+                                </Text>
+                                <Text style={{
+                                    fontSize: 12, color: colors.textMuted,
+                                    textAlign: 'center', lineHeight: 18,
+                                    paddingHorizontal: 10,
+                                }}>
+                                    Shampoos, ceras, tratamientos... Ve a{' '}
+                                    <Text style={{ fontWeight: '800', color: colors.primary }}>Inventario</Text>
+                                    {' '}y crea productos con categoría{' '}
+                                    <Text style={{ fontWeight: '800', color: colors.primary }}>"Reventa"</Text>
+                                    . Aparecerán aquí automáticamente 📲
+                                </Text>
+                                <View style={{
+                                    flexDirection: 'row', alignItems: 'center', gap: 6,
+                                    backgroundColor: colors.primary + '10',
+                                    paddingHorizontal: 14, paddingVertical: 8,
+                                    borderRadius: 12, marginTop: 4,
+                                }}>
+                                    <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+                                    <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>
+                                        Ir a Inventario
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    )}
+                </View>
 
                 {/* 3. NOMBRE DEL CLIENTE */}
                 <View style={styles.clienteSection}>
@@ -280,12 +339,12 @@ export default function BellezaVentasScreen() {
                 </View>
             )}
 
-            <BellezaCaitlynFAB 
-                especialistas={especialistas} 
-                config={(negocio.comisionConfig as any) || { tipo: 'fijo' }} 
+            <BellezaCaitlynFAB
+                especialistas={especialistas}
+                config={(negocio.comisionConfig as any) || { tipo: 'fijo' }}
             />
 
-            <VentasHistorialModal 
+            <VentasHistorialModal
                 visible={showHistorial}
                 onClose={() => setShowHistorial(false)}
                 ventas={ventas}

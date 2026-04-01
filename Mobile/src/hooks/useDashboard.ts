@@ -159,7 +159,7 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
                     if (found) nombreBarbero = found.nombre.split(' ')[0];
                 }
 
-                const itemsStr = v.items?.map((i: any) => i.producto?.nombre || 'Servicio').join(', ') || 'un servicio';
+                const itemsStr = v.items?.map((i: any) => i.nombreProducto || i.producto?.nombre || i.nombre || 'Servicio').join(', ') || 'un servicio';
                 const detalle = v.cliente ? `a ${v.cliente}` : '';
                 
                 notifs.push({

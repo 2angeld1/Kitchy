@@ -76,17 +76,19 @@ export const styles = StyleSheet.create({
         color: colors.textPrimary,
     },
     categoriesContainer: {
-        paddingLeft: spacing.xl,
+        paddingHorizontal: spacing.xl,
+        flexDirection: 'row',
+        gap: 8,
         marginBottom: spacing.lg,
     },
     categoryChip: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        paddingVertical: 8, // Filtros un poco más bajitos
         borderRadius: 16,
-        marginRight: spacing.sm,
-        borderWidth: 1,
+        borderWidth: 1.5,
         borderColor: colors.border,
         backgroundColor: colors.white,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     categoryChipActive: {
         backgroundColor: colors.primary,
@@ -105,10 +107,11 @@ export const styles = StyleSheet.create({
     },
     productsGrid: {
         paddingHorizontal: spacing.xl,
+        paddingTop: 20, // Margen de seguridad para badges
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        paddingBottom: 100,
+        paddingBottom: 120,
     },
     productCard: {
         width: width > 600 ? (width - (spacing.xl * 2) - 60) / 4 : (width - (spacing.xl * 2) - 15) / 2,

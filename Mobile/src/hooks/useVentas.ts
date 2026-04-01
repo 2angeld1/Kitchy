@@ -36,6 +36,8 @@ export interface Orden {
     items: ItemCarrito[];
     cliente: string;
     metodoPago: string;
+    completada?: boolean;
+    completadoEn?: string; // ISO date string
 }
 
 export const useVentas = () => {
@@ -75,10 +77,21 @@ export const useVentas = () => {
                 const storedValue = await AsyncStorage.getItem('kitchy_ordenes_pendientes');
                 const storedActiveId = await AsyncStorage.getItem('kitchy_active_order_id');
                 if (storedValue) {
-                    const parsed = JSON.parse(storedValue);
-                    if (parsed.length > 0) {
-                        setOrdenes(parsed);
-                        if (storedActiveId) setActiveOrderId(storedActiveId);
+                    const parsed: Orden[] = JSON.parse(storedValue);
+                    // Auto-limpieza: eliminar pedidos completados hace más de 24h
+                    const ahora = Date.now();
+                    const vigentes = parsed.filter(o => {
+                        if (!o.completada || !o.completadoEn) return true;
+                        const horasDesdeCompletado = (ahora - new Date(o.completadoEn).getTime()) / (1000 * 60 * 60);
+                        return horasDesdeCompletado < 24;
+                    });
+                    if (vigentes.length > 0) {
+                        setOrdenes(vigentes);
+                        if (storedActiveId && vigentes.some(o => o.id === storedActiveId)) {
+                            setActiveOrderId(storedActiveId);
+                        } else {
+                            setActiveOrderId(vigentes[0].id);
+                        }
                     }
                 }
             } catch (err) {
@@ -141,7 +154,14 @@ export const useVentas = () => {
     };
 
     const setCliente = (nombre: string) => {
-        setOrdenes(ordenes.map(o => o.id === activeOrderId ? { ...o, cliente: nombre } : o));
+        setOrdenes(ordenes.map(o => {
+            if (o.id !== activeOrderId) return o;
+            // Nombre dinámico: si el usuario pone nombre, el pedido se renombra
+            const nuevoNombre = nombre.trim()
+                ? `${nombre.trim()}`
+                : o.nombre.startsWith('Pedido') ? o.nombre : `Pedido ${ordenes.indexOf(o) + 1}`;
+            return { ...o, cliente: nombre, nombre: nuevoNombre };
+        }));
     };
 
     const nuevaOrden = (nombre: string = '') => {
@@ -163,16 +183,45 @@ export const useVentas = () => {
         setShowOrderSelector(false);
     };
 
-    const eliminarOrden = (id: string) => {
-        if (ordenes.length === 1) {
+    // Estado para modal de confirmación al borrar
+    const [ordenAEliminar, setOrdenAEliminar] = useState<Orden | null>(null);
+
+    const pedirConfirmacionEliminar = (id: string) => {
+        const ordenesActivas = ordenes.filter(o => !o.completada);
+        if (ordenesActivas.length <= 1 && !ordenes.find(o => o.id === id)?.completada) {
             Toast.show({ type: 'info', text1: 'No se puede eliminar', text2: 'Al menos debe haber una orden activa' });
             return;
         }
-        const nuevas = ordenes.filter(o => o.id !== id);
-        setOrdenes(nuevas);
-        if (activeOrderId === id) {
-            setActiveOrderId(nuevas[0].id);
+        const orden = ordenes.find(o => o.id === id);
+        if (orden) setOrdenAEliminar(orden);
+    };
+
+    const confirmarEliminarOrden = () => {
+        if (!ordenAEliminar) return;
+        const nuevas = ordenes.filter(o => o.id !== ordenAEliminar.id);
+        // Si no quedan ordenes activas, crear una nueva
+        const activas = nuevas.filter(o => !o.completada);
+        if (activas.length === 0) {
+            const nueva: Orden = {
+                id: Date.now().toString(),
+                nombre: `Pedido 1`,
+                items: [],
+                cliente: '',
+                metodoPago: 'efectivo'
+            };
+            nuevas.push(nueva);
         }
+        setOrdenes(nuevas);
+        if (activeOrderId === ordenAEliminar.id) {
+            const primeraActiva = nuevas.find(o => !o.completada) || nuevas[0];
+            setActiveOrderId(primeraActiva.id);
+        }
+        setOrdenAEliminar(null);
+        Toast.show({ type: 'success', text1: 'Pedido eliminado', text2: 'Recuerda que el historial queda en notificaciones 🔔' });
+    };
+
+    const cancelarEliminarOrden = () => {
+        setOrdenAEliminar(null);
     };
 
     const agregarAlCarrito = (producto: Producto) => {
@@ -293,13 +342,43 @@ export const useVentas = () => {
                 text2: response.data.message || 'La orden se procesó con éxito'
             });
 
-            // Limpiar la orden procesada
-            if (ordenes.length > 1) {
-                setOrdenes(ordenes.filter(o => o.id !== activeOrderId));
-                setActiveOrderId(ordenes.filter(o => o.id !== activeOrderId)[0].id);
-            } else {
-                setOrdenes([{ ...ordenes[0], items: [], cliente: '', metodoPago: 'efectivo' }]);
-            }
+            // Marcar como completada (NO borrar)
+            const totalFinal = calcularTotal();
+            setOrdenes(ordenes.map(o => {
+                if (o.id !== activeOrderId) return o;
+                return {
+                    ...o,
+                    completada: true,
+                    completadoEn: new Date().toISOString(),
+                    nombre: o.cliente?.trim()
+                        ? `${o.cliente.trim()} - $${totalFinal.toFixed(2)}`
+                        : `${o.nombre} - $${totalFinal.toFixed(2)}`
+                };
+            }));
+
+            // Crear nueva orden activa automáticamente
+            const nuevoId = Date.now().toString();
+            const contadorNuevo = ordenes.filter(o => !o.completada).length + 1;
+            const nuevaOrdenAuto: Orden = {
+                id: nuevoId,
+                nombre: `Pedido ${ordenes.length + 1}`,
+                items: [],
+                cliente: '',
+                metodoPago: 'efectivo'
+            };
+            setOrdenes(prev => [...prev.map(o => {
+                if (o.id !== activeOrderId) return o;
+                return {
+                    ...o,
+                    completada: true,
+                    completadoEn: new Date().toISOString(),
+                    nombre: o.cliente?.trim()
+                        ? `${o.cliente.trim()} - $${totalFinal.toFixed(2)}`
+                        : `${o.nombre} - $${totalFinal.toFixed(2)}`
+                };
+            }), nuevaOrdenAuto]);
+            setActiveOrderId(nuevoId);
+
             setMontoRecibido('');
             setShowModal(false);
             // Refrescar historial
@@ -364,7 +443,10 @@ export const useVentas = () => {
         activeOrder,
         nuevaOrden,
         seleccionarOrden,
-        eliminarOrden,
+        pedirConfirmacionEliminar,
+        confirmarEliminarOrden,
+        cancelarEliminarOrden,
+        ordenAEliminar,
         showOrderSelector,
         setShowOrderSelector,
         getSugerenciaInteligente

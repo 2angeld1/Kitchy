@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useVentas, Producto } from '../hooks/useVentas';
 import { lightTheme, darkTheme } from '../theme';
@@ -23,7 +23,8 @@ export default function VentasScreen() {
         quitarDelCarrito, calcularTotal, procesarVenta,
         cliente, setCliente, metodoPago, setMetodoPago,
         ordenes, activeOrderId, activeOrder, nuevaOrden,
-        seleccionarOrden, eliminarOrden,
+        seleccionarOrden, pedirConfirmacionEliminar,
+        confirmarEliminarOrden, cancelarEliminarOrden, ordenAEliminar,
         showHistorial, setShowHistorial, ventas, abrirHistorial,
         montoRecibido, setMontoRecibido, cambio
     } = useVentas();
@@ -70,7 +71,7 @@ export default function VentasScreen() {
                 ordenes={ordenes}
                 activeOrderId={activeOrderId}
                 seleccionarOrden={seleccionarOrden}
-                eliminarOrden={eliminarOrden}
+                eliminarOrden={pedirConfirmacionEliminar}
                 nuevaOrden={nuevaOrden}
                 colors={colors}
                 styles={styles}
@@ -89,36 +90,32 @@ export default function VentasScreen() {
                 </View>
             </View>
 
-            <View>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.categoriesContainer}
+            <View style={styles.categoriesContainer}>
+                <TouchableOpacity
+                    style={[
+                        styles.categoryChip,
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        !categoriaFiltro && { backgroundColor: colors.primary, borderColor: colors.primary }
+                    ]}
+                    onPress={() => setCategoriaFiltro('')}
                 >
+                    <Text style={[styles.categoryText, { color: colors.textSecondary }, !categoriaFiltro && { color: colors.white }]}>Todos</Text>
+                </TouchableOpacity>
+                {categorias.map(cat => (
                     <TouchableOpacity
+                        key={cat}
                         style={[
                             styles.categoryChip,
-                            { backgroundColor: colors.card, borderColor: colors.border },
-                            !categoriaFiltro && { backgroundColor: colors.primary, borderColor: colors.primary }
+                            { backgroundColor: colors.card, borderColor: colors.border, flex: 1 },
+                            categoriaFiltro === cat && { backgroundColor: colors.primary, borderColor: colors.primary }
                         ]}
-                        onPress={() => setCategoriaFiltro('')}
+                        onPress={() => setCategoriaFiltro(cat)}
                     >
-                        <Text style={[styles.categoryText, { color: colors.textSecondary }, !categoriaFiltro && { color: colors.white }]}>Todos</Text>
+                        <Text style={[styles.categoryText, { color: colors.textSecondary }, categoriaFiltro === cat && { color: colors.white }]}>
+                            {cat === 'comida' ? 'Platos' : cat === 'bebida' ? 'Bebidas' : 'Postres'}
+                        </Text>
                     </TouchableOpacity>
-                    {categorias.map(cat => (
-                        <TouchableOpacity
-                            key={cat}
-                            style={[
-                                styles.categoryChip,
-                                { backgroundColor: colors.card, borderColor: colors.border },
-                                categoriaFiltro === cat && { backgroundColor: colors.primary, borderColor: colors.primary }
-                            ]}
-                            onPress={() => setCategoriaFiltro(cat)}
-                        >
-                            <Text style={[styles.categoryText, { color: colors.textSecondary }, categoriaFiltro === cat && { color: colors.white }]}>{cat}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                ))}
             </View>
 
             <ScrollView
@@ -178,6 +175,40 @@ export default function VentasScreen() {
                 ventas={ventas}
                 colors={colors}
             />
+
+            {/* Modal de Confirmación para Eliminar Pedido */}
+            <Modal visible={!!ordenAEliminar} transparent animationType="fade">
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <View style={{ backgroundColor: colors.card, borderRadius: 24, padding: 24, width: '100%', maxWidth: 360 }}>
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(239,68,68,0.1)', justifyContent: 'center', alignItems: 'center', marginBottom: 12 }}>
+                                <Ionicons name="trash-outline" size={28} color="#ef4444" />
+                            </View>
+                            <Text style={{ fontSize: 18, fontWeight: '900', color: colors.textPrimary, marginBottom: 6 }}>¿Eliminar este pedido?</Text>
+                            <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+                                "{ordenAEliminar?.nombre}" se eliminará de tu lista.
+                            </Text>
+                            <Text style={{ fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 8 }}>
+                                🔔 Tranquilo, el historial de ventas siempre estará disponible en el panel de notificaciones.
+                            </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 10 }}>
+                            <TouchableOpacity
+                                onPress={cancelarEliminarOrden}
+                                style={{ flex: 1, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5, borderColor: colors.border }}
+                            >
+                                <Text style={{ fontWeight: '800', color: colors.textSecondary }}>Cancelar</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={confirmarEliminarOrden}
+                                style={{ flex: 1, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ef4444' }}
+                            >
+                                <Text style={{ fontWeight: '800', color: '#fff' }}>Sí, eliminar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }

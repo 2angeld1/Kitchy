@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Modal, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { SlideInDown } from 'react-native-reanimated';
+import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KitchyInput } from '../../../components/KitchyInput';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface Props {
     visible: boolean;
@@ -19,6 +22,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
 }) => {
     const [nombre, setNombre] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
+    const insets = useSafeAreaInsets();
 
     const handleSubmit = async () => {
         const res = await onConfirm({ nombre, categoria });
@@ -32,62 +36,144 @@ export const NegocioCreateModal: React.FC<Props> = ({
     };
 
     return (
-        <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>
-            <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ width: '100%' }}>
-                    <Animated.View entering={SlideInDown.duration(300).springify()} style={[styles.modalContent, { backgroundColor: colors.background }]}>
+        <Modal 
+            visible={visible} 
+            animationType="fade" 
+            transparent={true} 
+            statusBarTranslucent
+            onRequestClose={onClose}
+        >
+            <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
+                <TouchableOpacity 
+                    activeOpacity={1} 
+                    style={{ flex: 1, width: '100%' }} 
+                    onPress={onClose} 
+                />
+                <KeyboardAvoidingView 
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                    style={{ width: '100%', justifyContent: 'flex-end' }}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+                >
+                    <Animated.View 
+                        entering={SlideInDown.springify().damping(20).stiffness(90)} 
+                        style={[
+                            styles.modalContent, 
+                            { 
+                                backgroundColor: colors.background,
+                                paddingBottom: Math.max(insets.bottom, 24),
+                                width: '100%',
+                                borderTopLeftRadius: 32,
+                                borderTopRightRadius: 32,
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: -10 },
+                                shadowOpacity: 0.1,
+                                shadowRadius: 15,
+                                elevation: 20
+                            }
+                        ]}
+                    >
+                        {/* Indicador superior estético */}
+                        <View style={{ 
+                            width: 38, height: 5, borderRadius: 3, 
+                            backgroundColor: colors.border, alignSelf: 'center', 
+                            marginTop: 12, opacity: 0.4 
+                        }} />
+
                         <View style={styles.modalHeader}>
-                            <View>
-                                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={[styles.modalTitle, { color: colors.textPrimary, fontSize: 22 }]}>
                                     Nuevo <Text style={{ color: colors.primary }}>Negocio</Text>
                                 </Text>
-                                <Text style={{ fontSize: 13, fontWeight: '500', color: colors.textMuted, marginTop: 4 }}>
+                                <Text style={{ fontSize: 13, fontWeight: '500', color: colors.textMuted, marginTop: 2 }}>
                                     Abre otra sucursal o foodtruck
                                 </Text>
                             </View>
-                            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                                <Ionicons name="close" size={24} color={colors.textPrimary} />
+                            <TouchableOpacity 
+                                style={[styles.closeButton, { backgroundColor: colors.surface, width: 36, height: 36 }]} 
+                                onPress={onClose}
+                            >
+                                <Ionicons name="close" size={20} color={colors.textPrimary} />
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView showsVerticalScrollIndicator={false}>
-                            <KitchyInput label="Nombre del Negocio" placeholder="Ej. Burguer Truck II" value={nombre} onChangeText={setNombre} />
-
-                            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 12, marginTop: 10, marginHorizontal: 28 }}>\u00bfQu\u00e9 tipo de negocio es?</Text>
-                            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16, marginHorizontal: 28 }}>
-                                <TouchableOpacity
-                                    onPress={() => setCategoria('COMIDA')}
-                                    style={{
-                                        flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center',
-                                        backgroundColor: categoria === 'COMIDA' ? 'rgba(225, 29, 72, 0.1)' : colors.surface,
-                                        borderWidth: 2, borderColor: categoria === 'COMIDA' ? colors.primary : colors.border
-                                    }}
-                                >
-                                    <Ionicons name="restaurant-outline" size={24} color={categoria === 'COMIDA' ? colors.primary : colors.textMuted} />
-                                    <Text style={{ color: categoria === 'COMIDA' ? colors.primary : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 12 }}>Comida</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => setCategoria('BELLEZA')}
-                                    style={{
-                                        flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center',
-                                        backgroundColor: categoria === 'BELLEZA' ? 'rgba(139, 92, 246, 0.1)' : colors.surface,
-                                        borderWidth: 2, borderColor: categoria === 'BELLEZA' ? '#8b5cf6' : colors.border
-                                    }}
-                                >
-                                    <Ionicons name="cut-outline" size={24} color={categoria === 'BELLEZA' ? '#8b5cf6' : colors.textMuted} />
-                                    <Text style={{ color: categoria === 'BELLEZA' ? '#8b5cf6' : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 12 }}>Belleza</Text>
-                                </TouchableOpacity>
+                        <ScrollView 
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 10 }}
+                        >
+                            <View style={{ marginBottom: 18 }}>
+                                <KitchyInput 
+                                    label="Nombre del Negocio" 
+                                    placeholder="Ej. Burguer Truck II" 
+                                    value={nombre} 
+                                    onChangeText={setNombre} 
+                                    containerStyle={{ marginHorizontal: 0 }}
+                                />
                             </View>
-                            <Text style={[styles.inputHelper, { color: colors.textMuted }]}>
-                                * Este nuevo negocio tendr\u00e1 inventario y ventas 100% independientes.
+
+                            <Text style={{ 
+                                fontSize: 13, fontWeight: '800', 
+                                color: colors.textSecondary, marginBottom: 12 
+                            }}>
+                                ¿Qué tipo de negocio es?
                             </Text>
 
+                            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+                                <CategoryOption 
+                                    selected={categoria === 'COMIDA'}
+                                    onPress={() => setCategoria('COMIDA')}
+                                    icon="restaurant-outline"
+                                    label="Restaurante"
+                                    color={colors.primary}
+                                    colors={colors}
+                                />
+                                <CategoryOption 
+                                    selected={categoria === 'BELLEZA'}
+                                    onPress={() => setCategoria('BELLEZA')}
+                                    icon="cut-outline"
+                                    label="Belleza"
+                                    color="#8b5cf6"
+                                    colors={colors}
+                                />
+                            </View>
+
+                            <View style={{ 
+                                backgroundColor: colors.surface, 
+                                padding: 14, borderRadius: 16, 
+                                borderLeftWidth: 4, borderLeftColor: colors.primary,
+                                marginBottom: 24
+                            }}>
+                                <Text style={[styles.inputHelper, { color: colors.textMuted, marginHorizontal: 0, marginTop: 0, fontSize: 11 }]}>
+                                    • Este nuevo negocio tendrá inventario y ventas 100% independientes del actual.
+                                </Text>
+                            </View>
+
                             <TouchableOpacity
-                                style={[styles.updateBtn, { backgroundColor: colors.primary, opacity: loading ? 0.7 : 1 }]}
+                                style={[
+                                    styles.updateBtn, 
+                                    { 
+                                        backgroundColor: colors.primary, 
+                                        opacity: loading || !nombre ? 0.6 : 1,
+                                        marginHorizontal: 0,
+                                        marginTop: 0,
+                                        flexDirection: 'row',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        height: 58,
+                                        borderRadius: 18
+                                    }
+                                ]}
                                 onPress={handleSubmit}
-                                disabled={loading}
+                                disabled={loading || !nombre}
                             >
-                                <Text style={styles.updateBtnText}>{loading ? 'Creando...' : 'Crear Negocio'}</Text>
+                                {loading && (
+                                    <Animated.View entering={FadeIn}>
+                                        <Ionicons name="sync" size={20} color="#fff" />
+                                    </Animated.View>
+                                )}
+                                <Text style={[styles.updateBtnText, { fontSize: 16 }]}>
+                                    {loading ? 'Creando...' : 'Crear Negocio'}
+                                </Text>
                             </TouchableOpacity>
                         </ScrollView>
                     </Animated.View>
@@ -96,3 +182,28 @@ export const NegocioCreateModal: React.FC<Props> = ({
         </Modal>
     );
 };
+
+const CategoryOption = ({ selected, onPress, icon, label, color, colors }: any) => (
+    <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.7}
+        style={{
+            flex: 1, paddingVertical: 20, borderRadius: 20, alignItems: 'center',
+            backgroundColor: selected ? `${color}15` : colors.surface,
+            borderWidth: 2, borderColor: selected ? color : 'transparent'
+        }}
+    >
+        <Ionicons 
+            name={icon} 
+            size={28} 
+            color={selected ? color : colors.textMuted} 
+        />
+        <Text style={{ 
+            color: selected ? color : colors.textSecondary, 
+            fontWeight: '800', marginTop: 8, fontSize: 13 
+        }}>
+            {label}
+        </Text>
+    </TouchableOpacity>
+);
+

@@ -101,19 +101,31 @@ export default function InventarioScreen() {
                     : `💡 Escribe o dicta: "${categoriaNegocio === 'BELLEZA' ? '5 tintes a 10 dólares' : '5 tomates a 10 dólares'}" o "${categoriaNegocio === 'BELLEZA' ? 'usé 1 pote de cera' : 'usé 2 libras de carne'}"`}
             </Text>
 
-            {/* FILTROS RÁPIDOS */}
+            {/* FILTROS RÁPIDOS - FLEX LAYOUT */}
             <View style={styles.filterContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterOptions}>
+                <View style={styles.filterOptions}>
                     {['todos', 'stockBajo', categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente', 'limpieza'].map(opcion => {
                         const isActive = filtro === opcion;
-                        const labels: any = { todos: 'Todos', stockBajo: 'Bajo Stock', insumo: 'Insumos', ingrediente: 'Ingredientes', limpieza: 'Limpieza' };
+                        const labels: any = { 
+                            todos: 'Todos', 
+                            stockBajo: 'Bajo Stock', 
+                            insumo: 'Insumos', 
+                            ingrediente: 'Ingred.', 
+                            limpieza: 'Limpieza' 
+                        };
                         return (
-                            <TouchableOpacity key={opcion} style={[styles.filterChip, isActive && styles.filterChipActive]} onPress={() => setFiltro(opcion)}>
-                                <Text style={[styles.filterText, isActive && styles.filterTextActive]}>{labels[opcion] || opcion}</Text>
+                            <TouchableOpacity 
+                                key={opcion} 
+                                style={[styles.filterChip, isActive && styles.filterChipActive, { flex: 1 }]} 
+                                onPress={() => setFiltro(opcion)}
+                            >
+                                <Text style={[styles.filterText, isActive && styles.filterTextActive]} numberOfLines={1}>
+                                    {labels[opcion] || opcion}
+                                </Text>
                             </TouchableOpacity>
                         );
                     })}
-                </ScrollView>
+                </View>
             </View>
 
             {/* LISTADO DE PRODUCTOS */}

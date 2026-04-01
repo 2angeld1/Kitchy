@@ -12,6 +12,7 @@ import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 import Toast from 'react-native-toast-message';
 import { LineChart } from 'react-native-chart-kit';
+import { formatRelativeTime } from '../utils/date-helpers';
 
 const { width } = Dimensions.get('window');
 
@@ -237,8 +238,58 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                             </View>
                         </Animated.View>
 
-                        {/* 4. Gráfico de Ventas (Siete días) */}
+                        {/* 4. Servicios Recientes */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(500)}>
+                            <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
+                                    <View style={[styles.glassIconSmall, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+                                        <Ionicons name="time-outline" size={18} color="#10b981" />
+                                    </View>
+                                    <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Servicios Recientes</Text>
+                                    <TouchableOpacity onPress={() => (navigation as any).navigate('Ventas')}>
+                                        <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '700' }}>Ver POS</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.listContainer}>
+                                    {data.ventas?.recientes && data.ventas.recientes.length > 0 ? (
+                                        data.ventas.recientes.slice(0, 5).map((v: any, idx: number) => {
+                                            const esp = v.especialista?.nombre || 'General';
+                                            const metodoIcon = v.metodoPago === 'yappy' ? 'wallet-outline' : v.metodoPago === 'efectivo' ? 'cash-outline' : 'card-outline';
+                                            
+                                            return (
+                                                <View key={v._id || idx} style={[styles.glassListItem, { borderBottomColor: idx === 4 ? 'transparent' : colors.border }]}>
+                                                    <View style={[styles.glassIconSmall, { backgroundColor: colors.background, borderRadius: 10 }]}>
+                                                        <Ionicons name={metodoIcon} size={16} color={colors.textMuted} />
+                                                    </View>
+                                                    <View style={styles.listItemInfo}>
+                                                        <Text style={[styles.listItemTitle, { color: colors.textPrimary }]}>
+                                                            {v.cliente || 'Consumidor Final'}
+                                                        </Text>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800', textTransform: 'uppercase' }}>
+                                                                {esp.split(' ')[0]}
+                                                            </Text>
+                                                            <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>
+                                                                • {formatRelativeTime(v.createdAt || v.fecha)}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                    <Text style={{ fontSize: 16, fontWeight: '900', color: colors.textPrimary }}>
+                                                        ${v.total.toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        })
+                                    ) : (
+                                        <Text style={[styles.emptyText, { color: colors.textMuted }]}>No hay actividad reciente.</Text>
+                                    )}
+                                </View>
+                            </View>
+                        </Animated.View>
+
+                        {/* 5. Gráfico de Ventas (Siete días) */}
+                        <Animated.View entering={FadeInDown.springify().damping(15).delay(550)}>
                             <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
                                 <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
                                     <View style={[styles.glassIconSmall, { backgroundColor: colors.background }]}>
