@@ -88,22 +88,15 @@ export default function MainAppNavigator() {
                 component={categoria === 'BELLEZA' ? BellezaDashboardScreen : DashboardScreen}
                 options={{ tabBarLabel: 'Inicio' }}
             />
-            {categoria === 'BELLEZA' && (
-                <Tab.Screen
-                    name="Reventa"
-                    component={BellezaReventaScreen}
-                    options={{ tabBarLabel: 'Reventa' }}
-                />
-            )}
             <Tab.Screen
                 name="Ventas"
                 component={VentasScreen}
-                options={{ tabBarLabel: categoria === 'BELLEZA' ? 'Cortes' : 'Ventas' }}
+                options={{ tabBarLabel: 'Ventas' }}
             />
             <Tab.Screen
                 name="Inventario"
                 component={InventarioScreen}
-                options={{ tabBarLabel: 'Stock' }}
+                options={{ tabBarLabel: 'Inventario' }}
             />
 
             {/* Agrupación de todas las rutas "Pro/Admin" en una sola pestaña */}
@@ -111,7 +104,7 @@ export default function MainAppNavigator() {
                 <Tab.Screen
                     name="Panel"
                     component={AdminHubScreen}
-                    options={{ tabBarLabel: 'Admin' }}
+                    options={{ tabBarLabel: 'Otros' }}
                 />
             )}
         </Tab.Navigator>

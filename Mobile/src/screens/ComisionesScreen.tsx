@@ -11,6 +11,10 @@ import { lightTheme, darkTheme } from '../theme';
 import { useComisiones } from '../hooks/useComisiones';
 import { createStyles } from '../styles/ComisionesScreen.styles';
 import { formatMoney } from '../utils/beauty-helpers';
+import { exportComisionesCsv, exportComisionesPdf } from '../utils/export-helpers';
+import { getComisiones } from '../services/api';
+import { getPeriodRanges } from '../utils/date-helpers';
+import Toast from 'react-native-toast-message';
 
 interface EspecialistaComision {
     id: string;
@@ -42,6 +46,49 @@ export default function ComisionesScreen() {
         handleUpdateConfig 
     } = useComisiones();
     const [activeTab, setActiveTab] = React.useState<'resumen' | 'ajustes'>('resumen');
+    
+    // Export States
+    const [showExportModal, setShowExportModal] = React.useState(false);
+    const [exportFormat, setExportFormat] = React.useState<'csv' | 'pdf'>('pdf');
+    const [exportPeriodo, setExportPeriodo] = React.useState<'hoy' | 'semana' | 'quincena' | 'mes'>(periodo);
+    const [isExporting, setIsExporting] = React.useState(false);
+
+    const handleGenerateExport = async () => {
+        setIsExporting(true);
+        try {
+            let exportData = data;
+            
+            // Si el periodo de exportación es diferente al actual, cargamos los datos específicos
+            if (exportPeriodo !== periodo) {
+                const { inicio, fin } = getPeriodRanges(exportPeriodo as any);
+                const res = await getComisiones({ 
+                    periodo: exportPeriodo,
+                    fechaInicio: inicio.toISOString(),
+                    fechaFin: fin.toISOString()
+                });
+                exportData = res.data;
+            }
+
+            if (!exportData || !exportData.resumen) {
+                Toast.show({ type: 'error', text1: 'Error', text2: 'No hay datos para exportar en este periodo.' });
+                return;
+            }
+
+            if (exportFormat === 'csv') {
+                await exportComisionesCsv(exportData, exportPeriodo);
+            } else {
+                await exportComisionesPdf(exportData, exportPeriodo);
+            }
+            
+            setShowExportModal(false);
+            Toast.show({ type: 'success', text1: 'Éxito', text2: `Reporte ${exportFormat.toUpperCase()} generado.` });
+        } catch (err) {
+            console.error(err);
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo generar el reporte.' });
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     if (loading && !data) {
         return (
@@ -56,6 +103,17 @@ export default function ComisionesScreen() {
             <KitchyToolbar
                 title="Comisiones"
                 onBack={() => navigation.goBack()}
+                extraButtons={
+                    <TouchableOpacity 
+                        style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}
+                        onPress={() => {
+                            setExportPeriodo(periodo); // Sincronizar con el actual por defecto
+                            setShowExportModal(true);
+                        }}
+                    >
+                        <Ionicons name="cloud-download-outline" size={22} color={colors.primary} />
+                    </TouchableOpacity>
+                }
             />
 
             {/* TAB SELECTOR */}
@@ -293,6 +351,53 @@ export default function ComisionesScreen() {
                 )}
                 <View style={{ height: 100 }} />
             </ScrollView>
+
+            {/* MODAL DE EXPORTACIÓN */}
+            <Modal visible={showExportModal} transparent animationType="fade">
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <Animated.View entering={FadeInDown} style={{ width: '100%', backgroundColor: colors.card, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                            <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary }}>Exportar Reporte</Text>
+                            <TouchableOpacity onPress={() => setShowExportModal(false)}>
+                                <Ionicons name="close-circle" size={32} color={colors.textMuted} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 12, textTransform: 'uppercase' }}>1. Formato de Archivo</Text>
+                        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
+                            {['pdf', 'csv'].map((f) => (
+                                <TouchableOpacity 
+                                    key={f}
+                                    style={{ flex: 1, height: 50, borderRadius: 12, backgroundColor: exportFormat === f ? colors.primary : colors.surface, borderWidth: 1, borderColor: exportFormat === f ? colors.primary : colors.border, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 8 }}
+                                    onPress={() => setExportFormat(f as any)}
+                                >
+                                    <Ionicons name={f === 'pdf' ? 'document-text' : 'list-circle'} size={18} color={exportFormat === f ? '#fff' : colors.textPrimary} />
+                                    <Text style={{ fontWeight: '800', color: exportFormat === f ? '#fff' : colors.textPrimary }}>{f.toUpperCase()}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 12, textTransform: 'uppercase' }}>2. Periodo del Reporte</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 30 }}>
+                            {['hoy', 'semana', 'quincena', 'mes'].map((p) => (
+                                <TouchableOpacity 
+                                    key={p}
+                                    style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: exportPeriodo === p ? `${colors.primary}15` : colors.surface, borderWidth: 1, borderColor: exportPeriodo === p ? colors.primary : colors.border }}
+                                    onPress={() => setExportPeriodo(p as any)}
+                                >
+                                    <Text style={{ fontSize: 11, fontWeight: '900', color: exportPeriodo === p ? colors.primary : colors.textSecondary, textTransform: 'uppercase' }}>{p}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <KitchyButton 
+                            title={isExporting ? "Generando..." : `Generar ${exportFormat.toUpperCase()}`} 
+                            loading={isExporting} 
+                            onPress={handleGenerateExport} 
+                        />
+                    </Animated.View>
+                </View>
+            </Modal>
         </View>
     );
 }

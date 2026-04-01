@@ -9,7 +9,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useAuth, Negocio } from '../context/AuthContext';
 import { createStyles } from '../styles/BellezaVentasScreen.styles';
-import { getBeautyIcon, formatMoney } from '../utils/beauty-helpers';
+import { getBeautyIcon, formatMoney, getInventoryIcon } from '../utils/beauty-helpers';
 import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
 import { BellezaCaitlynFAB } from '../components/BellezaCaitlynFAB';
 
@@ -24,15 +24,16 @@ export default function BellezaVentasScreen() {
 
     const {
         servicios,
+        productosVenta,
         especialistas,
-        serviciosSeleccionados,
+        itemsSeleccionados,
         especialistaSeleccionado,
         metodoPago,
         loading,
         clienteNombre, setClienteNombre,
         montoRecibido, setMontoRecibido,
         lastVentaId, anularUltimaVenta,
-        toggleServicio,
+        toggleItem,
         setEspecialistaSeleccionado,
         setMetodoPago,
         procesarCobro,
@@ -126,14 +127,14 @@ export default function BellezaVentasScreen() {
 
                 {/* 2. SELECCIONAR SERVICIO - GRID */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>¿Qué servicios realizó?</Text>
+                    <Text style={styles.sectionTitle}>Servicios realizados</Text>
                     <View style={styles.grid}>
                         {servicios.map((ser, idx) => {
-                            const isSelected = serviciosSeleccionados.some(s => s._id === ser._id);
+                            const isSelected = itemsSeleccionados.some(s => s._id === ser._id);
                             return (
-                                <Animated.View key={ser._id} entering={FadeInDown.delay(idx * 50)}>
+                                <Animated.View key={ser._id} entering={FadeInDown.delay(idx * 40)}>
                                     <TouchableOpacity
-                                        onPress={() => toggleServicio(ser)}
+                                        onPress={() => toggleItem(ser)}
                                         style={[
                                             styles.serviceCard,
                                             {
@@ -159,6 +160,43 @@ export default function BellezaVentasScreen() {
                     </View>
                 </View>
 
+                {/* 2.5 SELECCIONAR PRODUCTOS (REVENTA) - GRID */}
+                {productosVenta.length > 0 && (
+                    <View style={[styles.section, { paddingTop: 0 }]}>
+                        <Text style={styles.sectionTitle}>Productos vendidos (Reventa)</Text>
+                        <View style={styles.grid}>
+                            {productosVenta.map((prod, idx) => {
+                                const isSelected = itemsSeleccionados.some(s => s._id === prod._id);
+                                return (
+                                    <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 40)}>
+                                        <TouchableOpacity
+                                            onPress={() => toggleItem(prod)}
+                                            style={[
+                                                styles.serviceCard,
+                                                {
+                                                    backgroundColor: isSelected ? `${colors.primary}15` : colors.card,
+                                                    borderColor: isSelected ? colors.primary : colors.border
+                                                }
+                                            ]}
+                                        >
+                                            <View style={styles.cardHeader}>
+                                                <View style={[styles.iconContainer, { backgroundColor: isSelected ? colors.primary : colors.surface }]}>
+                                                    <Ionicons name={getInventoryIcon('reventa', 'BELLEZA')} size={18} color={isSelected ? '#fff' : colors.primary} />
+                                                </View>
+                                                {isSelected && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
+                                            </View>
+                                            <View style={styles.serviceInfo}>
+                                                <Text style={[styles.serviceName, { color: colors.textPrimary }]} numberOfLines={1}>{prod.nombre}</Text>
+                                                <Text style={[styles.servicePrice, { color: colors.primary }]}>{formatMoney(prod.precio)}</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </Animated.View>
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
+
                 {/* 3. NOMBRE DEL CLIENTE */}
                 <View style={styles.clienteSection}>
                     <View style={[styles.inputContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -174,7 +212,7 @@ export default function BellezaVentasScreen() {
             </ScrollView>
 
             {/* TICKET FLOTANTE */}
-            {serviciosSeleccionados.length > 0 && especialistaSeleccionado && (
+            {itemsSeleccionados.length > 0 && especialistaSeleccionado && (
                 <Animated.View
                     entering={SlideInDown.duration(400)}
                     style={[styles.ticketContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -216,7 +254,7 @@ export default function BellezaVentasScreen() {
 
                     <View style={styles.totalRow}>
                         <View>
-                            <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{serviciosSeleccionados.length} servicios</Text>
+                            <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{itemsSeleccionados.length} items seleccionados</Text>
                             <Text style={[styles.totalValue, { color: colors.textPrimary }]}>{formatMoney(total)}</Text>
                         </View>
                         {cambio > 0 && <Text style={styles.cambioText}>CAMBIO: {formatMoney(cambio)}</Text>}
@@ -228,7 +266,7 @@ export default function BellezaVentasScreen() {
                         disabled={loading}
                     >
                         {loading ? <ActivityIndicator color="#fff" /> : (
-                            <Text style={styles.cobrarText}>COBRAR SERVICIOS</Text>
+                            <Text style={styles.cobrarText}>COBRAR TODO</Text>
                         )}
                     </TouchableOpacity>
                 </Animated.View>

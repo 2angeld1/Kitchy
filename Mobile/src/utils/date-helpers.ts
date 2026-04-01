@@ -55,3 +55,19 @@ export const getPeriodRanges = (periodo: PeriodoTipo): { inicio: Date; fin: Date
 
     return { inicio, fin };
 };
+
+/**
+ * Formatea una fecha a tiempo relativo (ej: "Hace 5 min", "Hace 2h")
+ */
+export const formatRelativeTime = (date: Date | string): string => {
+    const now = new Date();
+    const then = new Date(date);
+    const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Ahora mismo';
+    if (diffInSeconds < 3600) return `Hace ${Math.floor(diffInSeconds / 60)} min`;
+    if (diffInSeconds < 86400) return `Hace ${Math.floor(diffInSeconds / 3600)}h`;
+    
+    // Si es de ayer o más, mostramos la fecha corta
+    return then.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+};

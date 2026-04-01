@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getDashboard } from '../services/api';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import { formatRelativeTime } from '../utils/date-helpers';
 
 export interface DashboardData {
     ventas: {
@@ -150,13 +151,14 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         if (data.ventas.recientes) {
             data.ventas.recientes.forEach((v: any) => {
                 const nombreBarbero = v.especialista?.nombre?.split(' ')[0] || 'Alguien';
+                const itemsStr = v.items?.map((i: any) => i.producto?.nombre || 'Servicio').join(', ') || 'un servicio';
                 const detalle = v.cliente ? `a ${v.cliente}` : '';
                 
                 notifs.push({
                     id: v._id,
-                    title: 'Nuevo Corte Pagado 💈',
-                    message: `${nombreBarbero} cobró $${v.total.toFixed(2)} ${detalle}`,
-                    time: 'Hoy'
+                    title: 'Venta Procesada 💈',
+                    message: `${nombreBarbero} cobró: ${itemsStr}. Total: $${v.total.toFixed(2)} ${detalle}`,
+                    time: formatRelativeTime(v.createdAt || v.fecha)
                 });
             });
         }
@@ -166,7 +168,7 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
                 id: 'low-stock',
                 title: 'Stock Bajo',
                 message: `Atención: Tienes ${data.inventario.itemsStockBajo} productos con stock crítico.`,
-                time: 'Ahora'
+                time: 'Hoy'
             });
         }
 
@@ -184,7 +186,7 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
                 id: 'caitlyn-ai-insight',
                 title: 'Caitlyn AI',
                 message: caitlynAdvice,
-                time: 'Ahora',
+                time: 'Ahora mismo',
                 type: 'ai'
             });
         }

@@ -27,7 +27,7 @@ export const useBellezaVentas = () => {
     const [loading, setLoading] = useState(false);
 
     // Estado del "ticket" de belleza (Multiselección)
-    const [serviciosSeleccionados, setServiciosSeleccionados] = useState<Producto[]>([]);
+    const [itemsSeleccionados, setItemsSeleccionados] = useState<Producto[]>([]);
     const [especialistaSeleccionado, setEspecialistaSeleccionado] = useState<string | null>(null);
     const [metodoPago, setMetodoPago] = useState<'efectivo' | 'yappy' | 'tarjeta'>('efectivo');
 
@@ -90,25 +90,25 @@ export const useBellezaVentas = () => {
         cargarDatos();
     }, [cargarDatos]);
 
-    const toggleServicio = useCallback((serv: Producto) => {
-        setServiciosSeleccionados(prev => {
-            const index = prev.findIndex(s => s._id === serv._id);
+    const toggleItem = useCallback((item: Producto) => {
+        setItemsSeleccionados(prev => {
+            const index = prev.findIndex(s => s._id === item._id);
             if (index >= 0) {
-                return prev.filter(s => s._id !== serv._id);
+                return prev.filter(s => s._id !== item._id);
             } else {
-                return [...prev, serv];
+                return [...prev, item];
             }
         });
     }, []);
-
-    const total = useMemo(() => serviciosSeleccionados.reduce((acc, s) => acc + s.precio, 0), [serviciosSeleccionados]);
+    
+    const total = useMemo(() => itemsSeleccionados.reduce((acc, s) => acc + s.precio, 0), [itemsSeleccionados]);
     const cambio = useMemo(() => {
         const recibido = parseFloat(montoRecibido);
         return recibido > total ? recibido - total : 0;
     }, [montoRecibido, total]);
 
     const procesarCobro = useCallback(async (onSuccess?: () => void) => {
-        if (serviciosSeleccionados.length === 0 || !especialistaSeleccionado) {
+        if (itemsSeleccionados.length === 0 || !especialistaSeleccionado) {
             Toast.show({ type: 'info', text1: 'Atención', text2: 'Selecciona al menos un servicio y un especialista.' });
             return;
         }
@@ -116,7 +116,7 @@ export const useBellezaVentas = () => {
         setLoading(true);
         try {
             const payload = {
-                items: serviciosSeleccionados.map(s => ({ productoId: s._id, cantidad: 1 })),
+                items: itemsSeleccionados.map(s => ({ productoId: s._id, cantidad: 1 })),
                 metodoPago,
                 especialista: especialistaSeleccionado,
                 cliente: clienteNombre
@@ -130,7 +130,7 @@ export const useBellezaVentas = () => {
             Toast.show({ type: 'success', text1: '¡Venta Lista!', text2: 'Cobro registrado correctamente.' });
 
             // Reset y recargar conteos
-            setServiciosSeleccionados([]);
+            setItemsSeleccionados([]);
             setEspecialistaSeleccionado(null);
             setClienteNombre('');
             setMontoRecibido('');
@@ -140,7 +140,7 @@ export const useBellezaVentas = () => {
         } finally {
             setLoading(false);
         }
-    }, [serviciosSeleccionados, especialistaSeleccionado, metodoPago, clienteNombre, cargarDatos]);
+    }, [itemsSeleccionados, especialistaSeleccionado, metodoPago, clienteNombre, cargarDatos]);
 
     const anularUltimaVenta = useCallback(async () => {
         if (!lastVentaId) return;
@@ -181,7 +181,7 @@ export const useBellezaVentas = () => {
         loading,
         showHistorial,
         setShowHistorial,
-        serviciosSeleccionados, toggleServicio,
+        itemsSeleccionados, toggleItem,
         especialistaSeleccionado, setEspecialistaSeleccionado,
         metodoPago, setMetodoPago,
         clienteNombre, setClienteNombre,
