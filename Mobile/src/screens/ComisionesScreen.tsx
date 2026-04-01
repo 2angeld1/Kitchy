@@ -12,7 +12,7 @@ import { useComisiones } from '../hooks/useComisiones';
 import { createStyles } from '../styles/ComisionesScreen.styles';
 import { formatMoney } from '../utils/beauty-helpers';
 import { exportComisionesCsv, exportComisionesPdf } from '../utils/export-helpers';
-import { getComisiones } from '../services/api';
+import { getComisiones, getVentas } from '../services/api';
 import { getPeriodRanges } from '../utils/date-helpers';
 import Toast from 'react-native-toast-message';
 
@@ -57,10 +57,10 @@ export default function ComisionesScreen() {
         setIsExporting(true);
         try {
             let exportData = data;
+            const { inicio, fin } = getPeriodRanges(exportPeriodo as any);
             
             // Si el periodo de exportación es diferente al actual, cargamos los datos específicos
             if (exportPeriodo !== periodo) {
-                const { inicio, fin } = getPeriodRanges(exportPeriodo as any);
                 const res = await getComisiones({ 
                     periodo: exportPeriodo,
                     fechaInicio: inicio.toISOString(),
@@ -74,10 +74,21 @@ export default function ComisionesScreen() {
                 return;
             }
 
+            // Para el PDF detallado, necesitamos el historial de ventas del periodo
+            let ventasDetalle: any[] = [];
+            if (exportFormat === 'pdf') {
+                const vRes = await getVentas({
+                    fechaInicio: inicio.toISOString(),
+                    fechaFin: fin.toISOString(),
+                    limit: 1000 // Asegurar traer todas las del periodo
+                });
+                ventasDetalle = vRes.data.ventas || vRes.data;
+            }
+
             if (exportFormat === 'csv') {
                 await exportComisionesCsv(exportData, exportPeriodo);
             } else {
-                await exportComisionesPdf(exportData, exportPeriodo);
+                await exportComisionesPdf(exportData, exportPeriodo, 'Kitchy Beauty', ventasDetalle);
             }
             
             setShowExportModal(false);

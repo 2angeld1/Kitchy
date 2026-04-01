@@ -150,7 +150,15 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
 
         if (data.ventas.recientes) {
             data.ventas.recientes.forEach((v: any) => {
-                const nombreBarbero = v.especialista?.nombre?.split(' ')[0] || 'Alguien';
+                // Si el especialista es solo un ID, tratar de encontrarlo en la data de comisiones
+                let nombreBarbero = 'Alguien';
+                if (v.especialista?.nombre) {
+                    nombreBarbero = v.especialista.nombre.split(' ')[0];
+                } else if (v.especialista && data.comisiones?.especialistas) {
+                    const found = data.comisiones.especialistas.find((e: any) => e.id === v.especialista || e._id === v.especialista);
+                    if (found) nombreBarbero = found.nombre.split(' ')[0];
+                }
+
                 const itemsStr = v.items?.map((i: any) => i.producto?.nombre || 'Servicio').join(', ') || 'un servicio';
                 const detalle = v.cliente ? `a ${v.cliente}` : '';
                 

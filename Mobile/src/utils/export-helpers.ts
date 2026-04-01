@@ -56,8 +56,35 @@ export const exportComisionesCsv = async (data: any, periodo: string) => {
     }
 };
 
-export const exportComisionesPdf = async (data: any, periodo: string, businessName: string = 'Kitchy Beauty') => {
+export const exportComisionesPdf = async (data: any, periodo: string, businessName: string = 'Kitchy Beauty', ventas: any[] = []) => {
     try {
+        // Lógica de agrupación por especialista y por día
+        const dailyBreakdown: any = {};
+        
+        (data.especialistas || []).forEach((esp: any) => {
+            const espVentas = ventas.filter((v: any) => 
+                (v.especialista?._id || v.especialista) === esp.id || 
+                (v.especialista?._id || v.especialista) === esp._id
+            );
+            
+            const days: any = {};
+            espVentas.forEach((v: any) => {
+                const date = new Date(v.createdAt || v.fecha).toLocaleDateString('es-ES');
+                if (!days[date]) {
+                    days[date] = { count: 0, total: 0 };
+                }
+                days[date].count += v.items?.length || 1;
+                days[date].total += v.total || 0;
+            });
+            
+            dailyBreakdown[esp.id || esp._id] = Object.keys(days).sort().map(d => ({
+                fecha: d,
+                cantidad: days[d].count,
+                ingreso: days[d].total,
+                pago: (days[d].total * (esp.porcentajeActual / 100))
+            }));
+        });
+
         const html = `
         <!DOCTYPE html>
         <html>
@@ -71,24 +98,25 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
                 .summary-item { text-align: center; flex: 1; }
                 .summary-item .label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
                 .summary-item .value { font-size: 18px; font-weight: bold; color: #1e293b; }
-                .report-info { margin-bottom: 20px; font-size: 12px; font-weight: bold; color: #8b5cf6; }
+                
+                .esp-section { margin-top: 40px; page-break-inside: avoid; }
+                .esp-name { font-size: 18px; font-weight: 800; color: #8b5cf6; margin-bottom: 10px; border-bottom: 2px solid #8b5cf6; padding-bottom: 5px; }
+                
                 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                th { background-color: #8b5cf6; color: white; text-align: left; padding: 12px; font-size: 12px; }
-                td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
-                tr:nth-child(even) { background-color: #f1f5f9; }
+                th { background-color: #8b5cf6; color: white; text-align: left; padding: 8px; font-size: 10px; }
+                td { padding: 8px; border-bottom: 1px solid #e2e8f0; font-size: 10px; }
+                tr:nth-child(even) { background-color: #f8fafc; }
                 .footer { margin-top: 30px; text-align: center; color: #94a3b8; font-size: 10px; }
-                .amount { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
-                .percentage { color: #8b5cf6; font-weight: bold; }
+                .bold { font-weight: bold; }
+                .total-row { background-color: #f1f5f9 !important; font-weight: 900; }
             </style>
         </head>
         <body>
             <div class="header">
                 <h1>Reporte de Comisiones</h1>
                 <p>${businessName}</p>
-                <p>Fecha de emisión: ${new Date().toLocaleDateString()}</p>
+                <p>Fecha: ${new Date().toLocaleDateString()} | Periodo: ${periodo.toUpperCase()}</p>
             </div>
-
-            <div class="report-info">PERIODO: ${periodo.toUpperCase()}</div>
 
             <div class="summary">
                 <div class="summary-item">
@@ -105,31 +133,43 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
                 </div>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Especialista</th>
-                        <th>Servicios</th>
-                        <th>Ingreso Total</th>
-                        <th>A Pagar</th>
-                        <th>Com. %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${(data.especialistas || []).map((esp: any) => `
-                        <tr>
-                            <td>${esp.nombre}</td>
-                            <td>${esp.totalServicios}</td>
-                            <td class="amount">${formatMoney(esp.totalIngreso)}</td>
-                            <td class="amount">${formatMoney(esp.montoEspecialista)}</td>
-                            <td class="percentage">${esp.porcentajeActual}%</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            ${(data.especialistas || []).map((esp: any) => `
+                <div class="esp-section">
+                    <div class="esp-name">${esp.nombre} - <span style="font-size: 14px; opacity: 0.7;">${esp.porcentajeActual}% Comisión</span></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Servicios / Items</th>
+                                <th>Ingreso Bruto</th>
+                                <th>Ganancia Barbero</th>
+                                <th>Ganancia Dueño</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${(dailyBreakdown[esp.id || esp._id] || []).map((day: any) => `
+                                <tr>
+                                    <td>${day.fecha}</td>
+                                    <td>${day.cantidad}</td>
+                                    <td class="bold">${formatMoney(day.ingreso)}</td>
+                                    <td style="color: #6366f1;">${formatMoney(day.pago)}</td>
+                                    <td style="color: #10b981;">${formatMoney(day.ingreso - day.pago)}</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row">
+                                <td>TOTALES</td>
+                                <td>${esp.totalServicios}</td>
+                                <td>${formatMoney(esp.totalIngreso)}</td>
+                                <td>${formatMoney(esp.montoEspecialista)}</td>
+                                <td>${formatMoney(esp.montoDueno)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `).join('')}
 
             <div class="footer">
-                Generado automáticamente por el software de gestión Kitchy.
+                Reporte detallado generado por el sistema Kitchy POS.
             </div>
         </body>
         </html>
