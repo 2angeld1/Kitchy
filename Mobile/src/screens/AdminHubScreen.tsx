@@ -13,13 +13,14 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 import { useGastos } from '../hooks/useGastos';
+import { getAdminHubConfig, AdminMenuItem } from '../config/adminHubConfig';
 
 export default function AdminHubScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { exportarReporte } = useGastos();
     const { user } = useAuth();
 
-    // Detectar categoría del negocio activo
+    // Detectar categoría del negocio activo de forma robusta
     const categoriaNegocio = useMemo(() => {
         if (!user) return 'COMIDA';
         const negocioActual = typeof user.negocioActivo === 'object' 
@@ -28,137 +29,30 @@ export default function AdminHubScreen() {
         
         return (negocioActual as any)?.categoria || 'COMIDA';
     }, [user]);
+
+    // Obtener la configuración ("vestido") según el negocio
+    const config = useMemo(() => getAdminHubConfig(categoriaNegocio), [categoriaNegocio]);
     
     // States para reportes
     const [showRangeModal, setShowRangeModal] = useState(false);
     const [fechaDesde, setFechaDesde] = useState('');
     const [fechaHasta, setFechaHasta] = useState('');
 
-    const menuItems = useMemo(() => {
-        const esBelleza = categoriaNegocio === 'BELLEZA';
-        const items = [
-            {
-                id: esBelleza ? 'especialistas' : 'productos',
-                title: esBelleza ? 'Especialistas' : 'Productos',
-                desc: esBelleza ? 'Barberos y Estilistas' : 'Gestionar catálogo',
-                icon: esBelleza ? 'people-circle-outline' : 'fast-food-outline',
-                color: lightTheme.primary
-            },
-            {
-                id: esBelleza ? 'productos' : 'usuarios',
-                title: esBelleza ? 'Servicios' : 'Usuarios',
-                desc: esBelleza ? 'Precios y Cortes' : 'Cajeros y Meseros',
-                icon: esBelleza ? 'cut-outline' : 'people-outline',
-                color: '#3b82f6'
-            },
-            {
-                id: 'gastos',
-                title: 'Facturas',
-                desc: 'Ver Gastos',
-                icon: 'receipt-outline',
-                color: '#10b981'
-            },
-            {
-                id: 'finanzas',
-                title: 'Salud Financiera',
-                desc: 'Ingresos vs Gastos',
-                icon: 'analytics-outline',
-                color: '#f59e0b'
-            },
-        ];
-
-        if (!esBelleza) {
-            items.push({
-                id: 'presupuestario',
-                title: 'Presupuestario',
-                desc: 'Carrito Inteligente',
-                icon: 'cart-outline',
-                color: '#ec4899'
-            });
-        }
-
-        // Solo para BELLEZA: Comisiones
-        if (esBelleza) {
-            items.push({
-                id: 'comisiones',
-                title: 'Comisiones',
-                desc: 'Reparto de Ganancias',
-                icon: 'cash-outline',
-                color: '#8b5cf6'
-            });
-        }
-
-        items.push(
-            {
-                id: 'reportes',
-                title: 'Reportes CSV',
-                desc: 'Exportar para contador',
-                icon: 'cloud-download-outline',
-                color: '#6366f1'
-            },
-            {
-                id: 'soporte',
-                title: 'Soporte',
-                desc: 'Ayuda técnica',
-                icon: 'headset-outline',
-                color: '#6366f1'
-            }
-        );
-
-        return items;
-    }, [categoriaNegocio]);
-
     const { isDark, toggleTheme } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 
-    const handlePress = (id: string, title: string, disabled?: boolean) => {
-        if (disabled) {
-            Toast.show({
-                type: 'info',
-                text1: 'Módulo en desarrollo',
-                text2: 'Estará disponible muy pronto 🚀',
-                position: 'top'
-            });
-            return;
-        }
-
-        if (id === 'especialistas') {
-            navigation.navigate('Especialistas' as any);
-            return;
-        }
-        if (id === 'productos') {
-            if (categoriaNegocio === 'BELLEZA') {
-                navigation.navigate('Servicios' as any);
-            } else {
-                navigation.navigate('Productos');
-            }
-            return;
-        }
-        if (id === 'usuarios') {
-            navigation.navigate('Usuarios');
-            return;
-        }
-        if (id === 'gastos') {
-            navigation.navigate('Gastos');
-            return;
-        }
-        if (id === 'reportes') {
+    const handlePress = (item: AdminMenuItem) => {
+        if (item.id === 'reportes') {
             setShowRangeModal(true);
             return;
         }
-        if (id === 'finanzas') {
-            navigation.navigate('Finanzas');
-            return;
-        }
-        if (id === 'comisiones') {
-            navigation.navigate('Comisiones');
-            return;
-        }
-        if (id === 'presupuestario') {
-            navigation.navigate('Presupuestario');
-            return;
+
+        // Navegación automática según la configuración del item
+        if (item.navigation) {
+            navigation.navigate(item.navigation as any);
         }
     };
+
 
     const handleExport = async (startDate?: string, endDate?: string) => {
         setShowRangeModal(false);
@@ -190,12 +84,12 @@ export default function AdminHubScreen() {
             >
                 <Animated.View entering={FadeInDown.duration(400)} style={styles.header}>
                     <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                        Configuración y administración de Kitchy
+                        {config.subtitle}
                     </Text>
                 </Animated.View>
 
                 <View style={styles.grid}>
-                    {menuItems.map((item, index) => (
+                    {config.menuItems.map((item, index) => (
                         <Animated.View
                             key={item.id}
                             entering={FadeInDown.duration(500).delay(200 + (index * 100))}
@@ -205,7 +99,7 @@ export default function AdminHubScreen() {
                                     styles.hubCard,
                                     { backgroundColor: colors.card, borderColor: colors.border }
                                 ]}
-                                onPress={() => handlePress(item.id, item.title)}
+                                onPress={() => handlePress(item)}
                                 activeOpacity={0.7}
                             >
                                 <View style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}>
@@ -218,7 +112,7 @@ export default function AdminHubScreen() {
                     ))}
 
                     <Animated.View
-                        entering={FadeInDown.duration(500).delay(200 + (menuItems.length * 100))}
+                        entering={FadeInDown.duration(500).delay(200 + (config.menuItems.length * 100))}
                     >
                         <TouchableOpacity
                             style={[styles.hubCard, { backgroundColor: colors.card, borderColor: colors.border }]}
