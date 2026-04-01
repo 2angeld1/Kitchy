@@ -13,16 +13,31 @@ export const getEspecialistas = async (req: AuthRequest, res: Response) => {
 
 export const crearEspecialista = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, comision } = req.body;
+        const { nombre, comision, tipoComision } = req.body;
         const nuevo = new Especialista({
             nombre,
             comision: comision || 50,
+            tipoComision,
             negocioId: req.negocioId
         });
         await nuevo.save();
         res.status(201).json(nuevo);
     } catch (error) {
         res.status(400).json({ message: 'Error al crear especialista' });
+    }
+};
+
+export const actualizarEspecialista = async (req: AuthRequest, res: Response) => {
+    try {
+        const { nombre, comision, tipoComision, activo } = req.body;
+        const actualizado = await Especialista.findByIdAndUpdate(
+            req.params.id,
+            { nombre, comision, tipoComision, activo },
+            { new: true }
+        );
+        res.json(actualizado);
+    } catch (error) {
+        res.status(400).json({ message: 'Error al actualizar especialista' });
     }
 };
 

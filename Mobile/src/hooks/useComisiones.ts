@@ -70,10 +70,10 @@ export const useComisiones = () => {
         setIsSaving(true);
         try {
             await updateComisionConfig({
-                tipo: 'escalonado',
+                tipo: form.tipo, // Respetar el tipo elegido por el usuario
                 fijo: {
-                    porcentajeBarbero: pb,
-                    porcentajeDueno: pd
+                    porcentajeBarbero: pb || 50,
+                    porcentajeDueno: pd || 50
                 },
                 escalonado: form.escalonado,
                 cortesPorCiclo: cc

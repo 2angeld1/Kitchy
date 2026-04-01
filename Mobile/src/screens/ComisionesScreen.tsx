@@ -194,9 +194,13 @@ export default function ComisionesScreen() {
 
                                 {data.config && (
                                     <View style={styles.configMeta}>
-                                        <Ionicons name="flash-outline" size={14} color={colors.primary} />
+                                        <Ionicons 
+                                            name={data.config.tipo === 'fijo' ? 'lock-closed-outline' : 'flash-outline'} 
+                                            size={14} 
+                                            color={colors.primary} 
+                                        />
                                         <Text style={[styles.metaText, { color: colors.primary, fontWeight: '800' }]}>
-                                            MODO ESCALONADO ACTIVO
+                                            {data.config.tipo === 'fijo' ? 'MODO FIJO ACTIVO' : 'MODO ESCALONADO ACTIVO'}
                                         </Text>
                                     </View>
                                 )}
@@ -204,18 +208,26 @@ export default function ComisionesScreen() {
                         )}
 
                         {/* Reglas Activas (Mini Leyenda) */}
-                        {data.config?.escalonado && data.config.escalonado.length > 0 && (
+                        {data.config && (
                             <Animated.View entering={FadeInDown.delay(200)} style={styles.infoBento}>
                                 <Text style={[styles.sectionTitle, { fontSize: 13, marginBottom: 8 }]}>Reglas de Comisionado</Text>
-                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                                    {data.config.escalonado.map((t: any, i: number) => (
-                                        <View key={i} style={{ backgroundColor: colors.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border }}>
-                                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary }}>
-                                                {t.desde}-{t.hasta} serv: <Text style={{ color: colors.primary }}>{t.porcentajeBarbero}%</Text>
-                                            </Text>
-                                        </View>
-                                    ))}
-                                </View>
+                                {data.config.tipo === 'fijo' ? (
+                                    <View style={{ backgroundColor: colors.surface, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}>
+                                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.textPrimary }}>
+                                            🔒 Comisión fija: <Text style={{ color: colors.primary }}>{data.config.fijo?.porcentajeBarbero || 50}%</Text> para el especialista
+                                        </Text>
+                                    </View>
+                                ) : data.config.escalonado?.length > 0 ? (
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                                        {data.config.escalonado.map((t: any, i: number) => (
+                                            <View key={i} style={{ backgroundColor: colors.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border }}>
+                                                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary }}>
+                                                    {t.desde}-{t.hasta} serv: <Text style={{ color: colors.primary }}>{t.porcentajeBarbero}%</Text>
+                                                </Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                ) : null}
                             </Animated.View>
                         )}
 
@@ -268,89 +280,204 @@ export default function ComisionesScreen() {
                         <Animated.View entering={FadeInDown}>
                             <Text style={styles.settingsTitle}>Ajustes del Negocio</Text>
                             <Text style={styles.settingsDesc}>
-                                Define los tramos de comisión para tus barbero/estilistas según su volumen diario.
+                                Elige cómo se calculan las comisiones de tus especialistas.
                             </Text>
 
-                            <View>
-                                <View style={styles.columnHeader}>
-                                    <Text style={[styles.headerLabel, { flex: 0.8 }]}>Desde</Text>
-                                    <Text style={[styles.headerLabel, { flex: 0.8 }]}>Hasta</Text>
-                                    <Text style={[styles.headerLabel, { flex: 1.2 }]}>% Barbero</Text>
-                                    <View style={{ width: 44 }} />
-                                </View>
-                                {form.escalonado.map((tier: any, index: number) => (
-                                    <View key={index} style={styles.tierItem}>
-                                        <View style={{ flex: 0.8 }}>
-                                            <KitchyInput
-                                                style={{ height: 48, marginBottom: 0 }}
-                                                containerStyle={{ marginBottom: 0 }}
-                                                value={tier.desde.toString()}
-                                                onChangeText={(t) => {
-                                                    const newEsc = [...form.escalonado];
-                                                    newEsc[index] = { ...tier, desde: parseInt(t) || 0 };
-                                                    setForm({ ...form, escalonado: newEsc });
-                                                }}
-                                                keyboardType="numeric"
-                                            />
-                                        </View>
-                                        <View style={{ flex: 0.8 }}>
-                                            <KitchyInput
-                                                style={{ height: 48, marginBottom: 0 }}
-                                                containerStyle={{ marginBottom: 0 }}
-                                                value={tier.hasta.toString()}
-                                                onChangeText={(t) => {
-                                                    const newEsc = [...form.escalonado];
-                                                    newEsc[index] = { ...tier, hasta: parseInt(t) || 0 };
-                                                    setForm({ ...form, escalonado: newEsc });
-                                                }}
-                                                keyboardType="numeric"
-                                            />
-                                        </View>
-                                        <View style={{ flex: 1.2 }}>
-                                            <KitchyInput
-                                                style={{ height: 48, marginBottom: 0 }}
-                                                containerStyle={{ marginBottom: 0 }}
-                                                value={tier.porcentajeBarbero.toString()}
-                                                onChangeText={(t) => {
-                                                    const p = parseInt(t) || 0;
-                                                    const newEsc = [...form.escalonado];
-                                                    newEsc[index] = { ...tier, porcentajeBarbero: p, porcentajeDueno: 100 - p };
-                                                    setForm({ ...form, escalonado: newEsc });
-                                                }}
-                                                keyboardType="numeric"
-                                            />
-                                        </View>
-                                        <TouchableOpacity 
-                                            style={styles.removeTierBtn}
-                                            onPress={() => {
-                                                const newEsc = form.escalonado.filter((_: any, i: number) => i !== index);
-                                                setForm({ ...form, escalonado: newEsc });
+                            {/* TOGGLE FIJA vs VARIABLE */}
+                            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 24 }}>
+                                {[
+                                    { key: 'fijo', label: 'Comisión Fija', icon: 'lock-closed', desc: 'Mismo % siempre' },
+                                    { key: 'escalonado', label: 'Variable', icon: 'trending-up', desc: 'Sube por volumen' },
+                                ].map((opt) => {
+                                    const isActive = form.tipo === opt.key;
+                                    return (
+                                        <TouchableOpacity
+                                            key={opt.key}
+                                            onPress={() => setForm({ ...form, tipo: opt.key })}
+                                            activeOpacity={0.7}
+                                            style={{
+                                                flex: 1,
+                                                paddingVertical: 16,
+                                                paddingHorizontal: 14,
+                                                borderRadius: 16,
+                                                backgroundColor: isActive ? colors.primary + '12' : colors.surface,
+                                                borderWidth: 2,
+                                                borderColor: isActive ? colors.primary : colors.border,
+                                                alignItems: 'center',
+                                                gap: 6,
                                             }}
                                         >
-                                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                                            <View style={{
+                                                width: 40, height: 40, borderRadius: 14,
+                                                backgroundColor: isActive ? colors.primary : colors.border + '50',
+                                                justifyContent: 'center', alignItems: 'center',
+                                            }}>
+                                                <Ionicons name={opt.icon as any} size={20} color={isActive ? '#fff' : colors.textMuted} />
+                                            </View>
+                                            <Text style={{
+                                                fontSize: 13, fontWeight: '900',
+                                                color: isActive ? colors.primary : colors.textPrimary,
+                                            }}>
+                                                {opt.label}
+                                            </Text>
+                                            <Text style={{
+                                                fontSize: 10, color: colors.textMuted, fontWeight: '600',
+                                            }}>
+                                                {opt.desc}
+                                            </Text>
                                         </TouchableOpacity>
-                                    </View>
-                                ))}
-                                <TouchableOpacity 
-                                    style={styles.addTierBtn}
-                                    onPress={() => {
-                                        const lastHasta = form.escalonado.length > 0 ? form.escalonado[form.escalonado.length - 1].hasta : 0;
-                                        setForm({
-                                            ...form,
-                                            escalonado: [...form.escalonado, { desde: lastHasta + 1, hasta: lastHasta + 4, porcentajeBarbero: 50, porcentajeDueno: 50 }]
-                                        });
-                                    }}
-                                >
-                                    <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-                                    <Text style={styles.addTierText}>Añadir Tramo de Servicios</Text>
-                                </TouchableOpacity>
+                                    );
+                                })}
                             </View>
 
-                            <View style={styles.infoBento}>
-                                <Text style={styles.infoText}>
-                                    ℹ️ El sistema calculará automáticamente el mejor porcentaje para el barbero según el tramo de volumen alcancado hoy. Los tramos definen la meta diaria.
-                                </Text>
-                            </View>
+                            {/* FORMULARIO SEGÚN TIPO */}
+                            {form.tipo === 'fijo' ? (
+                                /* COMISIÓN FIJA */
+                                <View>
+                                    <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 12 }]}>
+                                        Porcentaje Fijo para Especialistas
+                                    </Text>
+                                    <View style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 12,
+                                        backgroundColor: colors.surface,
+                                        borderRadius: 16,
+                                        padding: 16,
+                                        borderWidth: 1,
+                                        borderColor: colors.border,
+                                        marginBottom: 16,
+                                    }}>
+                                        <View style={{ flex: 1, alignItems: 'center' }}>
+                                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 10, textTransform: 'uppercase' }}>
+                                                Especialista recibe
+                                            </Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                                <KitchyInput
+                                                    value={form.porcentajeBarbero}
+                                                    onChangeText={(t) => {
+                                                        const p = parseInt(t) || 0;
+                                                        setForm({ ...form, porcentajeBarbero: t, porcentajeDueno: (100 - p).toString() });
+                                                    }}
+                                                    keyboardType="numeric"
+                                                    placeholder="50"
+                                                    style={{ 
+                                                        height: 54, 
+                                                        width: 80, 
+                                                        marginBottom: 0, 
+                                                        textAlign: 'center', 
+                                                        fontSize: 28, 
+                                                        fontWeight: '900',
+                                                        color: colors.primary
+                                                    }}
+                                                    containerStyle={{ marginBottom: 0 }}
+                                                />
+                                                <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textMuted }}>%</Text>
+                                            </View>
+                                        </View>
+                                        <View style={{ width: 1, height: 60, backgroundColor: colors.border }} />
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 6, textTransform: 'uppercase' }}>
+                                                Local recibe
+                                            </Text>
+                                            <Text style={{ fontSize: 36, fontWeight: '900', color: '#10b981', textAlign: 'center' }}>
+                                                {form.porcentajeDueno}%
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.infoBento}>
+                                        <Text style={styles.infoText}>
+                                            ℹ️ Con comisión fija, todos los especialistas recibirán el mismo porcentaje sin importar la cantidad de servicios que realicen. Puedes personalizar el % individualmente desde la pantalla de "Tu Equipo".
+                                        </Text>
+                                    </View>
+                                </View>
+                            ) : (
+                                /* COMISIÓN ESCALONADA / VARIABLE */
+                                <View>
+                                    <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 12 }]}>
+                                        Tramos de Comisión por Volumen
+                                    </Text>
+                                    <View style={styles.columnHeader}>
+                                        <Text style={[styles.headerLabel, { flex: 0.8 }]}>Desde</Text>
+                                        <Text style={[styles.headerLabel, { flex: 0.8 }]}>Hasta</Text>
+                                        <Text style={[styles.headerLabel, { flex: 1.2 }]}>% Barbero</Text>
+                                        <View style={{ width: 44 }} />
+                                    </View>
+                                    {form.escalonado.map((tier: any, index: number) => (
+                                        <View key={index} style={styles.tierItem}>
+                                            <View style={{ flex: 0.8 }}>
+                                                <KitchyInput
+                                                    style={{ height: 48, marginBottom: 0 }}
+                                                    containerStyle={{ marginBottom: 0 }}
+                                                    value={tier.desde.toString()}
+                                                    onChangeText={(t) => {
+                                                        const newEsc = [...form.escalonado];
+                                                        newEsc[index] = { ...tier, desde: parseInt(t) || 0 };
+                                                        setForm({ ...form, escalonado: newEsc });
+                                                    }}
+                                                    keyboardType="numeric"
+                                                />
+                                            </View>
+                                            <View style={{ flex: 0.8 }}>
+                                                <KitchyInput
+                                                    style={{ height: 48, marginBottom: 0 }}
+                                                    containerStyle={{ marginBottom: 0 }}
+                                                    value={tier.hasta.toString()}
+                                                    onChangeText={(t) => {
+                                                        const newEsc = [...form.escalonado];
+                                                        newEsc[index] = { ...tier, hasta: parseInt(t) || 0 };
+                                                        setForm({ ...form, escalonado: newEsc });
+                                                    }}
+                                                    keyboardType="numeric"
+                                                />
+                                            </View>
+                                            <View style={{ flex: 1.2 }}>
+                                                <KitchyInput
+                                                    style={{ height: 48, marginBottom: 0 }}
+                                                    containerStyle={{ marginBottom: 0 }}
+                                                    value={tier.porcentajeBarbero.toString()}
+                                                    onChangeText={(t) => {
+                                                        const p = parseInt(t) || 0;
+                                                        const newEsc = [...form.escalonado];
+                                                        newEsc[index] = { ...tier, porcentajeBarbero: p, porcentajeDueno: 100 - p };
+                                                        setForm({ ...form, escalonado: newEsc });
+                                                    }}
+                                                    keyboardType="numeric"
+                                                />
+                                            </View>
+                                            <TouchableOpacity 
+                                                style={styles.removeTierBtn}
+                                                onPress={() => {
+                                                    const newEsc = form.escalonado.filter((_: any, i: number) => i !== index);
+                                                    setForm({ ...form, escalonado: newEsc });
+                                                }}
+                                            >
+                                                <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                    <TouchableOpacity 
+                                        style={styles.addTierBtn}
+                                        onPress={() => {
+                                            const lastHasta = form.escalonado.length > 0 ? form.escalonado[form.escalonado.length - 1].hasta : 0;
+                                            setForm({
+                                                ...form,
+                                                escalonado: [...form.escalonado, { desde: lastHasta + 1, hasta: lastHasta + 4, porcentajeBarbero: 50, porcentajeDueno: 50 }]
+                                            });
+                                        }}
+                                    >
+                                        <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+                                        <Text style={styles.addTierText}>Añadir Tramo de Servicios</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.infoBento}>
+                                        <Text style={styles.infoText}>
+                                            ℹ️ El sistema calculará automáticamente el mejor porcentaje para el barbero según el tramo de volumen alcanzado hoy. Los tramos definen la meta diaria.
+                                        </Text>
+                                    </View>
+                                </View>
+                            )}
 
                             <KitchyButton
                                 title="Guardar Nuevos Ajustes"

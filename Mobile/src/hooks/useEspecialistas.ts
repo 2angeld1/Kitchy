@@ -1,12 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getEspecialistas, createEspecialista, deleteEspecialista } from '../services/api';
+import { getEspecialistas, createEspecialista, deleteEspecialista, updateEspecialista } from '../services/api';
 import Toast from 'react-native-toast-message';
 
 export const useEspecialistas = () => {
     const [especialistas, setEspecialistas] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [nuevoNombre, setNuevoNombre] = useState('');
+    
+    // Create/Edit State
+    const [showModal, setShowModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    
+    const [form, setForm] = useState<{
+        nombre: string;
+        comision: string;
+        tipoComision: 'fijo' | 'escalonado' | null;
+    }>({
+        nombre: '',
+        comision: '50',
+        tipoComision: null, // null = hereda del local
+    });
 
     const cargar = useCallback(async () => {
         setLoading(true);
@@ -20,20 +33,56 @@ export const useEspecialistas = () => {
         }
     }, []);
 
-    const handleCrear = async () => {
-        if (!nuevoNombre.trim()) {
+    const resetForm = () => {
+        setForm({ nombre: '', comision: '50', tipoComision: null });
+        setSelectedId(null);
+        setIsEditing(false);
+    };
+
+    const handleAbrirCrear = () => {
+        resetForm();
+        setIsEditing(false);
+        setShowModal(true);
+    };
+
+    const handleAbrirEditar = (esp: any) => {
+        setForm({
+            nombre: esp.nombre,
+            comision: (esp.comision || 50).toString(),
+            tipoComision: esp.tipoComision || null,
+        });
+        setSelectedId(esp._id);
+        setIsEditing(true);
+        setShowModal(true);
+    };
+
+    const handleGuardar = async () => {
+        if (!form.nombre.trim()) {
             Toast.show({ type: 'info', text1: 'Atención', text2: 'El nombre es obligatorio' });
             return;
         }
+
         setLoading(true);
         try {
-            await createEspecialista({ nombre: nuevoNombre });
-            Toast.show({ type: 'success', text1: 'Éxito', text2: 'Especialista añadido' });
-            setShowCreateModal(false);
-            setNuevoNombre('');
+            const payload = {
+                nombre: form.nombre,
+                comision: parseInt(form.comision),
+                tipoComision: form.tipoComision || undefined
+            };
+
+            if (isEditing && selectedId) {
+                await updateEspecialista(selectedId, payload);
+                Toast.show({ type: 'success', text1: 'Éxito', text2: 'Especialista actualizado' });
+            } else {
+                await createEspecialista(payload);
+                Toast.show({ type: 'success', text1: 'Éxito', text2: 'Especialista añadido' });
+            }
+
+            setShowModal(false);
+            resetForm();
             cargar();
         } catch (err) {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo crear el especialista' });
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo guardar el especialista' });
         } finally {
             setLoading(false);
         }
@@ -56,12 +105,15 @@ export const useEspecialistas = () => {
     return {
         especialistas,
         loading,
-        showCreateModal,
-        setShowCreateModal,
-        nuevoNombre,
-        setNuevoNombre,
-        cargar,
-        handleCrear,
-        handleEliminar
+        showModal,
+        setShowModal,
+        isEditing,
+        form,
+        setForm,
+        handleAbrirCrear,
+        handleAbrirEditar,
+        handleGuardar,
+        handleEliminar,
+        cargar
     };
 };

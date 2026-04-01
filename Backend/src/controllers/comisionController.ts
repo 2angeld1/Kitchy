@@ -51,7 +51,7 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
             negocioId: req.negocioId,
             especialista: { $ne: null },
             createdAt: { $gte: inicio, $lte: fin }
-        }).populate('especialista', 'nombre imagen').sort({ createdAt: 1 });
+        }).populate('especialista', 'nombre imagen comision tipoComision').sort({ createdAt: 1 });
 
         // Agrupar por especialista
         const comisionesPorEspecialista: {
@@ -111,18 +111,28 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
         }
 
         // Calcular comisiones finales aplicando lógica escalonada o fija
+        // Ahora se respeta el tipoComision individual de cada especialista
         for (const espId in comisionesPorEspecialista) {
             const entry = comisionesPorEspecialista[espId];
-            const esEscalonado = (config.tipo === 'escalonado' || (config.escalonado?.length > 0));
+            
+            // Buscar el tipo de comisión individual del especialista
+            const espVenta = ventas.find(v => (v.especialista as any)._id?.toString() === espId);
+            const espObj = espVenta?.especialista as any;
+            const tipoIndividual = espObj?.tipoComision; // 'fijo' | 'escalonado' | null
+            const comisionIndividual = espObj?.comision; // % personalizado
 
-            if (esEscalonado && config.escalonado?.length > 0) {
+            // Si el especialista tiene tipo individual 'fijo', usar su % personal
+            const usarFijo = tipoIndividual === 'fijo' 
+                || (tipoIndividual == null && config.tipo === 'fijo');
+
+            if (!usarFijo && config.escalonado?.length > 0) {
+                // MODO ESCALONADO
                 const tramos = [...config.escalonado].sort((a, b) => a.desde - b.desde);
                 let contadorServiciosGlobal = 0;
                 let montoEsp = 0;
                 let montoLocal = 0;
                 let ultimoPct = tramos[0].porcentajeBarbero;
 
-                // Recuperamos las ventas de este especialista ordenadas
                 const ventasBarbero = ventas.filter(v => (v.especialista as any)._id?.toString() === espId || v.especialista?.toString() === espId);
 
                 ventasBarbero.forEach(v => {
@@ -142,8 +152,11 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
                 entry.montoDueno = montoLocal;
                 entry.porcentajeActual = ultimoPct;
             } else {
-                const pctBarbero = config.fijo?.porcentajeBarbero || config.porcentajeBarbero || 50;
-                const pctDueno = config.fijo?.porcentajeDueno || config.porcentajeDueno || 50;
+                // MODO FIJO - usar comisión individual si existe, sino la global
+                const pctBarbero = (tipoIndividual === 'fijo' && comisionIndividual != null)
+                    ? comisionIndividual
+                    : (config.fijo?.porcentajeBarbero || config.porcentajeBarbero || 50);
+                const pctDueno = 100 - pctBarbero;
                 entry.montoEspecialista = entry.totalIngreso * (pctBarbero / 100);
                 entry.montoDueno = entry.totalIngreso * (pctDueno / 100);
                 entry.porcentajeActual = pctBarbero;

@@ -18,8 +18,8 @@ interface Props {
     onMovimiento: (item: InventarioItem, tipo: 'entrada' | 'salida' | 'merma') => void;
 }
 
-export const InventarioItemCard: React.FC<Props> = ({ 
-    item, index, categoriaNegocio, colors, styles, onEdit, onDelete, onMovimiento 
+export const InventarioItemCard: React.FC<Props> = ({
+    item, index, categoriaNegocio, colors, styles, onEdit, onDelete, onMovimiento
 }) => {
     const isBajoStock = item.cantidad <= item.cantidadMinima;
     const hoy = new Date();

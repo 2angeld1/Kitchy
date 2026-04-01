@@ -116,7 +116,8 @@ export const updateComisionConfig = (data: {
 
 // Especialistas (Belleza)
 export const getEspecialistas = () => api.get('/especialistas');
-export const createEspecialista = (data: { nombre: string, comision?: number }) => api.post('/especialistas', data);
+export const createEspecialista = (data: { nombre: string, comision?: number, tipoComision?: 'fijo' | 'escalonado' }) => api.post('/especialistas', data);
+export const updateEspecialista = (id: string, data: { nombre?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado' }) => api.put(`/especialistas/${id}`, data);
 export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${id}`);
 
 // Configuración Pública
