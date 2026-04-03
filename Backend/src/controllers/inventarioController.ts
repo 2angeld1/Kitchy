@@ -12,7 +12,7 @@ import Gasto from '../models/Gasto';
 // Crear un nuevo item de inventario
 export const crearInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, descripcion, cantidad, unidad, cantidadMinima, costoUnitario, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
+        const { nombre, descripcion, cantidad, unidad, cantidadMinima, costoUnitario, precioVenta, comisionEspecialista, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
         const userId = req.userId;
 
         const inventario = new Inventario({
@@ -22,6 +22,8 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
             unidad: unidad || 'unidades',
             cantidadMinima: cantidadMinima || 0,
             costoUnitario,
+            precioVenta,
+            comisionEspecialista,
             categoria: categoria || 'ingrediente',
             proveedor,
             codigoBarras,
@@ -107,7 +109,7 @@ export const obtenerInventarioPorId = async (req: AuthRequest, res: Response) =>
 export const actualizarInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion, unidad, cantidadMinima, costoUnitario, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
+        const { nombre, descripcion, unidad, cantidadMinima, costoUnitario, precioVenta, comisionEspecialista, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
         const userId = req.userId;
 
         const inventario = await Inventario.findOneAndUpdate(
@@ -118,6 +120,8 @@ export const actualizarInventario = async (req: AuthRequest, res: Response) => {
                 unidad,
                 cantidadMinima,
                 costoUnitario,
+                precioVenta,
+                comisionEspecialista,
                 categoria,
                 proveedor,
                 codigoBarras,
@@ -641,7 +645,7 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
 
         for (const item of items) {
             try {
-                const { nombre, cantidad, unidad, precioUnitario, categoria } = item;
+                const { nombre, cantidad, unidad, precioUnitario, categoria, precioVenta } = item;
                 const qty = parseFloat(cantidad) || 0;
                 const price = parseFloat(precioUnitario) || 0;
 
@@ -666,6 +670,9 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
                         }
                     }
 
+                    // Actualizar precio de venta si viene en el item
+                    if (precioVenta) producto.precioVenta = parseFloat(precioVenta);
+
                     producto.usuario = userId as any;
                     await producto.save();
 
@@ -688,6 +695,7 @@ export const procesarLoteInventario = async (req: AuthRequest, res: Response) =>
                         cantidad: qty,
                         unidad: unidad || 'unidades',
                         costoUnitario: price,
+                        precioVenta: precioVenta ? parseFloat(precioVenta) : undefined,
                         categoria: categoria || 'ingrediente',
                         cantidadMinima: 1,
                         usuario: userId,

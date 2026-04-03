@@ -8,6 +8,7 @@ export interface IInventario extends Document {
     cantidadMinima: number; // Alerta cuando baja de este nivel
     costoUnitario: number;
     precioVenta?: number; // Precio al que se vende al público (si aplica)
+    comisionEspecialista?: number; // % de comisión para el especialista que venda este producto (override)
     categoria: string;
     proveedor?: string;
     codigoBarras?: string;
@@ -52,6 +53,11 @@ const InventarioSchema: Schema = new Schema({
     precioVenta: {
         type: Number,
         min: 0
+    },
+    comisionEspecialista: {
+        type: Number,
+        min: 0,
+        max: 100
     },
     categoria: {
         type: String,

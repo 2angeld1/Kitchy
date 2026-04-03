@@ -12,9 +12,12 @@ import { useComisiones } from '../hooks/useComisiones';
 import { createStyles } from '../styles/ComisionesScreen.styles';
 import { formatMoney } from '../utils/beauty-helpers';
 import { exportComisionesCsv, exportComisionesPdf } from '../utils/export-helpers';
-import { getComisiones, getVentas } from '../services/api';
+import { getComisiones, getVentas, updateComisionReventaConfig } from '../services/api';
 import { getPeriodRanges } from '../utils/date-helpers';
 import Toast from 'react-native-toast-message';
+import { ComisionResumenTab } from './Comisiones/components/ComisionResumenTab';
+import { ComisionReventaTab } from './Comisiones/components/ComisionReventaTab';
+import { ComisionAjustesTab } from './Comisiones/components/ComisionAjustesTab';
 
 interface EspecialistaComision {
     id: string;
@@ -45,7 +48,31 @@ export default function ComisionesScreen() {
         cargarComisiones, 
         handleUpdateConfig 
     } = useComisiones();
-    const [activeTab, setActiveTab] = React.useState<'resumen' | 'ajustes'>('resumen');
+    const [activeTab, setActiveTab] = React.useState<'resumen' | 'reventa' | 'ajustes'>('resumen');
+    
+    // Reventa config form
+    const [reventaPct, setReventaPct] = React.useState('10');
+    const [isSavingReventa, setIsSavingReventa] = React.useState(false);
+
+    // Sync reventa pct from server data
+    React.useEffect(() => {
+        if (data?.comisionReventaConfig?.porcentajeGlobal != null) {
+            setReventaPct(data.comisionReventaConfig.porcentajeGlobal.toString());
+        }
+    }, [data?.comisionReventaConfig]);
+
+    const handleSaveReventa = async () => {
+        setIsSavingReventa(true);
+        try {
+            await updateComisionReventaConfig({ porcentajeGlobal: parseInt(reventaPct) || 10 });
+            Toast.show({ type: 'success', text1: 'Éxito', text2: 'Comisión de reventa actualizada' });
+            cargarComisiones();
+        } catch (err) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo guardar' });
+        } finally {
+            setIsSavingReventa(false);
+        }
+    };
     
     // Export States
     const [showExportModal, setShowExportModal] = React.useState(false);
@@ -129,13 +156,15 @@ export default function ComisionesScreen() {
 
             {/* TAB SELECTOR */}
             <View style={styles.mainHeaderTabs}>
-                {['resumen', 'ajustes'].map((tab) => (
+                {['resumen', 'reventa', 'ajustes'].map((tab) => (
                     <TouchableOpacity 
                         key={tab}
                         style={[styles.mainTab, activeTab === tab && styles.mainTabActive]}
                         onPress={() => setActiveTab(tab as any)}
                     >
-                        <Text style={[styles.mainTabText, activeTab === tab && styles.mainTabTextActive]}>{tab}</Text>
+                        <Text style={[styles.mainTabText, activeTab === tab && styles.mainTabTextActive]}>
+                            {tab === 'reventa' ? '💰 reventa' : tab}
+                        </Text>
                     </TouchableOpacity>
                 ))}
             </View>
@@ -146,346 +175,34 @@ export default function ComisionesScreen() {
                 refreshControl={<RefreshControl refreshing={loading} onRefresh={cargarComisiones} tintColor={colors.primary} />}
             >
                 {activeTab === 'resumen' ? (
-                    <View style={styles.scrollContent}>
-                        {/* Period Selector */}
-                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-                            {['hoy', 'semana', 'quincena', 'mes'].map((p) => (
-                                <TouchableOpacity 
-                                    key={p} 
-                                    onPress={() => setPeriodo(p as any)}
-                                    style={{ 
-                                        paddingHorizontal: 12, 
-                                        paddingVertical: 6, 
-                                        borderRadius: 20, 
-                                        backgroundColor: periodo === p ? colors.primary : colors.surface,
-                                        borderWidth: 1,
-                                        borderColor: periodo === p ? colors.primary : colors.border
-                                    }}
-                                >
-                                    <Text style={{ 
-                                        fontSize: 10, 
-                                        fontWeight: '800', 
-                                        textTransform: 'uppercase',
-                                        color: periodo === p ? '#fff' : colors.textSecondary 
-                                    }}>{p}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-
-                        {/* Resumen General */}
-                        {data?.resumen && (
-                            <Animated.View entering={FadeInDown.delay(100)} style={styles.resumenCard}>
-                                <Text style={styles.labelResumen}>
-                                    Ingreso {periodo === 'hoy' ? 'de Hoy' : periodo === 'semana' ? 'de la Semana' : periodo === 'quincena' ? 'de la Quincena' : 'del Mes'}
-                                </Text>
-                                <Text style={styles.montoGeneral}>{formatMoney(data.resumen.totalGeneral)}</Text>
-                                <Text style={styles.descResumen}>{data.resumen.totalServicios} servicios realizados en este {periodo}</Text>
-
-                                <View style={styles.rowMonto}>
-                                    <View style={[styles.cardMonto, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}>
-                                        <Text style={[styles.especialistaLabel, { color: '#8b5cf6' }]}>ESPECIALISTAS</Text>
-                                        <Text style={[styles.especialistaMonto, { color: '#8b5cf6' }]}>{formatMoney(data.resumen.totalEspecialistas)}</Text>
-                                    </View>
-                                    <View style={[styles.cardMonto, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-                                        <Text style={[styles.especialistaLabel, { color: '#10b981' }]}>GANANCIA LOCAL</Text>
-                                        <Text style={[styles.especialistaMonto, { color: '#10b981' }]}>{formatMoney(data.resumen.totalDueno)}</Text>
-                                    </View>
-                                </View>
-
-                                {data.config && (
-                                    <View style={styles.configMeta}>
-                                        <Ionicons 
-                                            name={data.config.tipo === 'fijo' ? 'lock-closed-outline' : 'flash-outline'} 
-                                            size={14} 
-                                            color={colors.primary} 
-                                        />
-                                        <Text style={[styles.metaText, { color: colors.primary, fontWeight: '800' }]}>
-                                            {data.config.tipo === 'fijo' ? 'MODO FIJO ACTIVO' : 'MODO ESCALONADO ACTIVO'}
-                                        </Text>
-                                    </View>
-                                )}
-                            </Animated.View>
-                        )}
-
-                        {/* Reglas Activas (Mini Leyenda) */}
-                        {data.config && (
-                            <Animated.View entering={FadeInDown.delay(200)} style={styles.infoBento}>
-                                <Text style={[styles.sectionTitle, { fontSize: 13, marginBottom: 8 }]}>Reglas de Comisionado</Text>
-                                {data.config.tipo === 'fijo' ? (
-                                    <View style={{ backgroundColor: colors.surface, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}>
-                                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.textPrimary }}>
-                                            🔒 Comisión fija: <Text style={{ color: colors.primary }}>{data.config.fijo?.porcentajeBarbero || 50}%</Text> para el especialista
-                                        </Text>
-                                    </View>
-                                ) : data.config.escalonado?.length > 0 ? (
-                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                                        {data.config.escalonado.map((t: any, i: number) => (
-                                            <View key={i} style={{ backgroundColor: colors.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border }}>
-                                                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textPrimary }}>
-                                                    {t.desde}-{t.hasta} serv: <Text style={{ color: colors.primary }}>{t.porcentajeBarbero}%</Text>
-                                                </Text>
-                                            </View>
-                                        ))}
-                                    </View>
-                                ) : null}
-                            </Animated.View>
-                        )}
-
-                        <Text style={styles.sectionTitle}>Desglose por Especialista</Text>
-
-                        {data?.especialistas?.map((esp: EspecialistaComision, idx: number) => (
-                            <Animated.View
-                                key={esp.id}
-                                entering={FadeInDown.delay(300 + idx * 80)}
-                                style={styles.especialistaCard}
-                            >
-                                <View style={styles.especialistaRow}>
-                                    <View style={styles.espInfoRow}>
-                                        <View style={styles.avatarPlaceholder}>
-                                            <Ionicons name="person" size={22} color="#8b5cf6" />
-                                        </View>
-                                        <View>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                <Text style={styles.espName}>{esp.nombre}</Text>
-                                                <View style={{ backgroundColor: `${colors.primary}15`, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                                                    <Text style={{ fontSize: 10, fontWeight: '900', color: colors.primary }}>{esp.porcentajeActual}%</Text>
-                                                </View>
-                                            </View>
-                                            <Text style={styles.espSubtitle}>{esp.totalServicios} servicios realizados en este {periodo}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.montoCol}>
-                                        <Text style={styles.montoEsp}>{formatMoney(esp.montoEspecialista)}</Text>
-                                        <Text style={styles.montoTotalEsp}>de {formatMoney(esp.totalIngreso)}</Text>
-                                    </View>
-                                </View>
-                            </Animated.View>
-                        ))}
-
-                        {(!data?.especialistas || data.especialistas.length === 0) && (
-                            <View style={styles.emptyContainer}>
-                                <Ionicons name="cut-outline" size={64} color={colors.textMuted} />
-                                <Text style={styles.emptyTitle}>Sin servicios este mes</Text>
-                                <Text style={styles.emptySubtitle}>
-                                    Registra ventas asignando un especialista para ver las comisiones aquí.
-                                </Text>
-                            </View>
-                        )}
-                    </View>
+                    <ComisionResumenTab 
+                        data={data}
+                        periodo={periodo}
+                        setPeriodo={setPeriodo}
+                        colors={colors}
+                        styles={styles}
+                    />
+                ) : activeTab === 'reventa' ? (
+                    <ComisionReventaTab 
+                        data={data}
+                        periodo={periodo}
+                        setPeriodo={setPeriodo}
+                        reventaPct={reventaPct}
+                        setReventaPct={setReventaPct}
+                        handleSaveReventa={handleSaveReventa}
+                        isSavingReventa={isSavingReventa}
+                        colors={colors}
+                        styles={styles}
+                    />
                 ) : (
-                    <KeyboardAvoidingView 
-                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                        style={styles.settingsSection}
-                    >
-                        <Animated.View entering={FadeInDown}>
-                            <Text style={styles.settingsTitle}>Ajustes del Negocio</Text>
-                            <Text style={styles.settingsDesc}>
-                                Elige cómo se calculan las comisiones de tus especialistas.
-                            </Text>
-
-                            {/* TOGGLE FIJA vs VARIABLE */}
-                            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 24 }}>
-                                {[
-                                    { key: 'fijo', label: 'Comisión Fija', icon: 'lock-closed', desc: 'Mismo % siempre' },
-                                    { key: 'escalonado', label: 'Variable', icon: 'trending-up', desc: 'Sube por volumen' },
-                                ].map((opt) => {
-                                    const isActive = form.tipo === opt.key;
-                                    return (
-                                        <TouchableOpacity
-                                            key={opt.key}
-                                            onPress={() => setForm({ ...form, tipo: opt.key })}
-                                            activeOpacity={0.7}
-                                            style={{
-                                                flex: 1,
-                                                paddingVertical: 16,
-                                                paddingHorizontal: 14,
-                                                borderRadius: 16,
-                                                backgroundColor: isActive ? colors.primary + '12' : colors.surface,
-                                                borderWidth: 2,
-                                                borderColor: isActive ? colors.primary : colors.border,
-                                                alignItems: 'center',
-                                                gap: 6,
-                                            }}
-                                        >
-                                            <View style={{
-                                                width: 40, height: 40, borderRadius: 14,
-                                                backgroundColor: isActive ? colors.primary : colors.border + '50',
-                                                justifyContent: 'center', alignItems: 'center',
-                                            }}>
-                                                <Ionicons name={opt.icon as any} size={20} color={isActive ? '#fff' : colors.textMuted} />
-                                            </View>
-                                            <Text style={{
-                                                fontSize: 13, fontWeight: '900',
-                                                color: isActive ? colors.primary : colors.textPrimary,
-                                            }}>
-                                                {opt.label}
-                                            </Text>
-                                            <Text style={{
-                                                fontSize: 10, color: colors.textMuted, fontWeight: '600',
-                                            }}>
-                                                {opt.desc}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </View>
-
-                            {/* FORMULARIO SEGÚN TIPO */}
-                            {form.tipo === 'fijo' ? (
-                                /* COMISIÓN FIJA */
-                                <View>
-                                    <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 12 }]}>
-                                        Porcentaje Fijo para Especialistas
-                                    </Text>
-                                    <View style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        gap: 12,
-                                        backgroundColor: colors.surface,
-                                        borderRadius: 16,
-                                        padding: 16,
-                                        borderWidth: 1,
-                                        borderColor: colors.border,
-                                        marginBottom: 16,
-                                    }}>
-                                        <View style={{ flex: 1, alignItems: 'center' }}>
-                                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 10, textTransform: 'uppercase' }}>
-                                                Especialista recibe
-                                            </Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                                <KitchyInput
-                                                    value={form.porcentajeBarbero}
-                                                    onChangeText={(t) => {
-                                                        const p = parseInt(t) || 0;
-                                                        setForm({ ...form, porcentajeBarbero: t, porcentajeDueno: (100 - p).toString() });
-                                                    }}
-                                                    keyboardType="numeric"
-                                                    placeholder="50"
-                                                    style={{ 
-                                                        height: 54, 
-                                                        width: 80, 
-                                                        marginBottom: 0, 
-                                                        textAlign: 'center', 
-                                                        fontSize: 28, 
-                                                        fontWeight: '900',
-                                                        color: colors.primary
-                                                    }}
-                                                    containerStyle={{ marginBottom: 0 }}
-                                                />
-                                                <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textMuted }}>%</Text>
-                                            </View>
-                                        </View>
-                                        <View style={{ width: 1, height: 60, backgroundColor: colors.border }} />
-                                        <View style={{ flex: 1 }}>
-                                            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textMuted, marginBottom: 6, textTransform: 'uppercase' }}>
-                                                Local recibe
-                                            </Text>
-                                            <Text style={{ fontSize: 36, fontWeight: '900', color: '#10b981', textAlign: 'center' }}>
-                                                {form.porcentajeDueno}%
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={styles.infoBento}>
-                                        <Text style={styles.infoText}>
-                                            ℹ️ Con comisión fija, todos los especialistas recibirán el mismo porcentaje sin importar la cantidad de servicios que realicen. Puedes personalizar el % individualmente desde la pantalla de "Tu Equipo".
-                                        </Text>
-                                    </View>
-                                </View>
-                            ) : (
-                                /* COMISIÓN ESCALONADA / VARIABLE */
-                                <View>
-                                    <Text style={[styles.sectionTitle, { fontSize: 14, marginBottom: 12 }]}>
-                                        Tramos de Comisión por Volumen
-                                    </Text>
-                                    <View style={styles.columnHeader}>
-                                        <Text style={[styles.headerLabel, { flex: 0.8 }]}>Desde</Text>
-                                        <Text style={[styles.headerLabel, { flex: 0.8 }]}>Hasta</Text>
-                                        <Text style={[styles.headerLabel, { flex: 1.2 }]}>% Barbero</Text>
-                                        <View style={{ width: 44 }} />
-                                    </View>
-                                    {form.escalonado.map((tier: any, index: number) => (
-                                        <View key={index} style={styles.tierItem}>
-                                            <View style={{ flex: 0.8 }}>
-                                                <KitchyInput
-                                                    style={{ height: 48, marginBottom: 0 }}
-                                                    containerStyle={{ marginBottom: 0 }}
-                                                    value={tier.desde.toString()}
-                                                    onChangeText={(t) => {
-                                                        const newEsc = [...form.escalonado];
-                                                        newEsc[index] = { ...tier, desde: parseInt(t) || 0 };
-                                                        setForm({ ...form, escalonado: newEsc });
-                                                    }}
-                                                    keyboardType="numeric"
-                                                />
-                                            </View>
-                                            <View style={{ flex: 0.8 }}>
-                                                <KitchyInput
-                                                    style={{ height: 48, marginBottom: 0 }}
-                                                    containerStyle={{ marginBottom: 0 }}
-                                                    value={tier.hasta.toString()}
-                                                    onChangeText={(t) => {
-                                                        const newEsc = [...form.escalonado];
-                                                        newEsc[index] = { ...tier, hasta: parseInt(t) || 0 };
-                                                        setForm({ ...form, escalonado: newEsc });
-                                                    }}
-                                                    keyboardType="numeric"
-                                                />
-                                            </View>
-                                            <View style={{ flex: 1.2 }}>
-                                                <KitchyInput
-                                                    style={{ height: 48, marginBottom: 0 }}
-                                                    containerStyle={{ marginBottom: 0 }}
-                                                    value={tier.porcentajeBarbero.toString()}
-                                                    onChangeText={(t) => {
-                                                        const p = parseInt(t) || 0;
-                                                        const newEsc = [...form.escalonado];
-                                                        newEsc[index] = { ...tier, porcentajeBarbero: p, porcentajeDueno: 100 - p };
-                                                        setForm({ ...form, escalonado: newEsc });
-                                                    }}
-                                                    keyboardType="numeric"
-                                                />
-                                            </View>
-                                            <TouchableOpacity 
-                                                style={styles.removeTierBtn}
-                                                onPress={() => {
-                                                    const newEsc = form.escalonado.filter((_: any, i: number) => i !== index);
-                                                    setForm({ ...form, escalonado: newEsc });
-                                                }}
-                                            >
-                                                <Ionicons name="trash-outline" size={18} color="#ef4444" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    ))}
-                                    <TouchableOpacity 
-                                        style={styles.addTierBtn}
-                                        onPress={() => {
-                                            const lastHasta = form.escalonado.length > 0 ? form.escalonado[form.escalonado.length - 1].hasta : 0;
-                                            setForm({
-                                                ...form,
-                                                escalonado: [...form.escalonado, { desde: lastHasta + 1, hasta: lastHasta + 4, porcentajeBarbero: 50, porcentajeDueno: 50 }]
-                                            });
-                                        }}
-                                    >
-                                        <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-                                        <Text style={styles.addTierText}>Añadir Tramo de Servicios</Text>
-                                    </TouchableOpacity>
-
-                                    <View style={styles.infoBento}>
-                                        <Text style={styles.infoText}>
-                                            ℹ️ El sistema calculará automáticamente el mejor porcentaje para el barbero según el tramo de volumen alcanzado hoy. Los tramos definen la meta diaria.
-                                        </Text>
-                                    </View>
-                                </View>
-                            )}
-
-                            <KitchyButton
-                                title="Guardar Nuevos Ajustes"
-                                onPress={handleUpdateConfig}
-                                loading={isSaving}
-                            />
-                        </Animated.View>
-                    </KeyboardAvoidingView>
+                    <ComisionAjustesTab 
+                        form={form}
+                        setForm={setForm}
+                        handleSaveConfig={handleUpdateConfig}
+                        isSaving={isSaving}
+                        colors={colors}
+                        styles={styles}
+                    />
                 )}
                 <View style={{ height: 100 }} />
             </ScrollView>

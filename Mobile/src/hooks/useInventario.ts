@@ -20,6 +20,7 @@ export interface InventarioItem {
     codigoBarras?: string;
     fechaVencimiento?: string;
     precioVenta?: number;
+    comisionEspecialista?: number;
 }
 
 export const useInventario = () => {
@@ -97,6 +98,18 @@ export const useInventario = () => {
     const [cantidadMinima, setCantidadMinima] = useState('');
     const [costoUnitario, setCostoUnitario] = useState('');
     const [precioVenta, setPrecioVenta] = useState('');
+    const [comisionEspecialista, setComisionEspecialista] = useState('');
+
+    const suggestedPrice = useMemo(() => {
+        const costo = parseFloat(costoUnitario);
+        if (isNaN(costo) || costo <= 0) return null;
+        
+        // Determinar margen objetivo (default 65% si no existe)
+        const negocio = user?.negocioActivo as any;
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
+        
+        return (costo / (1 - (margenObjetivo / 100))).toFixed(2);
+    }, [costoUnitario, user]);
 
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user as any), [user]);
     const [categoria, setCategoria] = useState(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
@@ -147,7 +160,7 @@ export const useInventario = () => {
             if (filtro === 'stockBajo') {
                 params.stockBajo = true;
             } else if (filtro !== 'todos') {
-                params.categoria = filtro;
+                params.categoria = filtro; // 'reventa', 'insumo', 'ingrediente', 'limpieza', etc.
             }
             const response = await getInventario(params);
             setItems(response.data);
@@ -175,6 +188,7 @@ export const useInventario = () => {
         setCantidadMinima('');
         setCostoUnitario('');
         setPrecioVenta('');
+        setComisionEspecialista('');
         setProveedor('');
         setCodigoBarras('');
         setFechaVencimiento('');
@@ -191,6 +205,7 @@ export const useInventario = () => {
         setCantidadMinima(item.cantidadMinima.toString());
         setCostoUnitario(item.costoUnitario.toString());
         setPrecioVenta(item.precioVenta?.toString() || '');
+        setComisionEspecialista(item.comisionEspecialista?.toString() || '');
         setCategoria(item.categoria);
         setProveedor(item.proveedor || '');
         setCodigoBarras(item.codigoBarras || '');
@@ -280,6 +295,7 @@ export const useInventario = () => {
                 cantidadMinima: parseFloat(cantidadMinima) || 0,
                 costoUnitario: parseFloat(costoUnitario),
                 precioVenta: precioVenta ? parseFloat(precioVenta) : undefined,
+                comisionEspecialista: comisionEspecialista ? parseFloat(comisionEspecialista) : undefined,
                 categoria, proveedor, codigoBarras,
                 fechaVencimiento: fechaVencimiento ? formatToISO(fechaVencimiento) : undefined
             };
@@ -564,7 +580,8 @@ export const useInventario = () => {
         nombre, setNombre, descripcion, setDescripcion,
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
-        precioVenta, setPrecioVenta,
+        precioVenta, setPrecioVenta, suggestedPrice,
+        comisionEspecialista, setComisionEspecialista,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening, searchingGlobal,

@@ -14,6 +14,8 @@ import Toast from 'react-native-toast-message';
 
 // Subcomponentes extraídos
 import { InventarioItemCard } from './Inventario/components/InventarioItemCard';
+import { InventarioBellezaView } from './Inventario/components/InventarioBellezaView';
+import { InventarioComidaView } from './Inventario/components/InventarioComidaView';
 import { InventarioFormModal } from './Inventario/components/InventarioFormModal';
 import { InventarioMovimientoModal } from './Inventario/components/InventarioMovimientoModal';
 import { InventarioScannerModal } from './Inventario/components/InventarioScannerModal';
@@ -39,7 +41,8 @@ export default function InventarioScreen() {
         nombre, setNombre, descripcion, setDescripcion,
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
-        precioVenta, setPrecioVenta,
+        precioVenta, setPrecioVenta, suggestedPrice,
+        comisionEspecialista, setComisionEspecialista,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening, searchingGlobal,
@@ -104,11 +107,15 @@ export default function InventarioScreen() {
             {/* FILTROS RÁPIDOS - FLEX LAYOUT */}
             <View style={styles.filterContainer}>
                 <View style={styles.filterOptions}>
-                    {['todos', 'stockBajo', categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente', 'limpieza'].map(opcion => {
+                    {(categoriaNegocio === 'BELLEZA'
+                        ? ['todos', 'stockBajo', 'reventa', 'insumo', 'limpieza']
+                        : ['todos', 'stockBajo', 'ingrediente', 'limpieza']
+                    ).map(opcion => {
                         const isActive = filtro === opcion;
                         const labels: any = { 
                             todos: 'Todos', 
                             stockBajo: 'Bajo Stock', 
+                            reventa: '💰 Reventa',
                             insumo: 'Insumos', 
                             ingrediente: 'Ingred.', 
                             limpieza: 'Limpieza' 
@@ -138,17 +145,28 @@ export default function InventarioScreen() {
                         <Text style={styles.emptyText}>Inventario vacío.</Text>
                     </View>
                 ) : (
-                    itemsFiltrados.map((item, i) => (
-                        <InventarioItemCard
-                            key={item._id}
-                            item={item} index={i}
+                    categoriaNegocio === 'BELLEZA' ? (
+                        <InventarioBellezaView 
+                            items={itemsFiltrados}
                             categoriaNegocio={categoriaNegocio}
-                            colors={colors} styles={styles}
+                            filtro={filtro}
+                            colors={colors}
+                            styles={styles}
                             onEdit={openEditModal}
                             onDelete={handleDelete}
                             onMovimiento={openMovModal}
                         />
-                    ))
+                    ) : (
+                        <InventarioComidaView 
+                            items={itemsFiltrados}
+                            categoriaNegocio={categoriaNegocio}
+                            colors={colors}
+                            styles={styles}
+                            onEdit={openEditModal}
+                            onDelete={handleDelete}
+                            onMovimiento={openMovModal}
+                        />
+                    )
                 )}
             </ScrollView>
 
@@ -196,9 +214,11 @@ export default function InventarioScreen() {
                 cantidadMinima={cantidadMinima} setCantidadMinima={setCantidadMinima}
                 costoUnitario={costoUnitario} setCostoUnitario={setCostoUnitario}
                 precioVenta={precioVenta} setPrecioVenta={setPrecioVenta}
+                suggestedPrice={suggestedPrice}
                 categoria={categoria} setCategoria={setCategoria}
                 codigoBarras={codigoBarras} setCodigoBarras={setCodigoBarras}
                 fechaVencimiento={fechaVencimiento} setFechaVencimiento={setFechaVencimiento}
+                comisionEspecialista={comisionEspecialista} setComisionEspecialista={setComisionEspecialista}
                 onSubmit={handleSubmit}
                 error={error}
             />

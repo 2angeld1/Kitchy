@@ -171,6 +171,33 @@ export const updateComisionConfig = async (req: AuthRequest, res: Response) => {
     }
 };
 
+// Actualizar configuración de comisiones de REVENTA (% global para venta de productos)
+export const updateComisionReventaConfig = async (req: AuthRequest, res: Response) => {
+    try {
+        const { porcentajeGlobal } = req.body;
+
+        const negocio = await Negocio.findById(req.negocioId);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+
+        (negocio as any).comisionReventa = {
+            porcentajeGlobal: Number(porcentajeGlobal) || 10
+        };
+
+        await negocio.save();
+
+        res.json({
+            success: true,
+            message: 'Comisión de reventa actualizada',
+            comisionReventa: (negocio as any).comisionReventa
+        });
+    } catch (error) {
+        console.error('Error updating comision reventa config:', error);
+        res.status(500).json({ message: 'Error al actualizar comisión de reventa' });
+    }
+};
+
 // Actualizar configuración del negocio (como el margen objetivo)
 export const updateConfig = async (req: AuthRequest, res: Response) => {
     try {

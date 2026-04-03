@@ -113,6 +113,7 @@ export const updateComisionConfig = (data: {
     escalonado?: any[], 
     cortesPorCiclo: number 
 }) => api.put('/negocios/config-comisiones', data);
+export const updateComisionReventaConfig = (data: { porcentajeGlobal: number }) => api.put('/negocios/config-comision-reventa', data);
 
 // Especialistas (Belleza)
 export const getEspecialistas = () => api.get('/especialistas');

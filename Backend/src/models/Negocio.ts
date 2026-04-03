@@ -26,6 +26,9 @@ export interface INegocio extends Document {
         }[];
         cortesPorCiclo: number;
     };
+    comisionReventa?: {
+        porcentajeGlobal: number; // % que se lleva el especialista por vender productos
+    };
     direccion?: string;
     telefono?: string;
     propietario: mongoose.Types.ObjectId;
@@ -94,6 +97,9 @@ const negocioSchema = new Schema({
             ]
         },
         cortesPorCiclo: { type: Number, default: 5 }
+    },
+    comisionReventa: {
+        porcentajeGlobal: { type: Number, default: 10, min: 0, max: 100 }
     },
     propietario: {
         type: Schema.Types.ObjectId,

@@ -24,14 +24,14 @@ export default function BellezaReventaScreen() {
     const {
         productosVenta,
         especialistas,
-        serviciosSeleccionados,
+        itemsSeleccionados,
         especialistaSeleccionado,
         metodoPago,
         loading,
         clienteNombre, setClienteNombre,
         montoRecibido, setMontoRecibido,
         lastVentaId, anularUltimaVenta,
-        toggleServicio,
+        toggleItem,
         setEspecialistaSeleccionado,
         setMetodoPago,
         procesarCobro,
@@ -137,11 +137,11 @@ export default function BellezaReventaScreen() {
                             </View>
                         ) : (
                             productosVenta.map((prod, idx) => {
-                                const isSelected = serviciosSeleccionados.some(s => s._id === prod._id);
+                                const isSelected = itemsSeleccionados.some(s => s._id === prod._id);
                                 return (
                                     <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 50)}>
                                         <TouchableOpacity
-                                            onPress={() => toggleServicio(prod)}
+                                            onPress={() => toggleItem(prod)}
                                             style={[
                                                 styles.serviceCard,
                                                 { 
@@ -183,7 +183,7 @@ export default function BellezaReventaScreen() {
             </ScrollView>
 
             {/* TICKET FLOTANTE */}
-            {serviciosSeleccionados.length > 0 && especialistaSeleccionado && (
+            {itemsSeleccionados.length > 0 && especialistaSeleccionado && (
                 <Animated.View
                     entering={SlideInDown.duration(400)}
                     style={{
@@ -253,7 +253,7 @@ export default function BellezaReventaScreen() {
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 15 }}>
                         <View>
-                            <Text style={{ fontSize: 11, color: colors.textMuted }}>{serviciosSeleccionados.length} productos</Text>
+                            <Text style={{ fontSize: 11, color: colors.textMuted }}>{itemsSeleccionados.length} productos</Text>
                             <Text style={{ fontSize: 32, fontWeight: '900', color: colors.textPrimary }}>{formatMoney(total)}</Text>
                         </View>
                         {cambio > 0 && <Text style={{ fontSize: 14, color: '#10b981', fontWeight: '900', marginBottom: 5 }}>CAMBIO: {formatMoney(cambio)}</Text>}

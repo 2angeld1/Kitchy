@@ -27,15 +27,19 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
             return res.status(400).json({ message: 'No se recibió ninguna imagen de factura' });
         }
 
-        // 1. Enviar imagen a Caitlyn (microservicio) para análisis con Gemini
-        console.log('🤖 Enviando factura a Caitlyn para análisis...');
+        // 1. Obtener el tipo de negocio para enviarlo a Caitlyn
+        const negocio = await Negocio.findById(req.negocioId).select('categoria');
+        const negocioTipo = negocio?.categoria || 'GASTRONOMIA';
+
+        // 2. Enviar imagen a Caitlyn (microservicio) para análisis con Gemini
+        console.log(`🤖 Enviando factura a Caitlyn ([${negocioTipo}]) para análisis...`);
         let productosDetectados: any[] = [];
         let caitlynError: string | null = null;
 
         try {
             const caitlynResponse = await axios.post(
                 `${CAITLYN_URL}/agent/invoice`,
-                { imagen },
+                { imagen, negocio_tipo: negocioTipo },
                 { timeout: 60000 } // 60 segundos por si Gemini tarda
             );
 

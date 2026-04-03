@@ -173,6 +173,92 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
         const totalEspecialistas = resultado.reduce((sum, e) => sum + e.montoEspecialista, 0);
         const totalDueno = resultado.reduce((sum, e) => sum + e.montoDueno, 0);
 
+        // ============ COMISIONES DE REVENTA ============
+        // Calcular comisiones por productos de reventa vendidos por cada especialista
+        const comisionReventaConfig = (negocio as any).comisionReventa || { porcentajeGlobal: 10 };
+        const pctReventaGlobal = comisionReventaConfig.porcentajeGlobal || 10;
+
+        // Buscar productos de inventario que sean de reventa
+        const Inventario = require('../models/Inventario').default;
+        const inventarioReventa = await Inventario.find({ 
+            negocioId: req.negocioId, 
+            categoria: 'reventa' 
+        }).select('nombre precioVenta comisionEspecialista _id');
+
+        // Map de IDs de productos de reventa para búsqueda rápida
+        const reventaMap = new Map<string, any>();
+        inventarioReventa.forEach((inv: any) => {
+            reventaMap.set(inv._id.toString(), inv);
+        });
+
+        // Buscar las ventas que contienen esos productos de reventa
+        const reventaPorEspecialista: {
+            [key: string]: {
+                id: string;
+                nombre: string;
+                totalProductosVendidos: number;
+                totalIngresoReventa: number;
+                comisionReventa: number;
+                porcentajeReventa: number;
+                detalle: { producto: string; cantidad: number; monto: number; comision: number }[];
+            }
+        } = {};
+
+        // Revisar cada venta para extraer items de reventa
+        for (const venta of ventas) {
+            const esp = venta.especialista as any;
+            if (!esp) continue;
+            const espId = esp._id?.toString() || esp.toString();
+            const nombre = esp.nombre || 'Sin nombre';
+
+            for (const item of venta.items) {
+                const productoId = item.producto?.toString();
+                
+                // Verificar si este producto está en el inventario de reventa
+                // PRIORIDAD 1: Buscar por ID directo (más preciso)
+                // PRIORIDAD 2: Buscar por nombre (como respaldo si el ID no cruza por alguna razón)
+                const invMatch = reventaMap.get(productoId) || 
+                                 inventarioReventa.find((inv: any) => inv.nombre.toLowerCase() === item.nombreProducto.toLowerCase());
+
+                if (invMatch) {
+                    if (!reventaPorEspecialista[espId]) {
+                        reventaPorEspecialista[espId] = {
+                            id: espId,
+                            nombre,
+                            totalProductosVendidos: 0,
+                            totalIngresoReventa: 0,
+                            comisionReventa: 0,
+                            porcentajeReventa: pctReventaGlobal,
+                            detalle: []
+                        };
+                    }
+
+                    const entry = reventaPorEspecialista[espId];
+                    // Usar override de producto o global
+                    const pctProducto = invMatch.comisionEspecialista ?? pctReventaGlobal;
+                    const comisionItem = item.subtotal * (pctProducto / 100);
+
+                    entry.totalProductosVendidos += item.cantidad;
+                    entry.totalIngresoReventa += item.subtotal;
+                    entry.comisionReventa += comisionItem;
+                    entry.porcentajeReventa = pctProducto;
+                    entry.detalle.push({
+                        producto: item.nombreProducto,
+                        cantidad: item.cantidad,
+                        monto: item.subtotal,
+                        comision: comisionItem
+                    });
+                }
+            }
+        }
+
+        const reventaResultado = Object.values(reventaPorEspecialista).sort(
+            (a, b) => b.totalIngresoReventa - a.totalIngresoReventa
+        );
+
+        const totalReventaIngreso = reventaResultado.reduce((sum, e) => sum + e.totalIngresoReventa, 0);
+        const totalReventaComision = reventaResultado.reduce((sum, e) => sum + e.comisionReventa, 0);
+
         res.json({
             periodo: {
                 mes: month + 1,
@@ -181,13 +267,18 @@ export const calcularComisiones = async (req: AuthRequest, res: Response) => {
                 hasta: fin.toISOString()
             },
             config: config,
+            comisionReventaConfig,
             resumen: {
                 totalGeneral: totalGeneral.toFixed(2),
                 totalEspecialistas: totalEspecialistas.toFixed(2),
                 totalDueno: totalDueno.toFixed(2),
-                totalServicios: resultado.reduce((sum, e) => sum + e.totalServicios, 0)
+                totalServicios: resultado.reduce((sum, e) => sum + e.totalServicios, 0),
+                // Resumen de Reventa
+                totalReventaIngreso: totalReventaIngreso.toFixed(2),
+                totalReventaComision: totalReventaComision.toFixed(2),
             },
-            especialistas: resultado
+            especialistas: resultado,
+            reventaEspecialistas: reventaResultado
         });
     } catch (error: any) {
         console.error('Error calculando comisiones:', error);

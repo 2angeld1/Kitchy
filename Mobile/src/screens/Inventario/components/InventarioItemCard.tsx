@@ -18,6 +18,10 @@ interface Props {
     onMovimiento: (item: InventarioItem, tipo: 'entrada' | 'salida' | 'merma') => void;
 }
 
+// Sub-Cards para cada negocio
+import { InventarioBellezaCard } from './InventarioBellezaCard';
+import { InventarioComidaCard } from './InventarioComidaCard';
+
 export const InventarioItemCard: React.FC<Props> = ({
     item, index, categoriaNegocio, colors, styles, onEdit, onDelete, onMovimiento
 }) => {
@@ -25,9 +29,7 @@ export const InventarioItemCard: React.FC<Props> = ({
     const hoy = new Date();
     const tresDias = new Date();
     tresDias.setDate(hoy.getDate() + 3);
-    const estaPorVencer = item.fechaVencimiento && new Date(item.fechaVencimiento) <= tresDias;
-
-    const icon = getInventoryIcon(item.categoria, categoriaNegocio);
+    const estaPorVencer = !!(item.fechaVencimiento && new Date(item.fechaVencimiento) <= tresDias);
 
     const renderRightActions = () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -54,28 +56,23 @@ export const InventarioItemCard: React.FC<Props> = ({
                     onPress={() => onEdit(item)}
                     activeOpacity={0.8}
                 >
-                    <View style={styles.itemIconBox}>
-                        <Ionicons name={icon} size={24} color={colors.primary} />
-                        {estaPorVencer && (
-                            <View style={{ position: 'absolute', top: -4, right: -4 }}>
-                                <Ionicons name="alert-circle" size={16} color={colors.primary} />
-                            </View>
-                        )}
-                    </View>
-                    <View style={styles.itemInfo}>
-                        <View style={styles.itemHeader}>
-                            <Text style={styles.itemTitle} numberOfLines={1}>{item.nombre}</Text>
-                            <Text style={styles.itemDot}>•</Text>
-                            <Text style={styles.itemQty} numberOfLines={1}>{item.cantidad} {item.unidad}</Text>
-                        </View>
-                        <Text style={styles.itemSub}>{formatMoney(item.costoUnitario || 0)} / ud</Text>
-                        {isBajoStock && <Text style={styles.stockWarning}>Bajo Stock (Min: {item.cantidadMinima})</Text>}
-                        {item.fechaVencimiento && (
-                            <Text style={[styles.vencimientoText, { color: estaPorVencer ? colors.primary : colors.textMuted, fontWeight: estaPorVencer ? 'bold' : 'normal' }]}>
-                                Vence: {new Date(item.fechaVencimiento).toLocaleDateString()}
-                            </Text>
-                        )}
-                    </View>
+                    {categoriaNegocio === 'BELLEZA' ? (
+                        <InventarioBellezaCard 
+                            item={item} 
+                            colors={colors} 
+                            styles={styles} 
+                            estaPorVencer={estaPorVencer}
+                            isBajoStock={isBajoStock}
+                        />
+                    ) : (
+                        <InventarioComidaCard 
+                            item={item} 
+                            colors={colors} 
+                            styles={styles}
+                            estaPorVencer={estaPorVencer}
+                            isBajoStock={isBajoStock}
+                        />
+                    )}
                     <Ionicons name="chevron-back" size={18} color={colors.textMuted} style={{ opacity: 0.8 }} />
                 </GHTouchableOpacity>
             </Swipeable>

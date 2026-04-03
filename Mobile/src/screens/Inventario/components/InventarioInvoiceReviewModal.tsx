@@ -258,6 +258,37 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                                     </View>
                                 </View>
 
+                                {/* Campos Sugeridos por Caitlyn (Categoría y Reventa) */}
+                                <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: sc.text, fontWeight: '700' }}>CATEGORÍA</Text>
+                                        <TextInput
+                                            style={{ color: colors.textPrimary, borderBottomWidth: 1.5, borderBottomColor: sc.border, paddingVertical: 4, fontWeight: '600' }}
+                                            value={item.categoria || 'insumo'}
+                                            onChangeText={(text) => {
+                                                const newItems = [...invoiceItems];
+                                                newItems[realIndex] = { ...newItems[realIndex], categoria: text };
+                                                setInvoiceItems(newItems);
+                                            }}
+                                            placeholder="Categoría"
+                                        />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 10, color: sc.text, fontWeight: '700' }}>PRECIO REVENTA</Text>
+                                        <TextInput
+                                            style={{ color: colors.primary, borderBottomWidth: 1.5, borderBottomColor: colors.primary, paddingVertical: 4, fontWeight: '800' }}
+                                            value={String(item.precioVenta || '')}
+                                            keyboardType="numeric"
+                                            placeholder="Sugerido"
+                                            onChangeText={(text) => {
+                                                const newItems = [...invoiceItems];
+                                                newItems[realIndex] = { ...newItems[realIndex], precioVenta: parseFloat(text) || 0 };
+                                                setInvoiceItems(newItems);
+                                            }}
+                                        />
+                                    </View>
+                                </View>
+
                                 {/* Resumen de Desglose */}
                                 <View style={{ marginTop: 12, backgroundColor: 'rgba(255,255,255,0.3)', padding: 8, borderRadius: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
