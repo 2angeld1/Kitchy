@@ -100,23 +100,36 @@ export const useInventario = () => {
     const [precioVenta, setPrecioVenta] = useState('');
     const [comisionEspecialista, setComisionEspecialista] = useState('');
 
-    const suggestedPrice = useMemo(() => {
-        const costo = parseFloat(costoUnitario);
-        if (isNaN(costo) || costo <= 0) return null;
-        
-        // Determinar margen objetivo (default 65% si no existe)
-        const negocio = user?.negocioActivo as any;
-        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
-        
-        return (costo / (1 - (margenObjetivo / 100))).toFixed(2);
-    }, [costoUnitario, user]);
-
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user as any), [user]);
     const [categoria, setCategoria] = useState(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
 
     useEffect(() => {
         if (!editItem) setCategoria(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
     }, [categoriaNegocio, editItem]);
+
+    const suggestedPrice = useMemo(() => {
+        const costo = parseFloat(costoUnitario);
+        if (isNaN(costo) || costo <= 0) return null;
+        
+        const negocio = user?.negocioActivo as any;
+        const margenObjetivo = negocio?.config?.margenObjetivo || 65;
+        
+        // Si es BELLEZA, incluimos la comisión en el cálculo para no afectar el margen
+        let comision = 0;
+        if (categoriaNegocio === 'BELLEZA') {
+            // Prioridad: 1. Valor manual en el form, 2. Valor global del negocio
+            const manualCom = parseFloat(comisionEspecialista);
+            const globalCom = negocio?.comisionReventa?.porcentajeGlobal || 10;
+            comision = !isNaN(manualCom) ? manualCom : globalCom;
+        }
+
+        const divisor = 1 - (margenObjetivo / 100) - (comision / 100);
+        
+        // Evitar división por cero o resultados negativos si el margen+comision > 100
+        if (divisor <= 0) return (costo * 2).toFixed(2); // Fallback simple
+
+        return (costo / divisor).toFixed(2);
+    }, [costoUnitario, user, categoriaNegocio, comisionEspecialista]);
 
     const [proveedor, setProveedor] = useState('');
     const [codigoBarras, setCodigoBarras] = useState('');

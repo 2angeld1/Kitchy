@@ -64,9 +64,9 @@ export const InventarioFormModal: React.FC<Props> = ({
                             </View>
                             <TouchableOpacity onPress={onClose}><Ionicons name="close-circle" size={32} color={colors.textMuted} /></TouchableOpacity>
                         </View>
-                        <ScrollView 
-                            style={styles.modalScroll} 
-                            contentContainerStyle={{ paddingBottom: 60 }} 
+                        <ScrollView
+                            style={styles.modalScroll}
+                            contentContainerStyle={{ paddingBottom: 60 }}
                             showsVerticalScrollIndicator={false}
                         >
                             <KitchyInput label="Nombre" value={nombre} onChangeText={setNombre} />
@@ -116,13 +116,13 @@ export const InventarioFormModal: React.FC<Props> = ({
                                     <View style={{ position: 'relative' }}>
                                         <KitchyInput label="Precio Venta Público" value={precioVenta} onChangeText={setPrecioVenta} keyboardType="numeric" placeholder="$0.00" />
                                         {suggestedPrice && (
-                                            <TouchableOpacity 
+                                            <TouchableOpacity
                                                 onPress={() => setPrecioVenta(suggestedPrice)}
-                                                style={{ 
-                                                    position: 'absolute', 
-                                                    top: 0, 
-                                                    right: 0, 
-                                                    flexDirection: 'row', 
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    right: 0,
+                                                    flexDirection: 'row',
                                                     alignItems: 'center',
                                                     gap: 4,
                                                     backgroundColor: colors.primary + '15',
@@ -131,9 +131,9 @@ export const InventarioFormModal: React.FC<Props> = ({
                                                     borderRadius: 8
                                                 }}
                                             >
-                                                <Image 
-                                                    source={require('../../../../assets/caitlyn_avatar.png')} 
-                                                    style={{ width: 14, height: 14, borderRadius: 7 }} 
+                                                <Image
+                                                    source={require('../../../../assets/caitlyn_avatar.png')}
+                                                    style={{ width: 14, height: 14, borderRadius: 7 }}
                                                 />
                                                 <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800' }}>
                                                     Sugerido: ${suggestedPrice}
@@ -149,19 +149,19 @@ export const InventarioFormModal: React.FC<Props> = ({
                                         <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 8 }}>
                                             Deja vacío para usar el % global del negocio.
                                         </Text>
-                                        <KitchyInput 
-                                            label="" 
-                                            value={comisionEspecialista || ''} 
-                                            onChangeText={(t) => setComisionEspecialista?.(t)} 
-                                            keyboardType="numeric" 
+                                        <KitchyInput
+                                            label=""
+                                            value={comisionEspecialista || ''}
+                                            onChangeText={(t) => setComisionEspecialista?.(t)}
+                                            keyboardType="numeric"
                                             placeholder="Ej: 15 (% override)"
                                             containerStyle={{ marginBottom: 0 }}
                                         />
                                     </View>
                                 </Animated.View>
                             )}
-                            
-                            <KitchyDatePicker 
+
+                            <KitchyDatePicker
                                 label="Fecha Vencimiento"
                                 value={fechaVencimiento}
                                 onChange={setFechaVencimiento}

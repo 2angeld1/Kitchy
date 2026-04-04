@@ -32,9 +32,9 @@ export const InventarioBellezaCard: React.FC<Props> = ({
                 <View style={styles.itemHeader}>
                     <Text style={styles.itemTitle} numberOfLines={1}>{item.nombre}</Text>
                     {isReventa && (
-                         <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6 }}>
+                        <View style={{ backgroundColor: colors.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6 }}>
                             <Text style={{ fontSize: 8, fontWeight: '900', color: '#fff', textTransform: 'uppercase' }}>REVENTA</Text>
-                         </View>
+                        </View>
                     )}
                 </View>
                 <View style={styles.itemDetailsRow}>
@@ -42,7 +42,7 @@ export const InventarioBellezaCard: React.FC<Props> = ({
                     <Text style={styles.itemDot}>•</Text>
                     <Text style={styles.itemSub}>{formatMoney(item.costoUnitario || 0)} / ud</Text>
                 </View>
-                
+
                 {item.precioVenta && item.precioVenta > 0 && (
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
                         <Ionicons name="pricetag-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />

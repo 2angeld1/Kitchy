@@ -76,26 +76,26 @@ export const ComisionReventaTab: React.FC<Props> = ({
             {/* Config rápida */}
             <Animated.View entering={FadeInDown.delay(200)} style={styles.infoBento}>
                 <Text style={[styles.sectionTitle, { fontSize: 13, marginBottom: 8 }]}>Configurar % de Reventa</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <View style={{ gap: 12, marginBottom: 12 }}>
                     <View style={{ 
-                        flex: 1, backgroundColor: colors.surface, borderRadius: 12, padding: 14, 
-                        borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6
+                        backgroundColor: colors.surface, borderRadius: 16, padding: 20, 
+                        borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10
                     }}>
                         <KitchyInput
                             value={reventaPct}
                             onChangeText={setReventaPct}
                             keyboardType="numeric"
                             placeholder="10"
-                            style={{ height: 48, width: 60, marginBottom: 0, textAlign: 'center', fontSize: 24, fontWeight: '900', color: colors.primary }}
+                            style={{ height: 60, width: 80, marginBottom: 0, textAlign: 'center', fontSize: 32, fontWeight: '900', color: colors.primary }}
                             containerStyle={{ marginBottom: 0 }}
                         />
-                        <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textMuted }}>%</Text>
+                        <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textMuted }}>% de Comisión Global</Text>
                     </View>
                     <KitchyButton
-                        title="Guardar"
+                        title="Guardar Cambios de Reventa"
                         onPress={handleSaveReventa}
                         loading={isSavingReventa}
-                        style={{ flex: 1 }}
+                        style={{ width: '100%', height: 50 }}
                     />
                 </View>
                 <Text style={styles.infoText}>

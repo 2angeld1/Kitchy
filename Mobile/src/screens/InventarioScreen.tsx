@@ -20,6 +20,8 @@ import { InventarioFormModal } from './Inventario/components/InventarioFormModal
 import { InventarioMovimientoModal } from './Inventario/components/InventarioMovimientoModal';
 import { InventarioScannerModal } from './Inventario/components/InventarioScannerModal';
 import { InventarioInvoiceReviewModal } from './Inventario/components/InventarioInvoiceReviewModal';
+import { InventarioConfigModal } from './Inventario/components/InventarioConfigModal';
+import { updateNegocioConfig, updateComisionReventaConfig } from '../services/api';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
@@ -53,6 +55,42 @@ export default function InventarioScreen() {
     } = useInventario();
 
     const [isFabOpen, setIsFabOpen] = useState(false);
+
+    // Estado para Configuración Estratégica
+    const [showConfigModal, setShowConfigModal] = useState(false);
+    const [configInput, setConfigInput] = useState('');
+    const [savingConfig, setSavingConfig] = useState(false);
+
+    useEffect(() => {
+        if (user?.negocioActivo) {
+            const negocio = user.negocioActivo as any;
+            if (categoriaNegocio === 'BELLEZA') {
+                setConfigInput(negocio.comisionReventa?.porcentajeGlobal?.toString() || '10');
+            } else {
+                setConfigInput(negocio.config?.margenObjetivo?.toString() || '65');
+            }
+        }
+    }, [user?.negocioActivo, categoriaNegocio]);
+
+    const handleSaveConfig = async () => {
+        setSavingConfig(true);
+        try {
+            const value = parseInt(configInput);
+            if (categoriaNegocio === 'BELLEZA') {
+                await updateComisionReventaConfig({ porcentajeGlobal: value });
+                Toast.show({ type: 'success', text1: '¡Comisión Actualizada!', text2: 'Se aplicará a las nuevas ventas de reventa.' });
+            } else {
+                await updateNegocioConfig({ margenObjetivo: value });
+                Toast.show({ type: 'success', text1: '¡Margen Actualizado!', text2: 'Caitlyn usará esta meta para tus insumos.' });
+            }
+            setShowConfigModal(false);
+            handleRefresh();
+        } catch (err) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo guardar la configuración.' });
+        } finally {
+            setSavingConfig(false);
+        }
+    };
 
     const fabRotation = useSharedValue(0);
     useEffect(() => {
@@ -96,6 +134,12 @@ export default function InventarioScreen() {
                         <Ionicons name={isListening ? "mic" : "mic-outline"} size={22} color={isListening ? colors.primary : colors.textMuted} />
                     </TouchableOpacity>
                 </View>
+                <TouchableOpacity
+                    style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, padding: 12, borderRadius: 16, marginLeft: 8 }}
+                    onPress={() => setShowConfigModal(true)}
+                >
+                    <Ionicons name="options-outline" size={20} color={colors.primary} />
+                </TouchableOpacity>
             </View>
 
             <Text style={[styles.smartHint, { color: isListening ? colors.primary : colors.textMuted }]}>
@@ -266,6 +310,18 @@ export default function InventarioScreen() {
                     </Animated.View>
                 </View>
             )}
+
+            <InventarioConfigModal 
+                visible={showConfigModal}
+                onClose={() => setShowConfigModal(false)}
+                value={configInput}
+                setValue={setConfigInput}
+                saving={savingConfig}
+                onSave={handleSaveConfig}
+                categoriaNegocio={categoriaNegocio as any}
+                colors={colors}
+                styles={styles}
+            />
         </View>
     );
 }
