@@ -39,17 +39,10 @@ export default function VentasScreen() {
     } = useVentas();
 
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showScanSourceModal, setShowScanSourceModal] = useState(false);
 
     const handleABrirMenuEscaneo = () => {
-        Alert.alert(
-            "Escanear Cuaderno",
-            "¿Desde dónde quieres cargar la imagen?",
-            [
-                { text: "Cámara", onPress: tomarFotoCuaderno },
-                { text: "Galería", onPress: seleccionarImagenCuaderno },
-                { text: "Cancelar", style: "cancel" }
-            ]
-        );
+        setShowScanSourceModal(true);
     };
     const { user } = useAuth();
     const { isDark } = useTheme();
@@ -342,6 +335,45 @@ export default function VentasScreen() {
                         </View>
                     </View>
                 </View>
+            </Modal>
+
+            {/* Modal para elegir origen del escaneo (PWA Friendly) */}
+            <Modal visible={showScanSourceModal} transparent animationType="fade">
+                <TouchableOpacity 
+                    activeOpacity={1}
+                    onPress={() => setShowScanSourceModal(false)}
+                    style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 }}
+                >
+                    <View style={{ backgroundColor: colors.card, borderRadius: 28, padding: 28, width: '100%', maxWidth: 320 }}>
+                        <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>Escanear Cuaderno</Text>
+                        <Text style={{ fontSize: 14, color: colors.textMuted, textAlign: 'center', marginBottom: 24 }}>¿Desde dónde quieres cargar la imagen?</Text>
+                        
+                        <View style={{ gap: 12 }}>
+                            <TouchableOpacity
+                                onPress={() => { setShowScanSourceModal(false); tomarFotoCuaderno(); }}
+                                style={{ height: 60, borderRadius: 16, backgroundColor: colors.primary, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 12 }}
+                            >
+                                <Ionicons name="camera" size={24} color="#fff" />
+                                <Text style={{ fontSize: 16, fontWeight: '800', color: '#fff' }}>Usar Cámara</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => { setShowScanSourceModal(false); seleccionarImagenCuaderno(); }}
+                                style={{ height: 60, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, gap: 12 }}
+                            >
+                                <Ionicons name="images" size={24} color={colors.primary} />
+                                <Text style={{ fontSize: 16, fontWeight: '800', color: colors.textPrimary }}>Elegir de Galería</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => setShowScanSourceModal(false)}
+                                style={{ height: 50, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginTop: 8 }}
+                            >
+                                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textMuted }}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </TouchableOpacity>
             </Modal>
         </View>
     );
