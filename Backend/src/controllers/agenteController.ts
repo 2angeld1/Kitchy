@@ -672,12 +672,16 @@ export const procesarCuadernoVentas = async (req: AuthRequest, res: Response) =>
             return res.status(400).json({ message: 'No se recibió ninguna imagen de cuaderno' });
         }
 
-        console.log(`📖 Enviando cuaderno a Caitlyn para análisis OCR de ventas...`);
+        console.log(`📖 Enviando cuaderno a Caitlyn para análisis OCR de ventas (${imagen.length} chars)...`);
 
         const response = await axios.post(
             `${CAITLYN_URL}/agent/notebook`,
             { imagen },
-            { timeout: 60000 }
+            { 
+                timeout: 90000, // 90 segundos para cuadernos grandes
+                maxBodyLength: Infinity,
+                maxContentLength: Infinity
+            }
         );
 
         if (response.data.success) {
@@ -688,9 +692,14 @@ export const procesarCuadernoVentas = async (req: AuthRequest, res: Response) =>
         }
     } catch (error: any) {
         console.error('❌ Error contactando a Caitlyn (Notebook):', error.message);
+        if (error.response) {
+            console.error('Data error:', error.response.data);
+        }
         res.status(500).json({ 
             success: false, 
-            message: 'Caitlyn no pudo procesar el cuaderno en este momento.' 
+            message: error.message.includes('timeout') 
+                ? 'Caitlyn tardó demasiado. Intenta con una imagen más pequeña.'
+                : 'Caitlyn no pudo procesar el cuaderno en este momento.' 
         });
     }
 };
