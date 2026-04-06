@@ -338,6 +338,8 @@ export const useVentas = () => {
         try {
             const items = carrito.map(item => ({
                 productoId: item.producto._id,
+                nombre: item.producto.nombre,
+                precio: item.producto.precio,
                 cantidad: item.cantidad
             }));
 
@@ -446,7 +448,7 @@ export const useVentas = () => {
         try {
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== 'granted') return Toast.show({ type: 'error', text1: 'Permiso denegado' });
-            const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8, base64: true });
+            const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.1, base64: true });
             if (!result.canceled && result.assets[0].base64) handleProcesarCuaderno(`data:image/jpeg;base64,${result.assets[0].base64}`);
         } catch (err) {
             Toast.show({ type: 'error', text1: 'Error al capturar foto' });
@@ -457,7 +459,7 @@ export const useVentas = () => {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') return Toast.show({ type: 'error', text1: 'Permiso denegado' });
-            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8, base64: true });
+            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.1, base64: true });
             if (!result.canceled && result.assets[0].base64) handleProcesarCuaderno(`data:image/jpeg;base64,${result.assets[0].base64}`);
         } catch (err) {
             Toast.show({ type: 'error', text1: 'Error al seleccionar imagen' });
@@ -469,10 +471,29 @@ export const useVentas = () => {
         const nueva: Orden = {
             id,
             nombre: venta.cliente || `Pedido ${ordenes.length + 1}`,
-            items: (venta.items || []).map((it: any) => {
-                const prod = productos.find(p => p.nombre.toLowerCase().includes(it.nombre.toLowerCase()) || it.nombre.toLowerCase().includes(p.nombre.toLowerCase()));
+            items: (venta.items || []).map((it: any, index: number) => {
+                // 🔍 Búsqueda INTELIGENTE por palabras clave
+                const itNombre = (it.nombre || "").toLowerCase().trim();
+                const palabrasItem = itNombre.split(' ').filter((w: string) => w.length > 2); // Solo palabras significativas
+                
+                let prod = productos.find(p => p.nombre.toLowerCase() === itNombre); // 1. Match Exacto
+                
+                if (!prod) {
+                    prod = productos.find(p => { // 2. Match por palabras clave
+                        const pNombre = p.nombre.toLowerCase();
+                        return pNombre.includes(itNombre) || itNombre.includes(pNombre) || 
+                               palabrasItem.some((pal: string) => pNombre.includes(pal));
+                    });
+                }
+
                 return {
-                    producto: prod || { _id: 'manual-' + Date.now(), nombre: it.nombre, precio: it.precio || (venta.total / (venta.items?.length || 1)), categoria: 'comida', disponible: true },
+                    producto: prod || { 
+                        _id: `manual-${Date.now()}-${index}`, 
+                        nombre: it.nombre, 
+                        precio: it.precio || (venta.total / (venta.items?.length || 1)), 
+                        categoria: 'comida', 
+                        disponible: true 
+                    },
                     cantidad: it.cantidad || 1
                 };
             }),

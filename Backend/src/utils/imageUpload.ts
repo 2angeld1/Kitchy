@@ -36,3 +36,35 @@ export const uploadImage = async (imageContent: string | null | undefined, folde
 
     return imageContent;
 };
+
+/**
+ * Elimina una imagen de Cloudinary a partir de su URL segura.
+ */
+export const deleteImage = async (imageUrl: string | null | undefined): Promise<boolean> => {
+    if (!imageUrl || !imageUrl.includes('cloudinary.com')) return false;
+
+    try {
+        // Extraer public_id de la URL: .../v1234567/folder/public_id.jpg
+        // Ejemplo URL: https://res.cloudinary.com/dnwk212uf/image/upload/v1712411234/notebook_scans/xyz123.jpg
+        const parts = imageUrl.split('/');
+        const lastPart = parts[parts.length - 1];
+        const publicIdWithExt = lastPart.split('.')[0];
+        
+        // Identificar si hay carpetas después de 'upload/v...'
+        const uploadIndex = parts.indexOf('upload');
+        if (uploadIndex === -1) return false;
+
+        // Saltamos 'upload' y la versión 'v...'
+        const folderParts = parts.slice(uploadIndex + 2, parts.length - 1);
+        const publicId = folderParts.length > 0 
+            ? `${folderParts.join('/')}/${publicIdWithExt}`
+            : publicIdWithExt;
+
+        console.log(`🗑️ Eliminando de Cloudinary: ${publicId}`);
+        await cloudinary.uploader.destroy(publicId);
+        return true;
+    } catch (error) {
+        console.warn('⚠️ No se pudo eliminar la imagen de Cloudinary:', error);
+        return false;
+    }
+};

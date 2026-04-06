@@ -24,10 +24,17 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
         const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
 
         for (const item of items) {
-            let itemData = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
-            let nombreProducto = '';
-            let precioUnitario = 0;
-            let finalId = item.productoId;
+            let itemData = null;
+            const isManual = String(item.productoId).startsWith('manual-');
+
+            // Solo buscar en DB si es un ID de Mongo válido y no es un item manual
+            if (!isManual && item.productoId.length === 24) {
+                itemData = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
+            }
+
+            let nombreProducto = item.nombre || '';
+            let precioUnitario = item.precio || 0;
+            let finalId = isManual ? null : item.productoId;
 
             if (itemData) {
                 if (!itemData.disponible) {
@@ -46,21 +53,23 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
                         });
                     }
                 }
-            } else {
-                // Si no es un Producto, buscamos en Inventario directamente (para reventa)
+            } else if (!isManual) {
+                // Si no es manual y no se encontró en Producto, buscamos en Inventario directamente (para reventa)
                 const itemInv = await Inventario.findOne({ _id: item.productoId, negocioId: req.negocioId });
-                if (!itemInv) {
-                    return res.status(404).json({ message: `Producto o item de inventario no encontrado: ${item.productoId}` });
+                if (itemInv) {
+                    nombreProducto = itemInv.nombre;
+                    precioUnitario = itemInv.precioVenta || itemInv.costoUnitario;
+                    finalId = itemInv._id;
+                    
+                    // Descontar el item mismo del inventario
+                    deduccionesInventario.push({
+                        inventarioId: itemInv._id,
+                        cantidadADescontar: item.cantidad
+                    });
+                } else {
+                    // Si llegamos aquí y no es manual, es que el ID era basura o de otro negocio
+                    return res.status(404).json({ message: `Item no encontrado: ${item.productoId}` });
                 }
-                nombreProducto = itemInv.nombre;
-                precioUnitario = itemInv.precioVenta || itemInv.costoUnitario;
-                finalId = itemInv._id;
-                
-                // Descontar el item mismo del inventario
-                deduccionesInventario.push({
-                    inventarioId: itemInv._id,
-                    cantidadADescontar: item.cantidad
-                });
             }
 
             const subtotal = precioUnitario * item.cantidad;

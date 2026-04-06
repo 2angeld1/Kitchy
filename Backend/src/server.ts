@@ -44,13 +44,14 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-// Aumentar el límite de tamaño para permitir imágenes en base64
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Aumentar el límite de tamaño para permitir imágenes en base64 de alta resolución
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // simple request logger (antes de las rutas)
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    console.log('🚀 [HEARTBEAT] Petición de cuaderno recibida en el backend de Node...');
     next();
 });
 

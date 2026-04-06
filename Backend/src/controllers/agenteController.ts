@@ -667,22 +667,38 @@ export const aprenderPrecio = async (req: AuthRequest, res: Response) => {
 export const procesarCuadernoVentas = async (req: AuthRequest, res: Response) => {
     try {
         const { imagen } = req.body;
+        console.log('🚀 [HEARTBEAT] Petición de cuaderno AL CONTROLLER recibida...');
 
         if (!imagen) {
             return res.status(400).json({ message: 'No se recibió ninguna imagen de cuaderno' });
         }
 
-        console.log(`📖 Enviando cuaderno a Caitlyn para análisis OCR de ventas (${imagen.length} chars)...`);
+        let imageUrl = null;
+        try {
+            console.log(`☁️ Subiendo cuaderno a Cloudinary temporalmente...`);
+            imageUrl = await uploadImage(imagen, 'notebook_scans');
+        } catch (uploadError) {
+            console.error('❌ Error subiendo a Cloudinary:', uploadError);
+            // Si falla Cloudinary, intentamos enviar el base64 directamente como fallback si no es muy grande
+            imageUrl = imagen;
+        }
+
+        console.log(`📖 Enviando cuaderno a Caitlyn mediante ${imageUrl?.startsWith('http') ? 'URL' : 'Base64'}...`);
 
         const response = await axios.post(
             `${CAITLYN_URL}/agent/notebook`,
-            { imagen },
+            { imagen: imageUrl },
             { 
-                timeout: 90000, // 90 segundos para cuadernos grandes
+                timeout: 90000, 
                 maxBodyLength: Infinity,
                 maxContentLength: Infinity
             }
         );
+
+        // Limpiar Cloudinary si se usó (en segundo plano para no bloquear)
+        if (imageUrl && imageUrl.startsWith('http')) {
+            require('../utils/imageUpload').deleteImage(imageUrl).catch(console.error);
+        }
 
         if (response.data.success) {
             return res.json(response.data);
