@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Platform, Dimensions } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Platform, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
@@ -24,9 +24,10 @@ import { MenuIdeasModal } from './Productos/components/MenuIdeasModal';
 
 export default function ProductosScreen({ route }: any) {
     const navigation = useNavigation();
+    const { width } = useWindowDimensions();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
-    const styles = useMemo(() => createStyles(colors), [colors]);
+    const styles = useMemo(() => createStyles(colors, width), [colors, width]);
     const openedSwipeableRef = useRef<any>(null);
 
     const [showMenuIdeasModal, setShowMenuIdeasModal] = useState(false);
@@ -251,7 +252,7 @@ export default function ProductosScreen({ route }: any) {
                             <View style={styles.emptyIconBox}>
                                 <Ionicons name="restaurant-outline" size={40} color={colors.textMuted} />
                             </View>
-                            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Men\u00fa Vac\u00edo</Text>
+                            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>Menú Vacío</Text>
                             <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
                                 No hay productos registrados. Agrega platillos para empezar a vender.
                             </Text>

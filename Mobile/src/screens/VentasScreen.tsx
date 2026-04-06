@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useVentas, Producto } from '../hooks/useVentas';
 import { lightTheme, darkTheme } from '../theme';
-import { styles } from '../styles/VentasScreen.styles';
+import { createStyles } from '../styles/VentasScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
+import { useAppDimensions } from '../context/DimensionsContext';
 import { useAuth, Negocio } from '../context/AuthContext';
 import BellezaVentasScreen from './BellezaVentasScreen';
 
@@ -16,6 +17,7 @@ import { VentasOrderSelector } from './Ventas/components/VentasOrderSelector';
 import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
 
 export default function VentasScreen() {
+    const { width, height } = useAppDimensions();
     const {
         productosFiltrados, carrito, loading, refreshing, onRefresh,
         showModal, setShowModal, busqueda, setBusqueda,
@@ -32,6 +34,7 @@ export default function VentasScreen() {
     const { user } = useAuth();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+    const styles = useMemo(() => createStyles(colors, width, height), [colors, width, height]);
 
     const negocioActual = typeof user?.negocioActivo === 'object'
         ? user.negocioActivo as Negocio
@@ -75,6 +78,7 @@ export default function VentasScreen() {
                 nuevaOrden={nuevaOrden}
                 colors={colors}
                 styles={styles}
+                openCart={() => setShowModal(true)}
             />
 
             <View style={styles.searchContainer}>

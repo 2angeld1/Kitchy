@@ -1,127 +1,124 @@
-import { StyleSheet, Platform, Dimensions } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-const { width } = Dimensions.get('window');
+export const createStyles = (colors: any, width: number) => {
+    const isTablet = width > 768;
 
-export const createStyles = (colors: any) => StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    headerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-        paddingTop: 16,
-        paddingBottom: 8,
-    },
-    searchInputWrapper: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: 48,
-        borderRadius: 24,
-        paddingHorizontal: 16,
-        marginRight: 8,
-        borderWidth: 1,
-        backgroundColor: colors.surface,
-        borderColor: colors.border,
-    },
-    searchInput: {
-        flex: 1,
-        marginLeft: 8,
-        fontSize: 14,
-        fontWeight: '500',
-        height: '100%',
-        color: colors.textPrimary,
-    },
-    smartHint: {
-        paddingHorizontal: 24,
-        fontSize: 12,
-        marginBottom: 8,
-        fontStyle: 'italic',
-    },
-    filterContainer: {
-        width: '100%',
-        marginBottom: 8,
-    },
-    filterOptions: {
-        flexDirection: 'row',
-        paddingHorizontal: 24,
-        gap: 6,
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    filterChip: {
-        paddingHorizontal: 16,
-        paddingVertical: 6, // Filtros un poco más bajitos
-        borderRadius: 20,
-        borderWidth: 1,
-        backgroundColor: colors.card,
-        borderColor: colors.border,
-    },
-    filterChipActive: {
-        backgroundColor: colors.primary,
-        borderColor: colors.primary,
-    },
-    filterText: {
-        fontSize: 10, // Un pelín más pequeño para que quepa "Limpieza"
-        fontWeight: '800',
-        textTransform: 'uppercase',
-        color: colors.textSecondary,
-    },
-    filterTextActive: {
-        color: '#fff',
-    },
-    listContainer: {
-        paddingHorizontal: 24,
-        paddingTop: 15, // Margen de seguridad para badges
-        paddingBottom: 120,
-    },
-    itemCard: {
-        flexDirection: 'row',
-        paddingVertical: 16,
-        paddingHorizontal: 4,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        alignItems: 'center',
-        backgroundColor: colors.background,
-    },
-    itemIconBox: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 16,
-        backgroundColor: colors.card,
-    },
-    itemInfo: {
-        flex: 1,
-    },
-    itemHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 2,
-    },
-    itemTitle: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: colors.textPrimary,
-    },
-    itemDot: {
-        color: colors.textMuted,
-        marginHorizontal: 6,
-    },
-    itemQty: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: colors.primary,
-    },
-    itemSub: {
-        fontSize: 12,
-        color: colors.textSecondary,
-    },
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background,
+        },
+        headerRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: isTablet ? 32 : 24,
+            paddingTop: 16,
+            paddingBottom: 8,
+        },
+        searchInputWrapper: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: 52,
+            borderRadius: 26,
+            paddingHorizontal: 16,
+            marginRight: 8,
+            borderWidth: 1,
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+        },
+        searchInput: {
+            flex: 1,
+            marginLeft: 8,
+            fontSize: isTablet ? 16 : 14,
+            fontWeight: '500',
+            height: '100%',
+            color: colors.textPrimary,
+        },
+        smartHint: {
+            paddingHorizontal: isTablet ? 32 : 24,
+            fontSize: isTablet ? 14 : 12,
+            marginBottom: 8,
+            fontStyle: 'italic',
+        },
+        filterContainer: {
+            width: '100%',
+            marginBottom: 8,
+        },
+        filterOptions: {
+            flexDirection: 'row',
+            paddingHorizontal: isTablet ? 32 : 24,
+            gap: 8,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        filterChip: {
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 20,
+            borderWidth: 1,
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+        },
+        filterChipActive: {
+            backgroundColor: colors.primary,
+            borderColor: colors.primary,
+        },
+        filterText: {
+            fontSize: isTablet ? 12 : 10,
+            fontWeight: '800',
+            textTransform: 'uppercase',
+            color: colors.textSecondary,
+        },
+        filterTextActive: {
+            color: '#fff',
+        },
+        listContainer: {
+            paddingHorizontal: isTablet ? 32 : 24,
+            paddingTop: 15,
+            paddingBottom: 120,
+        },
+        itemCard: {
+            flexDirection: 'row',
+            paddingVertical: 20,
+            paddingHorizontal: 4,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+            alignItems: 'center',
+            backgroundColor: colors.background,
+        },
+        itemIconBox: {
+            width: isTablet ? 56 : 44,
+            height: isTablet ? 56 : 44,
+            borderRadius: 14,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 16,
+            backgroundColor: colors.card,
+        },
+        itemInfo: {
+            flex: 1,
+        },
+        itemHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 2,
+        },
+        itemTitle: {
+            fontSize: isTablet ? 18 : 15,
+            fontWeight: '700',
+            color: colors.textPrimary,
+        },
+        itemQty: {
+            fontSize: isTablet ? 18 : 15,
+            fontWeight: '700',
+            color: colors.primary,
+        },
+        itemSub: {
+            fontSize: isTablet ? 14 : 12,
+            color: colors.textSecondary,
+        },
     stockWarning: {
         fontSize: 11,
         fontWeight: '800',
@@ -254,4 +251,5 @@ export const createStyles = (colors: any) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     }
-});
+    });
+};

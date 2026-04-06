@@ -1,128 +1,135 @@
-import { StyleSheet, Dimensions, Platform } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '../theme';
 
-const { width, height } = Dimensions.get('window');
+export const createStyles = (colors: any, width: number, height: number) => {
+    const isTablet = width > 768;
+    const isLandscape = width > height;
 
-export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-    },
-    header: {
-        paddingTop: Platform.OS === 'ios' ? 60 : 40,
-        paddingHorizontal: spacing.xl,
-        paddingBottom: spacing.md,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    headerTitle: {
-        fontFamily: typography.fontFamily.black,
-        fontSize: typography.fontSize.xl,
-        fontWeight: typography.fontWeight.black,
-        color: colors.textPrimary,
-        letterSpacing: -0.5,
-    },
-    cartButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
-        backgroundColor: colors.white,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: colors.border,
-        position: 'relative',
-    },
-    cartBadge: {
-        position: 'absolute',
-        top: -5,
-        right: -5,
-        minWidth: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: colors.white,
-    },
-    cartBadgeText: {
-        fontFamily: typography.fontFamily.black,
-        color: colors.white,
-        fontSize: 10,
-        fontWeight: typography.fontWeight.black,
-    },
-    searchContainer: {
-        paddingHorizontal: spacing.xl,
-        marginBottom: spacing.md,
-    },
-    searchInputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: colors.white,
-        borderRadius: 16,
-        paddingHorizontal: spacing.md,
-        height: 50,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    searchInput: {
-        fontFamily: typography.fontFamily.medium,
-        flex: 1,
-        marginLeft: spacing.sm,
-        fontSize: typography.fontSize.sm,
-        fontWeight: typography.fontWeight.bold,
-        color: colors.textPrimary,
-    },
-    categoriesContainer: {
-        paddingHorizontal: spacing.xl,
-        flexDirection: 'row',
-        gap: 8,
-        marginBottom: spacing.lg,
-    },
-    categoryChip: {
-        paddingVertical: 8, // Filtros un poco más bajitos
-        borderRadius: 16,
-        borderWidth: 1.5,
-        borderColor: colors.border,
-        backgroundColor: colors.white,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    categoryChipActive: {
-        backgroundColor: colors.primary,
-        borderColor: colors.primary,
-    },
-    categoryText: {
-        fontFamily: typography.fontFamily.black,
-        fontSize: 11,
-        fontWeight: typography.fontWeight.black,
-        color: colors.textSecondary,
-        textTransform: 'uppercase',
-        letterSpacing: 1,
-    },
-    categoryTextActive: {
-        color: colors.white,
-    },
-    productsGrid: {
-        paddingHorizontal: spacing.xl,
-        paddingTop: 20, // Margen de seguridad para badges
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        paddingBottom: 120,
-    },
-    productCard: {
-        width: width > 600 ? (width - (spacing.xl * 2) - 60) / 4 : (width - (spacing.xl * 2) - 15) / 2,
-        backgroundColor: colors.white,
-        borderRadius: 24,
-        padding: 12,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: colors.border,
-        position: 'relative',
-    },
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background,
+        },
+        header: {
+            paddingTop: Platform.OS === 'ios' ? 60 : (isLandscape ? 8 : 40),
+            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            paddingBottom: isLandscape ? 2 : spacing.md,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: isLandscape ? 50 : undefined, // Altura fija en landscape
+        },
+        headerTitle: {
+            fontFamily: typography.fontFamily.black,
+            fontSize: isLandscape ? 18 : (isTablet ? 28 : 22),
+            fontWeight: typography.fontWeight.black,
+            color: colors.textPrimary,
+            letterSpacing: -0.5,
+        },
+        cartButton: {
+            width: isLandscape ? 34 : 44,
+            height: isLandscape ? 34 : 44,
+            borderRadius: 10,
+            backgroundColor: colors.white,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: colors.border,
+            position: 'relative',
+        },
+        cartBadge: {
+            position: 'absolute',
+            top: -4,
+            right: -4,
+            minWidth: 16,
+            height: 16,
+            borderRadius: 8,
+            backgroundColor: colors.primary,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: 1.5,
+            borderColor: colors.white,
+        },
+        cartBadgeText: {
+            fontFamily: typography.fontFamily.black,
+            color: colors.white,
+            fontSize: 8,
+            fontWeight: typography.fontWeight.black,
+        },
+        searchContainer: {
+            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            marginBottom: isLandscape ? 4 : spacing.md,
+        },
+        searchInputWrapper: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: colors.white,
+            borderRadius: 12,
+            paddingHorizontal: spacing.md,
+            height: isLandscape ? 36 : 52,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        searchInput: {
+            fontFamily: typography.fontFamily.medium,
+            flex: 1,
+            marginLeft: spacing.sm,
+            fontSize: isLandscape ? 12 : typography.fontSize.sm,
+            fontWeight: typography.fontWeight.bold,
+            color: colors.textPrimary,
+        },
+        categoriesContainer: {
+            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            flexDirection: 'row',
+            gap: 8,
+            marginBottom: isLandscape ? 6 : spacing.lg,
+        },
+        categoryChip: {
+            paddingVertical: isLandscape ? 4 : 10,
+            paddingHorizontal: isLandscape ? 10 : 16,
+            borderRadius: 12,
+            borderWidth: 1.5,
+            borderColor: colors.border,
+            backgroundColor: colors.white,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        categoryChipActive: {
+            backgroundColor: colors.primary,
+            borderColor: colors.primary,
+        },
+        categoryText: {
+            fontFamily: typography.fontFamily.black,
+            fontSize: isLandscape ? 9 : 11,
+            fontWeight: typography.fontWeight.black,
+            color: colors.textSecondary,
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+        },
+        categoryTextActive: {
+            color: colors.white,
+        },
+        productsGrid: {
+            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            paddingTop: isLandscape ? 4 : 20,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-start',
+            gap: isLandscape ? 12 : 16,
+            paddingBottom: 100,
+        },
+        productCard: {
+            width: isTablet 
+                ? (width - (isTablet ? spacing.xxl * 2 : spacing.xl * 2) - (isLandscape ? 48 : 48)) / (isLandscape ? 5 : 4) 
+                : (width - (spacing.xl * 2) - 16) / 2,
+            backgroundColor: colors.white,
+            borderRadius: 20,
+            padding: isLandscape ? 8 : 12,
+            marginBottom: isLandscape ? 8 : 4,
+            borderWidth: 1,
+            borderColor: colors.border,
+            position: 'relative',
+        },
     stockBadge: {
         position: 'absolute',
         top: 8,
@@ -152,10 +159,10 @@ export const styles = StyleSheet.create({
     },
     productName: {
         fontFamily: typography.fontFamily.medium,
-        fontSize: 13,
+        fontSize: isTablet ? 14 : 12.5,
         fontWeight: typography.fontWeight.bold,
         color: colors.textPrimary,
-        height: 32,
+        height: isTablet ? 32 : 30,
     },
     faltantesText: {
         color: '#ef4444',
@@ -165,7 +172,7 @@ export const styles = StyleSheet.create({
     },
     productPrice: {
         fontFamily: typography.fontFamily.bold,
-        fontSize: 16,
+        fontSize: isTablet ? 16 : 14,
         fontWeight: '900',
         color: colors.primary,
         marginTop: 4,
@@ -248,7 +255,7 @@ export const styles = StyleSheet.create({
         flex: 1,
     },
     cartItemName: {
-        fontSize: 15,
+        fontSize: isTablet ? 15 : 13.5,
         fontWeight: '900',
         color: colors.textPrimary,
         letterSpacing: -0.3,
@@ -383,4 +390,5 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     }
-});
+    });
+};

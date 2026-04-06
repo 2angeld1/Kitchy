@@ -5,6 +5,7 @@ import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { Producto } from '../../../hooks/useVentas';
 import { KitchyInput } from '../../../components/KitchyInput';
 import { KitchySelect } from '../../../components/KitchySelect';
+import { useAppDimensions } from '../../../context/DimensionsContext';
 
 interface Props {
     visible: boolean;
@@ -47,6 +48,9 @@ export const VentasCartModal: React.FC<Props> = ({
     procesarVenta,
     loading
 }) => {
+    const { width, height } = useAppDimensions();
+    const isLandscape = width > height;
+
     return (
         <Modal
             visible={visible}
@@ -72,49 +76,64 @@ export const VentasCartModal: React.FC<Props> = ({
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.carritoList} showsVerticalScrollIndicator={false}>
+                    <ScrollView 
+                        style={{ flex: 1 }} 
+                        contentContainerStyle={[
+                            styles.carritoList,
+                            isLandscape && { flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 16 }
+                        ]} 
+                        showsVerticalScrollIndicator={false}
+                    >
                         {carrito.length === 0 ? (
-                            <View style={[styles.emptyContainer, { paddingTop: 100 }]}>
-                                <Ionicons name="cart-outline" size={64} color={colors.border} />
+                            <View style={[styles.emptyContainer, { paddingTop: isLandscape ? 40 : 100 }]}>
+                                <Ionicons name="cart-outline" size={isLandscape ? 40 : 64} color={colors.border} />
                                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>El carrito está vacío</Text>
                             </View>
                         ) : (
                             carrito.map(item => (
-                                <View key={item.producto._id} style={styles.cartItem}>
-                                    <View style={styles.cartItemImage}>
-                                        {item.producto.imagen ? (
-                                            <Image
-                                                source={{ uri: item.producto.imagen }}
-                                                style={{ width: '100%', height: '100%', borderRadius: 12 }}
-                                                resizeMode="cover"
-                                            />
-                                        ) : (
-                                            <Ionicons
-                                                name={item.producto.categoria === 'comida' ? 'fast-food-outline' : item.producto.categoria === 'bebida' ? 'water-outline' : item.producto.categoria === 'postre' ? 'ice-cream-outline' : 'cube-outline'}
-                                                size={24}
-                                                color={colors.primary}
-                                            />
-                                        )}
-                                    </View>
+                                <View 
+                                    key={item.producto._id} 
+                                    style={[
+                                        styles.cartItem, 
+                                        isLandscape && { width: (width - 64) / 2, marginBottom: 8, paddingVertical: 8 }
+                                    ]}
+                                >
+                                    {!isLandscape && (
+                                        <View style={styles.cartItemImage}>
+                                            {item.producto.imagen ? (
+                                                <Image
+                                                    source={{ uri: item.producto.imagen }}
+                                                    style={{ width: '100%', height: '100%', borderRadius: 12 }}
+                                                    resizeMode="cover"
+                                                />
+                                            ) : (
+                                                <Ionicons
+                                                    name={item.producto.categoria === 'comida' ? 'fast-food-outline' : item.producto.categoria === 'bebida' ? 'water-outline' : item.producto.categoria === 'postre' ? 'ice-cream-outline' : 'cube-outline'}
+                                                    size={24}
+                                                    color={colors.primary}
+                                                />
+                                            )}
+                                        </View>
+                                    )}
                                     <View style={styles.cartItemInfo}>
-                                        <Text style={styles.cartItemName} numberOfLines={1}>{item.producto.nombre}</Text>
-                                        <Text style={styles.cartItemPrice}>${(Number(item.producto.precio) || 0).toFixed(2)}</Text>
+                                        <Text style={[styles.cartItemName, isLandscape && { fontSize: 13 }]} numberOfLines={1}>{item.producto.nombre}</Text>
+                                        <Text style={[styles.cartItemPrice, isLandscape && { fontSize: 11 }]}>${(Number(item.producto.precio) || 0).toFixed(2)}</Text>
                                     </View>
-                                    <View style={styles.quantityControls}>
+                                    <View style={[styles.quantityControls, isLandscape && { transform: [{ scale: 0.9 }] }]}>
                                         <TouchableOpacity
                                             style={styles.qtyBtn}
                                             onPress={() => quitarDelCarrito(item.producto._id)}
                                             activeOpacity={0.7}
                                         >
-                                            <Ionicons name="remove" size={16} color={colors.textSecondary} />
+                                            <Ionicons name="remove" size={14} color={colors.textSecondary} />
                                         </TouchableOpacity>
-                                        <Text style={styles.qtyText}>{item.cantidad}</Text>
+                                        <Text style={[styles.qtyText, isLandscape && { fontSize: 14 }]}>{item.cantidad}</Text>
                                         <TouchableOpacity
                                             style={styles.qtyBtn}
                                             onPress={() => agregarAlCarrito(item.producto)}
                                             activeOpacity={0.7}
                                         >
-                                            <Ionicons name="add" size={16} color={colors.primary} />
+                                            <Ionicons name="add" size={14} color={colors.primary} />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -123,72 +142,97 @@ export const VentasCartModal: React.FC<Props> = ({
                     </ScrollView>
 
                     {carrito.length > 0 && (
-                        <View style={styles.checkoutFooter}>
-                            {/* Nombre del Cliente */}
-                            <KitchyInput
-                                label="Nombre del Cliente"
-                                placeholder="..."
-                                value={cliente}
-                                onChangeText={setCliente}
-                            />
-
-                            {/* Metodo de Pago - Cambiado a Select para mejor UX en móvil */}
-                            <KitchySelect
-                                label="Método de Pago"
-                                value={metodoPago}
-                                options={[
-                                    { label: '💵 Efectivo', value: 'efectivo' },
-                                    { label: '💸 Yappy', value: 'yappy' },
-                                    { label: '🏦 ACH / Transferencia', value: 'ach' },
-                                    { label: '💳 Tarjeta', value: 'tarjeta' }
-                                ]}
-                                onSelect={setMetodoPago}
-                            />
-
-                            {/* Detalle Efectivo */}
-                            {metodoPago === 'efectivo' && (
-                                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20, alignItems: 'flex-start' }}>
-                                    <View style={{ flex: 1.2 }}>
+                            <View style={[
+                                styles.checkoutFooter, 
+                                isLandscape && { paddingBottom: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }
+                            ]}>
+                                {/* Inputs en Fila si es Landscape */}
+                                <View style={{ flexDirection: 'row', gap: 12, marginBottom: isLandscape ? 4 : 0 }}>
+                                    <View style={{ flex: 1.5 }}>
                                         <KitchyInput
-                                            label="RECIBIDO"
-                                            placeholder="0.00"
-                                            keyboardType="numeric"
-                                            value={montoRecibido}
-                                            onChangeText={setMontoRecibido}
+                                            label="Nombre del Cliente"
+                                            placeholder="..."
+                                            value={cliente}
+                                            onChangeText={setCliente}
+                                            containerStyle={isLandscape && { marginBottom: 0 }}
                                         />
                                     </View>
-                                    <View style={{ flex: 1, paddingTop: 32 }}>
-                                        <View style={{ alignItems: 'flex-end' }}>
-                                            <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 }}>CAMBIO</Text>
-                                            <Text style={{ fontSize: 26, fontWeight: '900', color: colors.primary }}>
+                                    <View style={{ flex: 1 }}>
+                                        <KitchySelect
+                                            label="Método de Pago"
+                                            value={metodoPago}
+                                            options={[
+                                                { label: '💵 Efectivo', value: 'efectivo' },
+                                                { label: '💸 Yappy', value: 'yappy' },
+                                                { label: '🏦 ACH / Transferencia', value: 'ach' },
+                                                { label: '💳 Tarjeta', value: 'tarjeta' }
+                                            ]}
+                                            onSelect={setMetodoPago}
+                                            containerStyle={isLandscape && { marginBottom: 0 }}
+                                        />
+                                    </View>
+                                    {metodoPago === 'efectivo' && isLandscape && (
+                                        <View style={{ flex: 1 }}>
+                                            <KitchyInput
+                                                label="RECIBIDO"
+                                                placeholder="0.00"
+                                                keyboardType="numeric"
+                                                value={montoRecibido}
+                                                onChangeText={setMontoRecibido}
+                                                containerStyle={{ marginBottom: 0 }}
+                                            />
+                                        </View>
+                                    )}
+                                </View>
+
+                                {/* Cambio y Total en la misma fila en Landscape */}
+                                <View style={{ 
+                                    flexDirection: 'row', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center', 
+                                    marginVertical: isLandscape ? 4 : 8 
+                                }}>
+                                    {metodoPago === 'efectivo' && (
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                             <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '900' }}>CAMBIO:</Text>
+                                             <Text style={{ fontSize: isLandscape ? 18 : 22, fontWeight: '900', color: colors.primary }}>
                                                 ${(Number(cambio) || 0).toFixed(2)}
                                             </Text>
                                         </View>
+                                    )}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+                                        <Text style={[styles.totalLabel, { fontSize: 12, marginBottom: 0 }]}>TOTAL:</Text>
+                                        <Text style={[styles.totalValue, { fontSize: isLandscape ? 22 : 24 }]}>${(Number(calcularTotal()) || 0).toFixed(2)}</Text>
                                     </View>
                                 </View>
-                            )}
 
-                            <View style={styles.totalRow}>
-                                <Text style={styles.totalLabel}>Total a pagar</Text>
-                                <Text style={styles.totalValue}>${(Number(calcularTotal()) || 0).toFixed(2)}</Text>
+                                <View style={{ flexDirection: 'row', gap: 10 }}>
+                                    <TouchableOpacity
+                                        style={[styles.confirmBtn, { flex: 0.6, height: isLandscape ? 40 : 46, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border }]}
+                                        onPress={onClose}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Ionicons name="time-outline" size={isLandscape ? 18 : 18} color={colors.textSecondary} />
+                                        <Text style={[styles.confirmBtnText, { color: colors.textSecondary, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>DEJAR PENDIENTE</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={[styles.confirmBtn, { flex: 1, height: isLandscape ? 40 : 46 }]}
+                                        onPress={procesarVenta}
+                                        disabled={loading}
+                                        activeOpacity={0.9}
+                                    >
+                                        {loading ? (
+                                            <ActivityIndicator size="small" color="#FFF" />
+                                        ) : (
+                                            <>
+                                                <Ionicons name="wallet-outline" size={isLandscape ? 20 : 20} color={colors.white} />
+                                                <Text style={[styles.confirmBtnText, { fontSize: isLandscape ? 13 : 13, fontWeight: '900' }]}>PAGADO</Text>
+                                            </>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-
-                            <TouchableOpacity
-                                style={styles.confirmBtn}
-                                onPress={procesarVenta}
-                                disabled={loading}
-                                activeOpacity={0.9}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#FFF" />
-                                ) : (
-                                    <>
-                                        <Ionicons name="checkmark-circle" size={24} color={colors.white} />
-                                        <Text style={styles.confirmBtnText}>Confirmar Pedido</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        </View>
                     )}
                 </Animated.View>
             </Animated.View>

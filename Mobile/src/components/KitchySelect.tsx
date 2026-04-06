@@ -26,9 +26,18 @@ interface KitchySelectProps {
   onSelect: (value: string) => void;
   placeholder?: string;
   error?: string;
+  containerStyle?: any;
 }
 
-export function KitchySelect({ label, value, options, onSelect, placeholder = 'Seleccionar...', error }: KitchySelectProps) {
+export function KitchySelect({ 
+  label, 
+  value, 
+  options, 
+  onSelect, 
+  placeholder = 'Seleccionar...', 
+  error,
+  containerStyle 
+}: KitchySelectProps) {
   const { isDark } = useTheme();
   const colors = isDark ? darkTheme : lightTheme;
   const [showModal, setShowModal] = useState(false);
@@ -36,7 +45,7 @@ export function KitchySelect({ label, value, options, onSelect, placeholder = 'S
   const selectedOption = options.find((opt) => opt.value === value);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {label && <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>}
       
       <TouchableOpacity

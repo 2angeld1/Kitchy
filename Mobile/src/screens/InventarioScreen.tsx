@@ -7,6 +7,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/InventarioScreen.styles';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
+import { useAppDimensions } from '../context/DimensionsContext';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../context/AuthContext';
 import { getCategoriaNegocio } from '../utils/beauty-helpers';
@@ -25,9 +26,10 @@ import { updateNegocioConfig, updateComisionReventaConfig } from '../services/ap
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
+    const { width } = useAppDimensions();
     const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
-    const styles = useMemo(() => createStyles(colors), [colors]);
+    const styles = useMemo(() => createStyles(colors, width), [colors, width]);
 
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user), [user]);
 

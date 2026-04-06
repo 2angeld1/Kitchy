@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { useAppDimensions } from '../../../context/DimensionsContext';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -11,6 +12,7 @@ interface Props {
     nuevaOrden: () => void;
     colors: any;
     styles: any;
+    openCart: () => void;
 }
 
 export const VentasOrderSelector: React.FC<Props> = ({
@@ -20,8 +22,11 @@ export const VentasOrderSelector: React.FC<Props> = ({
     eliminarOrden,
     nuevaOrden,
     colors,
+    openCart,
 }) => {
     const [showSelector, setShowSelector] = useState(false);
+    const { width, height } = useAppDimensions();
+    const isLandscape = width > height;
 
     const calcularSubtotal = (items: any[]) => {
         return items.reduce((sum, item) => sum + (Number(item.producto?.precio || 0) * item.cantidad), 0);
@@ -43,9 +48,13 @@ export const VentasOrderSelector: React.FC<Props> = ({
     };
 
     return (
-        <View style={{ backgroundColor: colors.background, paddingHorizontal: 20, paddingVertical: 10 }}>
+        <View style={{ 
+            backgroundColor: colors.background, 
+            paddingHorizontal: isLandscape ? 12 : 20, 
+            paddingVertical: isLandscape ? 4 : 10 
+        }}>
             {/* Barra Compacta: [✅ N] [Pedido Activo ▼] [+] */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: isLandscape ? 6 : 10 }}>
 
                 {/* Badge de Completados */}
                 {ordenesCompletadas.length > 0 && (
@@ -56,16 +65,16 @@ export const VentasOrderSelector: React.FC<Props> = ({
                             flexDirection: 'row',
                             alignItems: 'center',
                             gap: 5,
-                            paddingHorizontal: 12,
-                            height: 54,
-                            borderRadius: 16,
+                            paddingHorizontal: isLandscape ? 10 : 12,
+                            height: isLandscape ? 38 : 54,
+                            borderRadius: 12,
                             backgroundColor: 'rgba(16, 185, 129, 0.08)',
                             borderWidth: 1.5,
                             borderColor: 'rgba(16, 185, 129, 0.2)',
                         }}
                     >
-                        <Ionicons name="checkmark-circle" size={18} color="#10b981" />
-                        <Text style={{ color: '#10b981', fontWeight: '900', fontSize: 14 }}>
+                        <Ionicons name="checkmark-circle" size={isLandscape ? 16 : 18} color="#10b981" />
+                        <Text style={{ color: '#10b981', fontWeight: '900', fontSize: isLandscape ? 12 : 14 }}>
                             {ordenesCompletadas.length}
                         </Text>
                     </TouchableOpacity>
@@ -77,44 +86,45 @@ export const VentasOrderSelector: React.FC<Props> = ({
                     activeOpacity={0.8}
                     style={{
                         flex: 1,
-                        height: 54,
-                        borderRadius: 16,
+                        height: isLandscape ? 38 : 54,
+                        borderRadius: 12,
                         backgroundColor: colors.primary,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         paddingHorizontal: 16,
                         shadowColor: colors.primary,
-                        shadowOffset: { width: 0, height: 4 },
+                        shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.3,
-                        shadowRadius: 8,
-                        elevation: 6,
+                        shadowRadius: 4,
+                        elevation: 4,
                     }}
                 >
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, flexDirection: isLandscape ? 'row' : 'column', alignItems: isLandscape ? 'center' : 'flex-start', gap: isLandscape ? 8 : 0 }}>
                         <Text style={{
                             color: '#fff',
                             fontWeight: '900',
-                            fontSize: 15,
+                            fontSize: isLandscape ? 13 : 15,
                             letterSpacing: -0.3,
                         }} numberOfLines={1}>
                             {ordenActiva?.nombre || 'Pedido 1'}
                         </Text>
                         <Text style={{
                             color: 'rgba(255,255,255,0.65)',
-                            fontSize: 11,
+                            fontSize: isLandscape ? 11 : 11,
                             fontWeight: '700',
-                            marginTop: 1,
+                            marginTop: isLandscape ? 0 : 1,
                         }}>
-                            ${subtotalActivo.toFixed(2)} · {ordenesActivas.length} {ordenesActivas.length === 1 ? 'pedido' : 'pedidos'}
+                            ${subtotalActivo.toFixed(2)}
+                            {!isLandscape && ` · ${ordenesActivas.length} ${ordenesActivas.length === 1 ? 'pedido' : 'pedidos'}`}
                         </Text>
                     </View>
                     <View style={{
-                        width: 28, height: 28, borderRadius: 14,
+                        width: isLandscape ? 24 : 28, height: isLandscape ? 24 : 28, borderRadius: 12,
                         backgroundColor: 'rgba(255,255,255,0.2)',
                         justifyContent: 'center', alignItems: 'center',
                     }}>
-                        <Ionicons name="chevron-down" size={16} color="#fff" />
+                        <Ionicons name="chevron-down" size={isLandscape ? 14 : 16} color="#fff" />
                     </View>
                 </TouchableOpacity>
 
@@ -123,9 +133,9 @@ export const VentasOrderSelector: React.FC<Props> = ({
                     onPress={handleNuevaOrden}
                     activeOpacity={0.7}
                     style={{
-                        width: 54,
-                        height: 54,
-                        borderRadius: 16,
+                        width: isLandscape ? 38 : 54,
+                        height: isLandscape ? 38 : 54,
+                        borderRadius: 12,
                         backgroundColor: colors.surface,
                         borderWidth: 1.5,
                         borderColor: colors.primary + '44',
@@ -134,7 +144,7 @@ export const VentasOrderSelector: React.FC<Props> = ({
                         alignItems: 'center',
                     }}
                 >
-                    <Ionicons name="add" size={24} color={colors.primary} />
+                    <Ionicons name="add" size={isLandscape ? 22 : 24} color={colors.primary} />
                 </TouchableOpacity>
             </View>
 
@@ -229,22 +239,33 @@ export const VentasOrderSelector: React.FC<Props> = ({
                                                         fontSize: 11, color: colors.textMuted,
                                                         fontWeight: '600', marginTop: 2,
                                                     }}>
-                                                        {o.items.length} {o.items.length === 1 ? 'producto' : 'productos'}
+                                                        ${subtotal.toFixed(2)} · {o.items.length} {o.items.length === 1 ? 'ítem' : 'ítems'}
                                                     </Text>
                                                 </View>
-                                                <Text style={{
-                                                    fontSize: 16, fontWeight: '900',
-                                                    color: isActive ? colors.primary : colors.textPrimary,
-                                                }}>
-                                                    ${subtotal.toFixed(2)}
-                                                </Text>
+                                                
+                                                {/* ACCESO RÁPIDO AL DETALLE / PAGO */}
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        seleccionarOrden(o.id);
+                                                        setShowSelector(false);
+                                                        openCart();
+                                                    }}
+                                                    style={{
+                                                        width: 32, height: 32, borderRadius: 16,
+                                                        backgroundColor: colors.primary + '15',
+                                                        justifyContent: 'center', alignItems: 'center',
+                                                        marginRight: 8,
+                                                    }}
+                                                >
+                                                    <Ionicons name="cart-outline" size={16} color={colors.primary} />
+                                                </TouchableOpacity>
+
                                                 <TouchableOpacity
                                                     onPress={() => eliminarOrden(o.id)}
                                                     style={{
                                                         width: 28, height: 28, borderRadius: 14,
                                                         backgroundColor: 'rgba(239,68,68,0.06)',
                                                         justifyContent: 'center', alignItems: 'center',
-                                                        marginLeft: 10,
                                                     }}
                                                 >
                                                     <Ionicons name="trash-outline" size={14} color="#ef4444" />

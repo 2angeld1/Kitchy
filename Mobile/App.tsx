@@ -22,6 +22,7 @@ import { View, ActivityIndicator, Platform } from 'react-native';
 import { lightTheme, darkTheme } from './src/theme';
 import KitchyToast from './src/components/KitchyToast';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { DimensionsProvider } from './src/context/DimensionsContext';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -147,14 +148,16 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <AuthProvider>
-          <NavigationContainer>
-            <RootNavigator />
-            <KitchyToast />
-          </NavigationContainer>
-        </AuthProvider>
-      </ThemeProvider>
+      <DimensionsProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <NavigationContainer>
+              <RootNavigator />
+              <KitchyToast />
+            </NavigationContainer>
+          </AuthProvider>
+        </ThemeProvider>
+      </DimensionsProvider>
     </GestureHandlerRootView>
   );
 }
