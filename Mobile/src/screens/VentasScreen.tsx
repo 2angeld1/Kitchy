@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn } from 'react-native-reanimated';
 import { useVentas, Producto } from '../hooks/useVentas';
@@ -302,6 +302,37 @@ export default function VentasScreen() {
                     <Text style={{ marginTop: 20, fontSize: 24, fontWeight: '900', color: '#fff' }}>¡VENDA EXITOSA!</Text>
                 </Animated.View>
             )}
+            {/* Pantalla de Carga de Análisis de Caitlyn (Bloquea TODO, incluyendo TabBar) */}
+            <Modal
+                visible={isAnalyzingNotebook}
+                transparent
+                animationType="fade"
+                statusBarTranslucent
+            >
+                <Animated.View 
+                    entering={FadeIn} 
+                    exiting={FadeIn}
+                    style={styles.analysisOverlay}
+                >
+                    <View style={styles.analysisContent}>
+                        <Animated.View 
+                            entering={ZoomIn.duration(600).springify()} 
+                            style={styles.analysisIconContainer}
+                        >
+                            <Ionicons name="sparkles" size={40} color="#fff" />
+                        </Animated.View>
+                        <Text style={styles.analysisTitle}>Caitlyn está analizando...</Text>
+                        <Text style={styles.analysisSubtitle}>
+                            Leyendo tu caligrafía y organizando las ventas de tu cuaderno.
+                        </Text>
+                        <ActivityIndicator 
+                            size="small" 
+                            color="#fff" 
+                            style={{ marginTop: 24, opacity: 0.8 }} 
+                        />
+                    </View>
+                </Animated.View>
+            </Modal>
 
             {/* Modal de Confirmación para Eliminar Pedido */}
             <Modal visible={!!ordenAEliminar} transparent animationType="fade">

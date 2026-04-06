@@ -1,5 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '../theme';
+import { spacing, typography } from '../theme';
 
 export const createStyles = (colors: any, width: number, height: number) => {
     const isTablet = width > 768;
@@ -476,6 +476,7 @@ export const createStyles = (colors: any, width: number, height: number) => {
     scanBtn: {
         marginBottom: 10,
         borderWidth: 1,
+        borderColor: colors.primary,
     },
     successOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -512,6 +513,48 @@ export const createStyles = (colors: any, width: number, height: number) => {
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 8,
-    }
+    },
+    // Analysis Overlay Styles
+    analysisOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.92)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10000,
+    },
+    analysisContent: {
+        alignItems: 'center',
+        padding: 30,
+        width: '100%',
+    },
+    analysisIconContainer: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
+        backgroundColor: colors.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 15 },
+        shadowOpacity: 0.6,
+        shadowRadius: 25,
+        elevation: 20,
+    },
+    analysisTitle: {
+        fontSize: 24,
+        fontWeight: '900',
+        color: '#fff',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    analysisSubtitle: {
+        fontSize: 15,
+        color: 'rgba(255,255,255,0.7)',
+        textAlign: 'center',
+        maxWidth: 280,
+        lineHeight: 22,
+        fontWeight: '600',
+    },
     });
 };
