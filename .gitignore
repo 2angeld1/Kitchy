@@ -36,3 +36,7 @@ Thumbs.db
 # Misc
 .eslintcache
 /coverage
+
+# Local execution and seeds
+ejecutar_todo.bat
+seedproductos.ts

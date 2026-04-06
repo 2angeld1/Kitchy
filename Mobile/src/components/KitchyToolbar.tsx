@@ -14,6 +14,7 @@ interface KitchyToolbarProps {
     onNotificationPress?: (notif: any) => void;
     showUserMenuButton?: boolean;
     showSwitchNegocioButton?: boolean;
+    notificationIcon?: string; // Nuevo prop
 }
 
 export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
@@ -24,7 +25,8 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     onBack,
     onNotificationPress,
     showUserMenuButton = true,
-    showSwitchNegocioButton = true
+    showSwitchNegocioButton = true,
+    notificationIcon = "notifications-outline" // Valor por defecto
 }) => {
     const {
         user,
@@ -90,7 +92,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                             }
                         }}
                     >
-                        <Ionicons name="notifications-outline" size={22} color={colors.textPrimary} />
+                        <Ionicons name={notificationIcon as any} size={22} color={colors.textPrimary} />
                         {notifications && notifications.length > 0 && <View style={[styles.badge, { borderColor: isDark ? colors.card : colors.white }]} />}
                     </TouchableOpacity>
                 )}

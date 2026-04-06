@@ -142,4 +142,7 @@ export const parseShoppingList = (text?: string, image?: string) =>
 export const learnPrice = (item_name: string, price: number) =>
     api.post('/agente/shopping/learn-price', { item_name, price });
 
+export const procesarCuadernoVentas = (imagenBase64: string) =>
+    api.post('/agente/notebook', { imagen: imagenBase64 });
+
 export default api;

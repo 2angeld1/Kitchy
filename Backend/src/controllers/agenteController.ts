@@ -659,3 +659,38 @@ export const aprenderPrecio = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ success: false, message: 'Error en aprendizaje de precio' });
     }
 };
+
+/**
+ * Procesa una imagen de cuaderno de ventas manuscrito (Notebook OCR)
+ * Proxy hacia Caitlyn Python.
+ */
+export const procesarCuadernoVentas = async (req: AuthRequest, res: Response) => {
+    try {
+        const { imagen } = req.body;
+
+        if (!imagen) {
+            return res.status(400).json({ message: 'No se recibió ninguna imagen de cuaderno' });
+        }
+
+        console.log(`📖 Enviando cuaderno a Caitlyn para análisis OCR de ventas...`);
+
+        const response = await axios.post(
+            `${CAITLYN_URL}/agent/notebook`,
+            { imagen },
+            { timeout: 60000 }
+        );
+
+        if (response.data.success) {
+            return res.json(response.data);
+        } else {
+            console.warn('⚠️ Caitlyn no pudo leer el cuaderno:', response.data.error);
+            return res.status(400).json({ success: false, message: response.data.error });
+        }
+    } catch (error: any) {
+        console.error('❌ Error contactando a Caitlyn (Notebook):', error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Caitlyn no pudo procesar el cuaderno en este momento.' 
+        });
+    }
+};

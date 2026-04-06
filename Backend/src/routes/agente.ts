@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio, guardarGastoFactura, sugerirReceta, analizarAlertasDashboard, sugerirMenuIdeas, aprenderAliasVisual, buscarMatchesVisuales } from '../controllers/agenteController';
+import { procesarFactura, consultarCosteoPorNombre, obtenerConsejoNegocio, guardarGastoFactura, sugerirReceta, analizarAlertasDashboard, sugerirMenuIdeas, aprenderAliasVisual, buscarMatchesVisuales, procesarCuadernoVentas } from '../controllers/agenteController';
 
 const router = Router();
 
@@ -24,5 +24,8 @@ router.post('/vision/match-products', buscarMatchesVisuales);
 // --- Presupuestario ---
 router.post('/shopping/parse', require('../controllers/agenteController').parseShoppingList);
 router.post('/shopping/learn-price', require('../controllers/agenteController').aprenderPrecio);
+
+// --- Notebook (Ventas Manuscritas) ---
+router.post('/notebook', procesarCuadernoVentas);
 
 export default router;

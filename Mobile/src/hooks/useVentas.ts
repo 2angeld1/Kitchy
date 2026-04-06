@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
-import { getProductos, createVenta, getVentas } from '../services/api';
+import { getProductos, createVenta, getVentas, procesarCuadernoVentas } from '../services/api';
 import Toast from 'react-native-toast-message';
+import * as ImagePicker from 'expo-image-picker';
 
 export interface Producto {
     _id: string;
@@ -65,6 +66,11 @@ export const useVentas = () => {
     const [showHistorial, setShowHistorial] = useState(false);
     const [showOrderSelector, setShowOrderSelector] = useState(false);
     const [montoRecibido, setMontoRecibido] = useState<string>('');
+
+    // Notebook State
+    const [isAnalyzingNotebook, setIsAnalyzingNotebook] = useState(false);
+    const [notebookVentas, setNotebookVentas] = useState<any[]>([]);
+    const [showNotebookModal, setShowNotebookModal] = useState(false);
 
     // Filters
     const [busqueda, setBusqueda] = useState('');
@@ -416,6 +422,68 @@ export const useVentas = () => {
         return sugerencia || null;
     };
 
+    // --- Lógica del Cuaderno (Notebook OCR) ---
+
+    const handleProcesarCuaderno = async (base64: string) => {
+        setIsAnalyzingNotebook(true);
+        try {
+            const response = await procesarCuadernoVentas(base64);
+            if (response.data.success) {
+                setNotebookVentas(response.data.ventas);
+                setShowNotebookModal(true);
+                Toast.show({ type: 'success', text1: 'Cuaderno analizado', text2: response.data.mensaje });
+            } else {
+                Toast.show({ type: 'error', text1: 'Error', text2: response.data.error || 'No se pudo leer el cuaderno' });
+            }
+        } catch (err: any) {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'Fallo al conectar con Caitlyn' });
+        } finally {
+            setIsAnalyzingNotebook(false);
+        }
+    };
+
+    const tomarFotoCuaderno = async () => {
+        try {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') return Toast.show({ type: 'error', text1: 'Permiso denegado' });
+            const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8, base64: true });
+            if (!result.canceled && result.assets[0].base64) handleProcesarCuaderno(`data:image/jpeg;base64,${result.assets[0].base64}`);
+        } catch (err) {
+            Toast.show({ type: 'error', text1: 'Error al capturar foto' });
+        }
+    };
+
+    const seleccionarImagenCuaderno = async () => {
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') return Toast.show({ type: 'error', text1: 'Permiso denegado' });
+            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.8, base64: true });
+            if (!result.canceled && result.assets[0].base64) handleProcesarCuaderno(`data:image/jpeg;base64,${result.assets[0].base64}`);
+        } catch (err) {
+            Toast.show({ type: 'error', text1: 'Error al seleccionar imagen' });
+        }
+    };
+
+    const importarVentaNotebook = (venta: any) => {
+        const id = Date.now().toString();
+        const nueva: Orden = {
+            id,
+            nombre: venta.cliente || `Pedido ${ordenes.length + 1}`,
+            items: (venta.items || []).map((it: any) => {
+                const prod = productos.find(p => p.nombre.toLowerCase().includes(it.nombre.toLowerCase()) || it.nombre.toLowerCase().includes(p.nombre.toLowerCase()));
+                return {
+                    producto: prod || { _id: 'manual-' + Date.now(), nombre: it.nombre, precio: it.precio || (venta.total / (venta.items?.length || 1)), categoria: 'comida', disponible: true },
+                    cantidad: it.cantidad || 1
+                };
+            }),
+            cliente: venta.cliente || '',
+            metodoPago: venta.metodoPago || 'efectivo'
+        };
+        setOrdenes([...ordenes, nueva]);
+        setActiveOrderId(id);
+        Toast.show({ type: 'success', text1: 'Venta Importada', text2: `Se ha creado el pedido para ${nueva.nombre}` });
+    };
+
     return {
         productos,
         carrito,
@@ -449,6 +517,13 @@ export const useVentas = () => {
         ordenAEliminar,
         showOrderSelector,
         setShowOrderSelector,
-        getSugerenciaInteligente
+        getSugerenciaInteligente,
+        isAnalyzingNotebook,
+        notebookVentas,
+        showNotebookModal,
+        setShowNotebookModal,
+        tomarFotoCuaderno,
+        seleccionarImagenCuaderno,
+        importarVentaNotebook
     };
 };

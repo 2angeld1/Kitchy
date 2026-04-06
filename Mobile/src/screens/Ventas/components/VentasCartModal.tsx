@@ -162,10 +162,10 @@ export const VentasCartModal: React.FC<Props> = ({
                                             label="Método de Pago"
                                             value={metodoPago}
                                             options={[
-                                                { label: '💵 Efectivo', value: 'efectivo' },
-                                                { label: '💸 Yappy', value: 'yappy' },
-                                                { label: '🏦 ACH / Transferencia', value: 'ach' },
-                                                { label: '💳 Tarjeta', value: 'tarjeta' }
+                                                { label: 'Efectivo', value: 'efectivo' },
+                                                { label: 'Yappy', value: 'yappy' },
+                                                { label: 'ACH/Trans', value: 'ach' },
+                                                { label: 'Tarjeta', value: 'tarjeta' }
                                             ]}
                                             onSelect={setMetodoPago}
                                             containerStyle={isLandscape && { marginBottom: 0 }}
@@ -212,7 +212,6 @@ export const VentasCartModal: React.FC<Props> = ({
                                         onPress={onClose}
                                         activeOpacity={0.8}
                                     >
-                                        <Ionicons name="time-outline" size={isLandscape ? 18 : 18} color={colors.textSecondary} />
                                         <Text style={[styles.confirmBtnText, { color: colors.textSecondary, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>DEJAR PENDIENTE</Text>
                                     </TouchableOpacity>
 
