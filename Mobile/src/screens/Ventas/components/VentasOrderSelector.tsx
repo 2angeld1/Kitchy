@@ -13,6 +13,8 @@ interface Props {
     colors: any;
     styles: any;
     openCart: () => void;
+    editarVentaHistorica?: (venta: any) => void;
+    verDetalleVenta?: (venta: any) => void;
 }
 
 export const VentasOrderSelector: React.FC<Props> = ({
@@ -23,6 +25,8 @@ export const VentasOrderSelector: React.FC<Props> = ({
     nuevaOrden,
     colors,
     openCart,
+    editarVentaHistorica,
+    verDetalleVenta,
 }) => {
     const [showSelector, setShowSelector] = useState(false);
     const { width, height } = useAppDimensions();
@@ -322,16 +326,54 @@ export const VentasOrderSelector: React.FC<Props> = ({
                                                     </Text>
                                                 )}
                                             </View>
-                                            <TouchableOpacity
-                                                onPress={() => eliminarOrden(o.id)}
-                                                style={{
-                                                    width: 28, height: 28, borderRadius: 14,
-                                                    backgroundColor: 'rgba(239,68,68,0.06)',
-                                                    justifyContent: 'center', alignItems: 'center',
-                                                }}
-                                            >
-                                                <Ionicons name="trash-outline" size={14} color="#ef4444" />
-                                            </TouchableOpacity>
+
+                                            <View style={{ flexDirection: 'row', gap: 6 }}>
+                                                {/* Ver Detalle (Libro) */}
+                                                {verDetalleVenta && (
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            setShowSelector(false);
+                                                            verDetalleVenta(o);
+                                                        }}
+                                                        style={{
+                                                            width: 32, height: 32, borderRadius: 16,
+                                                            backgroundColor: colors.primary + '10',
+                                                            justifyContent: 'center', alignItems: 'center',
+                                                        }}
+                                                    >
+                                                        <Ionicons name="journal-outline" size={16} color={colors.primary} />
+                                                    </TouchableOpacity>
+                                                )}
+
+                                                {/* Editar */}
+                                                {editarVentaHistorica && (
+                                                    <TouchableOpacity
+                                                        onPress={() => {
+                                                            setShowSelector(false);
+                                                            editarVentaHistorica(o);
+                                                        }}
+                                                        style={{
+                                                            width: 32, height: 32, borderRadius: 16,
+                                                            backgroundColor: colors.primary + '10',
+                                                            justifyContent: 'center', alignItems: 'center',
+                                                        }}
+                                                    >
+                                                        <Ionicons name="create-outline" size={16} color={colors.primary} />
+                                                    </TouchableOpacity>
+                                                )}
+
+                                                {/* Eliminar (Solo si no estorba demasiado, lo mantenemos) */}
+                                                <TouchableOpacity
+                                                    onPress={() => eliminarOrden(o.id)}
+                                                    style={{
+                                                        width: 32, height: 32, borderRadius: 16,
+                                                        backgroundColor: 'rgba(239,68,68,0.06)',
+                                                        justifyContent: 'center', alignItems: 'center',
+                                                    }}
+                                                >
+                                                    <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                                                </TouchableOpacity>
+                                            </View>
                                         </View>
                                     ))}
 

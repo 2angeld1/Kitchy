@@ -67,6 +67,7 @@ export const useVentas = () => {
     const [showHistorial, setShowHistorial] = useState(false);
     const [showOrderSelector, setShowOrderSelector] = useState(false);
     const [montoRecibido, setMontoRecibido] = useState<string>('');
+    const [highlightVentaId, setHighlightVentaId] = useState<string | null>(null);
 
     // Notebook State
     const [isAnalyzingNotebook, setIsAnalyzingNotebook] = useState(false);
@@ -411,6 +412,12 @@ export const useVentas = () => {
         setShowHistorial(true);
     };
 
+    const verDetalleVenta = async (ventaObj: any) => {
+        setHighlightVentaId(ventaObj._idDB || ventaObj._id);
+        await cargarVentas();
+        setShowHistorial(true);
+    };
+
     const productosFiltrados = productos.filter(p => {
         const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase());
         const matchCategoria = !categoriaFiltro || p.categoria === categoriaFiltro;
@@ -581,6 +588,9 @@ export const useVentas = () => {
         tomarFotoCuaderno,
         seleccionarImagenCuaderno,
         importarVentaNotebook,
-        editarVentaHistorica
+        editarVentaHistorica,
+        verDetalleVenta,
+        highlightVentaId,
+        setHighlightVentaId
     };
 };

@@ -35,7 +35,8 @@ export default function VentasScreen() {
         showHistorial, setShowHistorial, ventas, abrirHistorial,
         montoRecibido, setMontoRecibido, cambio,
         isAnalyzingNotebook, notebookVentas, showNotebookModal, setShowNotebookModal,
-        tomarFotoCuaderno, seleccionarImagenCuaderno, importarVentaNotebook, editarVentaHistorica
+        tomarFotoCuaderno, seleccionarImagenCuaderno, importarVentaNotebook, editarVentaHistorica, verDetalleVenta,
+        highlightVentaId, setHighlightVentaId
     } = useVentas();
 
     const [showSuccess, setShowSuccess] = useState(false);
@@ -164,6 +165,8 @@ export default function VentasScreen() {
                         colors={colors}
                         styles={styles}
                         openCart={() => setShowModal(true)}
+                        editarVentaHistorica={editarVentaHistorica}
+                        verDetalleVenta={verDetalleVenta}
                     />
                 )}
 
@@ -266,6 +269,7 @@ export default function VentasScreen() {
                 ventas={ventas}
                 colors={colors}
                 onEdit={editarVentaHistorica}
+                highlightVentaId={highlightVentaId}
             />
 
             <VentasNotebookModal

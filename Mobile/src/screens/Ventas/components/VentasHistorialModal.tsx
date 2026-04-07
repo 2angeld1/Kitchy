@@ -11,9 +11,10 @@ interface VentasHistorialModalProps {
     ventas: any[];
     colors: any;
     onEdit?: (venta: any) => void;
+    highlightVentaId?: string | null;
 }
 
-export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit }: VentasHistorialModalProps) => {
+export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit, highlightVentaId }: VentasHistorialModalProps) => {
     const { user } = useAuth();
     const [ventaSeleccionada, setVentaSeleccionada] = useState<any>(null);
 
@@ -23,6 +24,14 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit 
             : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
         return negocioActual?.categoria === 'BELLEZA';
     }, [user]);
+
+    // Efecto para abrir el detalle si hay un highlight
+    React.useEffect(() => {
+        if (visible && highlightVentaId) {
+            const venta = ventas.find(v => v._id === highlightVentaId);
+            if (venta) setVentaSeleccionada(venta);
+        }
+    }, [visible, highlightVentaId, ventas]);
 
     const renderItem = ({ item }: { item: any }) => {
         const nombreEspecialista = item.especialista?.nombre || 'General';
