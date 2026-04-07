@@ -358,14 +358,17 @@ export const useVentas = () => {
                 text2: response.data.message || 'La orden se procesó con éxito'
             });
 
-            // Marcar como completada (NO borrar)
+            // Marcar como completada (NO borrar) con el ID real de la base de datos
             const totalFinal = calcularTotal();
+            const dbId = response.data.venta?._id || response.data._id;
+            
             setOrdenes(ordenes.map(o => {
                 if (o.id !== activeOrderId) return o;
                 return {
                     ...o,
                     completada: true,
                     completadoEn: new Date().toISOString(),
+                    _idDB: dbId,
                     nombre: o.cliente?.trim()
                         ? `${o.cliente.trim()} - $${totalFinal.toFixed(2)}`
                         : `${o.nombre} - $${totalFinal.toFixed(2)}`
@@ -388,6 +391,7 @@ export const useVentas = () => {
                     ...o,
                     completada: true,
                     completadoEn: new Date().toISOString(),
+                    _idDB: dbId,
                     nombre: o.cliente?.trim()
                         ? `${o.cliente.trim()} - $${totalFinal.toFixed(2)}`
                         : `${o.nombre} - $${totalFinal.toFixed(2)}`
