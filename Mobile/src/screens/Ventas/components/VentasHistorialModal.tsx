@@ -10,9 +10,10 @@ interface VentasHistorialModalProps {
     onClose: () => void;
     ventas: any[];
     colors: any;
+    onEdit?: (venta: any) => void;
 }
 
-export const VentasHistorialModal = ({ visible, onClose, ventas, colors }: VentasHistorialModalProps) => {
+export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit }: VentasHistorialModalProps) => {
     const { user } = useAuth();
     const [ventaSeleccionada, setVentaSeleccionada] = useState<any>(null);
 
@@ -167,12 +168,27 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors }: Venta
                                 </View>
                             </View>
 
-                            <TouchableOpacity 
-                                style={[styles.printButton, { backgroundColor: colors.primary }]}
-                                onPress={() => setVentaSeleccionada(null)}
-                            >
-                                <Text style={{ color: 'white', fontWeight: 'bold' }}>Cerrar Detalle</Text>
-                            </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <TouchableOpacity 
+                                    style={[styles.printButton, { flex: 1, backgroundColor: colors.primary }]}
+                                    onPress={() => setVentaSeleccionada(null)}
+                                >
+                                    <Text style={{ color: 'white', fontWeight: 'bold' }}>Cerrar</Text>
+                                </TouchableOpacity>
+                                {onEdit && (
+                                    <TouchableOpacity 
+                                        style={[styles.printButton, { flex: 1, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary }]}
+                                        onPress={() => {
+                                            if (ventaSeleccionada) {
+                                                onEdit(ventaSeleccionada);
+                                                setVentaSeleccionada(null);
+                                            }
+                                        }}
+                                    >
+                                        <Text style={{ color: colors.primary, fontWeight: 'bold' }}>Editar</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
                     </View>
                 </Modal>

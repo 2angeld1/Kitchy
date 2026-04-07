@@ -35,7 +35,7 @@ export default function VentasScreen() {
         showHistorial, setShowHistorial, ventas, abrirHistorial,
         montoRecibido, setMontoRecibido, cambio,
         isAnalyzingNotebook, notebookVentas, showNotebookModal, setShowNotebookModal,
-        tomarFotoCuaderno, seleccionarImagenCuaderno, importarVentaNotebook
+        tomarFotoCuaderno, seleccionarImagenCuaderno, importarVentaNotebook, editarVentaHistorica
     } = useVentas();
 
     const [showSuccess, setShowSuccess] = useState(false);
@@ -265,6 +265,7 @@ export default function VentasScreen() {
                 onClose={() => setShowHistorial(false)}
                 ventas={ventas}
                 colors={colors}
+                onEdit={editarVentaHistorica}
             />
 
             <VentasNotebookModal

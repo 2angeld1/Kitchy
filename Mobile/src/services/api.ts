@@ -71,6 +71,7 @@ export const importarProductos = (data: any) => api.post('/productos/importar', 
 // Ventas
 export const createVenta = (data: any) => api.post('/ventas', data);
 export const getVentas = (params?: any) => api.get('/ventas', { params });
+export const updateVenta = (id: string, data: any) => api.put(`/ventas/${id}`, data);
 export const deleteVenta = (id: string) => api.delete(`/ventas/${id}`);
 
 // Inventario

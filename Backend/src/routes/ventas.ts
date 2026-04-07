@@ -6,7 +6,8 @@ import {
     obtenerVentaPorId,
     obtenerVentasHoy,
     obtenerEstadisticas,
-    eliminarVenta
+    eliminarVenta,
+    actualizarVenta
 } from '../controllers/ventaController';
 
 const router = Router();
@@ -20,6 +21,7 @@ router.get('/', obtenerVentas);
 router.get('/hoy', obtenerVentasHoy);
 router.get('/estadisticas', obtenerEstadisticas);
 router.get('/:id', obtenerVentaPorId);
+router.put('/:id', actualizarVenta);
 router.delete('/:id', eliminarVenta);
 
 export default router;

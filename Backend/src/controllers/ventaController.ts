@@ -339,3 +339,165 @@ export const eliminarVenta = async (req: AuthRequest, res: Response) => {
         res.status(500).json({ message: 'Error al eliminar la venta', error: error.message });
     }
 };
+
+// Actualizar una venta existente
+export const actualizarVenta = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { items, metodoPago, cliente, notas, especialista } = req.body;
+        const userId = req.userId;
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({ message: 'La venta debe tener al menos un producto' });
+        }
+
+        const ventaAnterior = await Venta.findOne({ _id: id, negocioId: req.negocioId });
+        if (!ventaAnterior) {
+            return res.status(404).json({ message: 'Venta no encontrada' });
+        }
+
+        let negocio = await Negocio.findById(req.negocioId);
+        
+        // ------------- 1. REVERTIR VENTA ANTERIOR -------------
+        if (negocio) {
+            let porcentajeAnterior = 0.05;
+            if (negocio.accumulatedSalesMonth > 2000) porcentajeAnterior = 0.02;
+            else if (negocio.accumulatedSalesMonth > 700) porcentajeAnterior = 0.03;
+            
+            const comisionAnterior = ventaAnterior.total * porcentajeAnterior;
+            negocio.accumulatedSalesMonth = Math.max(0, negocio.accumulatedSalesMonth - ventaAnterior.total);
+            negocio.billing.balance = Math.max(0, negocio.billing.balance - comisionAnterior);
+            negocio.totalSalesLifetime = Math.max(0, negocio.totalSalesLifetime - ventaAnterior.total);
+            negocio.totalCommissionLifetime = Math.max(0, negocio.totalCommissionLifetime - comisionAnterior);
+            
+            if (negocio.billing.balance <= 50 && negocio.billing.paymentStatus === 'pendiente') {
+                negocio.billing.paymentStatus = 'al_dia';
+            }
+        }
+
+        // Revertir inventario anterior
+        for (const item of ventaAnterior.items) {
+            const isManual = item.producto == null || String(item.producto).startsWith('manual-');
+            if (isManual) continue;
+            
+            const prod = await Producto.findOne({ _id: item.producto, negocioId: req.negocioId });
+            if (prod && prod.ingredientes && prod.ingredientes.length > 0) {
+                for (const ing of prod.ingredientes) {
+                    await Inventario.findOneAndUpdate(
+                        { _id: ing.inventario, negocioId: req.negocioId },
+                        { $inc: { cantidad: ing.cantidad * item.cantidad } }
+                    );
+                }
+            } else {
+                await Inventario.findOneAndUpdate(
+                    { _id: item.producto, negocioId: req.negocioId },
+                    { $inc: { cantidad: item.cantidad } }
+                );
+            }
+        }
+
+        // ------------- 2. APLICAR NUEVA VENTA -------------
+        const itemsProcesados = [];
+        let total = 0;
+        const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
+
+        for (const item of items) {
+            let itemData = null;
+            const isManual = String(item.productoId).startsWith('manual-');
+
+            if (!isManual && item.productoId && item.productoId.length === 24) {
+                itemData = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
+            }
+
+            let nombreProducto = item.nombre || '';
+            let precioUnitario = item.precio || 0;
+            let finalId = isManual ? null : item.productoId;
+
+            if (itemData) {
+                if (!itemData.disponible) {
+                    return res.status(400).json({ message: `Producto no disponible: ${itemData.nombre}` });
+                }
+                nombreProducto = itemData.nombre;
+                precioUnitario = itemData.precio;
+                finalId = itemData._id;
+
+                if (itemData.ingredientes && itemData.ingredientes.length > 0) {
+                    for (const ing of itemData.ingredientes) {
+                        deduccionesInventario.push({
+                            inventarioId: ing.inventario,
+                            cantidadADescontar: ing.cantidad * item.cantidad
+                        });
+                    }
+                }
+            } else if (!isManual) {
+                const itemInv = await Inventario.findOne({ _id: item.productoId, negocioId: req.negocioId });
+                if (itemInv) {
+                    nombreProducto = itemInv.nombre;
+                    precioUnitario = itemInv.precioVenta || itemInv.costoUnitario;
+                    finalId = itemInv._id;
+                    deduccionesInventario.push({
+                        inventarioId: itemInv._id,
+                        cantidadADescontar: item.cantidad
+                    });
+                } else {
+                    return res.status(404).json({ message: `Item no encontrado: ${item.productoId}` });
+                }
+            }
+
+            const subtotal = precioUnitario * item.cantidad;
+            itemsProcesados.push({
+                producto: finalId,
+                nombreProducto,
+                cantidad: item.cantidad,
+                precioUnitario,
+                subtotal
+            });
+            total += subtotal;
+        }
+
+        ventaAnterior.items = itemsProcesados;
+        ventaAnterior.total = total;
+        ventaAnterior.metodoPago = metodoPago || ventaAnterior.metodoPago;
+        ventaAnterior.cliente = cliente !== undefined ? cliente : ventaAnterior.cliente;
+        ventaAnterior.notas = notas !== undefined ? notas : ventaAnterior.notas;
+        ventaAnterior.especialista = especialista !== undefined ? especialista : ventaAnterior.especialista;
+
+        await ventaAnterior.save();
+
+        if (negocio) {
+            negocio.accumulatedSalesMonth += total;
+            
+            let porcentajeNuevo = 0.05;
+            if (negocio.accumulatedSalesMonth > 2000) porcentajeNuevo = 0.02;
+            else if (negocio.accumulatedSalesMonth > 700) porcentajeNuevo = 0.03;
+
+            const comisionNueva = total * porcentajeNuevo;
+            negocio.billing.balance += comisionNueva;
+            negocio.totalSalesLifetime += total;
+            negocio.totalCommissionLifetime += comisionNueva;
+
+            if (negocio.billing.balance > 50 && negocio.billing.paymentStatus === 'al_dia') {
+                negocio.billing.paymentStatus = 'pendiente';
+            }
+            await negocio.save();
+        }
+
+        for (const ded of deduccionesInventario) {
+            await Inventario.findOneAndUpdate(
+                { _id: ded.inventarioId, negocioId: req.negocioId },
+                { $inc: { cantidad: -ded.cantidadADescontar } }
+            );
+        }
+
+        await ventaAnterior.populate('usuario', 'nombre email');
+
+        res.status(200).json({
+            venta: ventaAnterior,
+            inventarioActualizado: true,
+            message: 'Venta editada y el inventario ajustado.'
+        });
+    } catch (error: any) {
+        console.error('Error al actualizar venta:', error);
+        res.status(500).json({ message: 'Error al actualizar la venta', error: error.message });
+    }
+};

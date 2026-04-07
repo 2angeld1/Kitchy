@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
-import { getProductos, createVenta, getVentas, procesarCuadernoVentas } from '../services/api';
+import { getProductos, createVenta, updateVenta, getVentas, procesarCuadernoVentas } from '../services/api';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -39,6 +39,7 @@ export interface Orden {
     metodoPago: string;
     completada?: boolean;
     completadoEn?: string; // ISO date string
+    _idDB?: string;
 }
 
 export const useVentas = () => {
@@ -343,10 +344,16 @@ export const useVentas = () => {
                 cantidad: item.cantidad
             }));
 
-            const response = await createVenta({ items, metodoPago, cliente });
+            let response;
+            if (activeOrder._idDB) {
+                response = await updateVenta(activeOrder._idDB, { items, metodoPago, cliente });
+            } else {
+                response = await createVenta({ items, metodoPago, cliente });
+            }
+            
             Toast.show({
                 type: 'success',
-                text1: '¡Venta Registrada!',
+                text1: activeOrder._idDB ? '¡Venta Editada!' : '¡Venta Registrada!',
                 text2: response.data.message || 'La orden se procesó con éxito'
             });
 
@@ -505,6 +512,34 @@ export const useVentas = () => {
         Toast.show({ type: 'success', text1: 'Venta Importada', text2: `Se ha creado el pedido para ${nueva.nombre}` });
     };
 
+    const editarVentaHistorica = (ventaObj: any) => {
+        const id = Date.now().toString();
+        const nuevaOrden: Orden = {
+            id,
+            nombre: `Editando: ${ventaObj.cliente || 'Venta'}`,
+            items: (ventaObj.items || []).map((it: any) => {
+                const prod = productos.find(p => p._id === it.producto) || {
+                    _id: it.producto || `manual-${Date.now()}`,
+                    nombre: it.nombreProducto || it.nombre || 'Producto',
+                    precio: it.precioUnitario || 0,
+                    categoria: 'comida',
+                    disponible: true
+                };
+                return {
+                    producto: prod,
+                    cantidad: it.cantidad || 1
+                };
+            }),
+            cliente: ventaObj.cliente || '',
+            metodoPago: ventaObj.metodoPago || 'efectivo',
+            _idDB: ventaObj._id
+        };
+        setOrdenes([...ordenes, nuevaOrden]);
+        setActiveOrderId(id);
+        setShowHistorial(false);
+        Toast.show({ type: 'info', text1: 'Modo Retoque', text2: `Editando venta pasada` });
+    };
+
     return {
         productos,
         carrito,
@@ -545,6 +580,7 @@ export const useVentas = () => {
         setShowNotebookModal,
         tomarFotoCuaderno,
         seleccionarImagenCuaderno,
-        importarVentaNotebook
+        importarVentaNotebook,
+        editarVentaHistorica
     };
 };
