@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, SlideInDown, ZoomIn, useSharedValue, useAnimatedStyle, withSpring, withSequence, withDelay } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn, useSharedValue, useAnimatedStyle, withSpring, withSequence, withDelay } from 'react-native-reanimated';
 import { useBellezaVentas } from '../hooks/useBellezaVentas';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
@@ -332,11 +332,17 @@ export default function BellezaVentasScreen() {
             )}
 
             {showSuccess && (
-                <View style={styles.successOverlay}>
-                    <Animated.View style={[styles.successCircle, successStyle]}>
-                        <Ionicons name="checkmark" size={60} color="#fff" />
-                    </Animated.View>
-                </View>
+                <Animated.View 
+                    entering={FadeInDown.duration(400).springify()} 
+                    exiting={FadeIn.duration(200)}
+                    style={styles.successOverlay}
+                    pointerEvents="none"
+                >
+                    <View style={styles.successCircle}>
+                        <Ionicons name="checkmark" size={18} color="#fff" />
+                    </View>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#fff' }}>¡Venta exitosa!</Text>
+                </Animated.View>
             )}
 
             <BellezaCaitlynFAB

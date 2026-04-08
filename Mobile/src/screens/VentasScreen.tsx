@@ -294,17 +294,18 @@ export default function VentasScreen() {
                 </TouchableOpacity>
             )}
 
-            {/* Animación de Éxito */}
+            {/* Animación de Éxito (Toast) */}
             {showSuccess && (
                 <Animated.View 
-                    entering={FadeIn} 
-                    exiting={FadeIn}
+                    entering={FadeInDown.duration(400).springify()} 
+                    exiting={FadeIn.duration(200)}
                     style={styles.successOverlay}
+                    pointerEvents="none"
                 >
-                    <Animated.View entering={ZoomIn.duration(400)} style={styles.successCircle}>
-                        <Ionicons name="checkmark" size={60} color="#fff" />
-                    </Animated.View>
-                    <Text style={{ marginTop: 20, fontSize: 24, fontWeight: '900', color: '#fff' }}>¡VENDA EXITOSA!</Text>
+                    <View style={styles.successCircle}>
+                        <Ionicons name="checkmark" size={18} color="#fff" />
+                    </View>
+                    <Text style={{ fontSize: 16, fontWeight: '800', color: '#fff' }}>¡Venta exitosa!</Text>
                 </Animated.View>
             )}
             {/* Pantalla de Carga de Análisis de Caitlyn (Bloquea TODO, incluyendo TabBar) */}
