@@ -5,157 +5,43 @@ import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
 import { AuthRequest } from '../middleware/auth';
 import { getPeriodRanges } from '../utils/date-ranges';
+import { crearVentaService, actualizarVentaService } from '../services/ventaService';
 
 // Crear una nueva venta
 export const crearVenta = async (req: AuthRequest, res: Response) => {
     try {
         const { items, metodoPago, cliente, notas, especialista } = req.body;
-        const userId = req.userId;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'La venta debe tener al menos un producto' });
         }
 
-        // Procesar items y calcular totales
-        const itemsProcesados = [];
-        let total = 0;
-
-        // Array para guardar las deducciones necesarias del inventario
-        const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
-
-        for (const item of items) {
-            let itemData = null;
-            const isManual = String(item.productoId).startsWith('manual-');
-
-            // Solo buscar en DB si es un ID de Mongo válido y no es un item manual
-            if (!isManual && item.productoId.length === 24) {
-                itemData = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
-            }
-
-            let nombreProducto = item.nombre || '';
-            let precioUnitario = item.precio || 0;
-            let finalId = isManual ? null : item.productoId;
-
-            if (itemData) {
-                if (!itemData.disponible) {
-                    return res.status(400).json({ message: `Producto no disponible: ${itemData.nombre}` });
-                }
-                nombreProducto = itemData.nombre;
-                precioUnitario = itemData.precio;
-                finalId = itemData._id;
-
-                // Si tiene receta, descontar ingredientes
-                if (itemData.ingredientes && itemData.ingredientes.length > 0) {
-                    for (const ingrediente of itemData.ingredientes) {
-                        deduccionesInventario.push({
-                            inventarioId: ingrediente.inventario,
-                            cantidadADescontar: ingrediente.cantidad * item.cantidad
-                        });
-                    }
-                }
-            } else if (!isManual) {
-                // Si no es manual y no se encontró en Producto, buscamos en Inventario directamente (para reventa)
-                const itemInv = await Inventario.findOne({ _id: item.productoId, negocioId: req.negocioId });
-                if (itemInv) {
-                    nombreProducto = itemInv.nombre;
-                    precioUnitario = itemInv.precioVenta || itemInv.costoUnitario;
-                    finalId = itemInv._id;
-                    
-                    // Descontar el item mismo del inventario
-                    deduccionesInventario.push({
-                        inventarioId: itemInv._id,
-                        cantidadADescontar: item.cantidad
-                    });
-                } else {
-                    // Si llegamos aquí y no es manual, es que el ID era basura o de otro negocio
-                    return res.status(404).json({ message: `Item no encontrado: ${item.productoId}` });
-                }
-            }
-
-            const subtotal = precioUnitario * item.cantidad;
-            itemsProcesados.push({
-                producto: finalId,
-                nombreProducto,
-                cantidad: item.cantidad,
-                precioUnitario,
-                subtotal
-            });
-            total += subtotal;
-        }
-
-        const venta = new Venta({
-            items: itemsProcesados,
-            total,
-            metodoPago: metodoPago || 'efectivo',
-            usuario: userId,
-            negocioId: req.negocioId,
+        const result = await crearVentaService(
+            items,
+            metodoPago,
             cliente,
             notas,
-            especialista
-        });
-
-        await venta.save();
-
-        // Actualizar ventas acumuladas del negocio para el pilotaje/facturación
-        const negocio = await Negocio.findById(req.negocioId);
-        if (negocio) {
-            const ahora = new Date();
-            const fechaLimite = new Date(negocio.billingCycleStart);
-            fechaLimite.setMonth(fechaLimite.getMonth() + 1);
-
-            if (ahora > fechaLimite) {
-                // Reiniciar ciclo si pasó un mes
-                negocio.accumulatedSalesMonth = total;
-                negocio.billingCycleStart = ahora;
-            } else {
-                negocio.accumulatedSalesMonth += total;
-            }
-
-            // Calcular comisión de esta venta basada en el acumulado mensual
-            // Tiers: <700: 5%, 701-2000: 3%, >2000: 2%
-            let porcentajeComision = 0.05;
-            if (negocio.accumulatedSalesMonth > 2000) {
-                porcentajeComision = 0.02;
-            } else if (negocio.accumulatedSalesMonth > 700) {
-                porcentajeComision = 0.03;
-            }
-
-            const comisionEstaVenta = total * porcentajeComision;
-
-            // Actualizar balance y estadísticas de vida
-            negocio.billing.balance += comisionEstaVenta;
-            negocio.totalSalesLifetime += total;
-            negocio.totalCommissionLifetime += comisionEstaVenta;
-
-            // Actualizar estado de pago si tiene deuda considerable
-            if (negocio.billing.balance > 50 && negocio.billing.paymentStatus === 'al_dia') {
-                negocio.billing.paymentStatus = 'pendiente';
-            }
-
-            await negocio.save();
-        }
-
-        // Aplicar todas las deducciones del inventario (FILTRADO POR NEGOCIO)
-        for (const deduccion of deduccionesInventario) {
-            await Inventario.findOneAndUpdate(
-                { _id: deduccion.inventarioId, negocioId: req.negocioId },
-                { $inc: { cantidad: -deduccion.cantidadADescontar } }
-            );
-        }
-
-        // Populate para devolver datos completos
-        await venta.populate('usuario', 'nombre email');
+            especialista,
+            req.userId as string,
+            req.negocioId as string
+        );
 
         res.status(201).json({
-            venta,
-            inventarioActualizado: true,
-            message: deduccionesInventario.length > 0
+            venta: result.venta,
+            inventarioActualizado: result.inventarioActualizado,
+            message: result.deduccionesAplicadas
                 ? 'Venta registrada y los insumos han sido descontados del inventario.'
                 : 'Venta registrada.'
         });
     } catch (error: any) {
         console.error('Error al crear venta:', error);
-        res.status(500).json({ message: 'Error al crear la venta', error: error.message });
+        
+        // Retornar 400 o 404 para errores lógicos conocidos
+        let status = 500;
+        if (error.message.includes('Producto no disponible')) status = 400;
+        if (error.message.includes('Item no encontrado')) status = 404;
+        
+        res.status(status).json({ message: 'Error al crear la venta', error: error.message });
     }
 };
 
@@ -345,159 +231,38 @@ export const actualizarVenta = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { items, metodoPago, cliente, notas, especialista } = req.body;
-        const userId = req.userId;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'La venta debe tener al menos un producto' });
         }
 
-        const ventaAnterior = await Venta.findOne({ _id: id, negocioId: req.negocioId });
-        if (!ventaAnterior) {
-            return res.status(404).json({ message: 'Venta no encontrada' });
-        }
-
-        let negocio = await Negocio.findById(req.negocioId);
-        
-        // ------------- 1. REVERTIR VENTA ANTERIOR -------------
-        if (negocio) {
-            let porcentajeAnterior = 0.05;
-            if (negocio.accumulatedSalesMonth > 2000) porcentajeAnterior = 0.02;
-            else if (negocio.accumulatedSalesMonth > 700) porcentajeAnterior = 0.03;
-            
-            const comisionAnterior = ventaAnterior.total * porcentajeAnterior;
-            negocio.accumulatedSalesMonth = Math.max(0, negocio.accumulatedSalesMonth - ventaAnterior.total);
-            negocio.billing.balance = Math.max(0, negocio.billing.balance - comisionAnterior);
-            negocio.totalSalesLifetime = Math.max(0, negocio.totalSalesLifetime - ventaAnterior.total);
-            negocio.totalCommissionLifetime = Math.max(0, negocio.totalCommissionLifetime - comisionAnterior);
-            
-            if (negocio.billing.balance <= 50 && negocio.billing.paymentStatus === 'pendiente') {
-                negocio.billing.paymentStatus = 'al_dia';
-            }
-        }
-
-        // Revertir inventario anterior
-        for (const item of ventaAnterior.items) {
-            const isManual = item.producto == null || String(item.producto).startsWith('manual-');
-            if (isManual) continue;
-            
-            const prod = await Producto.findOne({ _id: item.producto, negocioId: req.negocioId });
-            if (prod && prod.ingredientes && prod.ingredientes.length > 0) {
-                for (const ing of prod.ingredientes) {
-                    await Inventario.findOneAndUpdate(
-                        { _id: ing.inventario, negocioId: req.negocioId },
-                        { $inc: { cantidad: ing.cantidad * item.cantidad } }
-                    );
-                }
-            } else {
-                await Inventario.findOneAndUpdate(
-                    { _id: item.producto, negocioId: req.negocioId },
-                    { $inc: { cantidad: item.cantidad } }
-                );
-            }
-        }
-
-        // ------------- 2. APLICAR NUEVA VENTA -------------
-        const itemsProcesados = [];
-        let total = 0;
-        const deduccionesInventario: { inventarioId: any, cantidadADescontar: number }[] = [];
-
-        for (const item of items) {
-            let itemData = null;
-            const isManual = String(item.productoId).startsWith('manual-');
-
-            if (!isManual && item.productoId && item.productoId.length === 24) {
-                itemData = await Producto.findOne({ _id: item.productoId, negocioId: req.negocioId });
-            }
-
-            let nombreProducto = item.nombre || '';
-            let precioUnitario = item.precio || 0;
-            let finalId = isManual ? null : item.productoId;
-
-            if (itemData) {
-                if (!itemData.disponible) {
-                    return res.status(400).json({ message: `Producto no disponible: ${itemData.nombre}` });
-                }
-                nombreProducto = itemData.nombre;
-                precioUnitario = itemData.precio;
-                finalId = itemData._id;
-
-                if (itemData.ingredientes && itemData.ingredientes.length > 0) {
-                    for (const ing of itemData.ingredientes) {
-                        deduccionesInventario.push({
-                            inventarioId: ing.inventario,
-                            cantidadADescontar: ing.cantidad * item.cantidad
-                        });
-                    }
-                }
-            } else if (!isManual) {
-                const itemInv = await Inventario.findOne({ _id: item.productoId, negocioId: req.negocioId });
-                if (itemInv) {
-                    nombreProducto = itemInv.nombre;
-                    precioUnitario = itemInv.precioVenta || itemInv.costoUnitario;
-                    finalId = itemInv._id;
-                    deduccionesInventario.push({
-                        inventarioId: itemInv._id,
-                        cantidadADescontar: item.cantidad
-                    });
-                } else {
-                    return res.status(404).json({ message: `Item no encontrado: ${item.productoId}` });
-                }
-            }
-
-            const subtotal = precioUnitario * item.cantidad;
-            itemsProcesados.push({
-                producto: finalId,
-                nombreProducto,
-                cantidad: item.cantidad,
-                precioUnitario,
-                subtotal
-            });
-            total += subtotal;
-        }
-
-        ventaAnterior.items = itemsProcesados;
-        ventaAnterior.total = total;
-        ventaAnterior.metodoPago = metodoPago || ventaAnterior.metodoPago;
-        ventaAnterior.cliente = cliente !== undefined ? cliente : ventaAnterior.cliente;
-        ventaAnterior.notas = notas !== undefined ? notas : ventaAnterior.notas;
-        ventaAnterior.especialista = especialista !== undefined ? especialista : ventaAnterior.especialista;
-
-        await ventaAnterior.save();
-
-        if (negocio) {
-            negocio.accumulatedSalesMonth += total;
-            
-            let porcentajeNuevo = 0.05;
-            if (negocio.accumulatedSalesMonth > 2000) porcentajeNuevo = 0.02;
-            else if (negocio.accumulatedSalesMonth > 700) porcentajeNuevo = 0.03;
-
-            const comisionNueva = total * porcentajeNuevo;
-            negocio.billing.balance += comisionNueva;
-            negocio.totalSalesLifetime += total;
-            negocio.totalCommissionLifetime += comisionNueva;
-
-            if (negocio.billing.balance > 50 && negocio.billing.paymentStatus === 'al_dia') {
-                negocio.billing.paymentStatus = 'pendiente';
-            }
-            await negocio.save();
-        }
-
-        for (const ded of deduccionesInventario) {
-            await Inventario.findOneAndUpdate(
-                { _id: ded.inventarioId, negocioId: req.negocioId },
-                { $inc: { cantidad: -ded.cantidadADescontar } }
-            );
-        }
-
-        await ventaAnterior.populate('usuario', 'nombre email');
+        const venta = await actualizarVentaService(
+            id,
+            items,
+            metodoPago,
+            cliente,
+            notas,
+            especialista,
+            req.userId as string,
+            req.negocioId as string
+        );
 
         res.status(200).json({
-            venta: ventaAnterior,
+            venta,
             inventarioActualizado: true,
             message: 'Venta editada y el inventario ajustado.'
         });
     } catch (error: any) {
         console.error('Error al actualizar venta:', error);
-        res.status(500).json({ message: 'Error al actualizar la venta', error: error.message });
+        
+        if (error.message === 'NOT_FOUND') {
+            return res.status(404).json({ message: 'Venta no encontrada' });
+        }
+        
+        let status = 500;
+        if (error.message.includes('Producto no disponible')) status = 400;
+        if (error.message.includes('Item no encontrado')) status = 404;
+        
+        res.status(status).json({ message: 'Error al actualizar la venta', error: error.message });
     }
 };

@@ -2,10 +2,7 @@ import { Response } from 'express';
 import Inventario, { IInventario } from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
 import { AuthRequest } from '../middleware/auth';
-import fs from 'fs';
-import csvParser from 'csv-parser';
-import { uploadImage } from '../utils/imageUpload';
-import Gasto from '../models/Gasto';
+import { importarCsvService, buscarProductoGlobalService, procesarLoteInventarioService } from '../services/inventarioService';
 
 // ==================== INVENTARIO ====================
 
@@ -403,132 +400,14 @@ export const obtenerResumenInventario = async (req: AuthRequest, res: Response) 
     }
 };
 
-// Importar inventario desde CSV
 export const importarInventarioCsv = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No se subió ningún archivo CSV.' });
         }
-
-        const userId = req.userId;
-        const results: any[] = [];
-        const errores: string[] = [];
-        let creados = 0;
-        let actualizados = 0;
-
-        fs.createReadStream(req.file.path)
-            .pipe(csvParser())
-            .on('data', (data) => results.push(data))
-            .on('end', async () => {
-                try {
-                    for (const row of results) {
-                        const { nombre, descripcion, cantidad, unidad, cantidadMinima, costoUnitario, categoria, proveedor } = row;
-
-                        if (!nombre || costoUnitario === undefined) {
-                            errores.push(`Fila ignorada: Faltan campos requeridos (nombre o costoUnitario) en la fila: ${JSON.stringify(row)}`);
-                            continue;
-                        }
-
-                        const parsedCantidad = parseFloat(cantidad) || 0;
-                        const parsedCantidadMinima = parseFloat(cantidadMinima) || 0;
-                        const parsedCostoUnitario = parseFloat(costoUnitario) || 0;
-
-                        // Buscar si el item ya existe
-                        const itemExistente = await Inventario.findOne({
-                            nombre: { $regex: new RegExp(`^${nombre}$`, 'i') },
-                            negocioId: req.negocioId
-                        });
-
-                        if (itemExistente) {
-                            // Actualizar
-                            const cantidadAnterior = itemExistente.cantidad;
-                            itemExistente.cantidad += parsedCantidad;
-                            itemExistente.descripcion = descripcion || itemExistente.descripcion;
-                            itemExistente.unidad = unidad || itemExistente.unidad;
-                            itemExistente.cantidadMinima = parsedCantidadMinima || itemExistente.cantidadMinima;
-
-                            // Si el costo viene distinto a 0 en el CSV y mayor que cero, actualiza el promedio o reemplázalo
-                            if (parsedCostoUnitario > 0 && parsedCantidad > 0) {
-                                // Promedio ponderado básico
-                                const valorActual = cantidadAnterior * itemExistente.costoUnitario;
-                                const valorNuevo = parsedCantidad * parsedCostoUnitario;
-                                itemExistente.costoUnitario = (valorActual + valorNuevo) / itemExistente.cantidad;
-                            }
-
-                            itemExistente.categoria = categoria || itemExistente.categoria;
-                            itemExistente.proveedor = proveedor || itemExistente.proveedor;
-                            itemExistente.usuario = userId as any;
-
-                            await itemExistente.save();
-
-                            if (parsedCantidad > 0) {
-                                const movimiento = new MovimientoInventario({
-                                    inventario: itemExistente._id,
-                                    tipo: 'entrada',
-                                    cantidad: parsedCantidad,
-                                    costoTotal: parsedCantidad * parsedCostoUnitario,
-                                    motivo: 'Importación CSV (Suma al stock)',
-                                    usuario: userId,
-                                    negocioId: req.negocioId
-                                });
-                                await movimiento.save();
-                            }
-                            actualizados++;
-                        } else {
-                            // Crear nuevo
-                            const nuevoItem = new Inventario({
-                                nombre,
-                                descripcion,
-                                cantidad: parsedCantidad,
-                                unidad: unidad || 'unidades',
-                                cantidadMinima: parsedCantidadMinima,
-                                costoUnitario: parsedCostoUnitario,
-                                categoria: categoria || 'ingrediente',
-                                proveedor,
-                                usuario: userId,
-                                negocioId: req.negocioId
-                            });
-
-                            await nuevoItem.save();
-
-                            if (parsedCantidad > 0) {
-                                const movimiento = new MovimientoInventario({
-                                    inventario: nuevoItem._id,
-                                    tipo: 'entrada',
-                                    cantidad: parsedCantidad,
-                                    costoTotal: parsedCantidad * parsedCostoUnitario,
-                                    motivo: 'Importación CSV (Creación inicial)',
-                                    usuario: userId,
-                                    negocioId: req.negocioId
-                                });
-                                await movimiento.save();
-                            }
-                            creados++;
-                        }
-                    }
-
-                    // Eliminar el archivo temporal
-                    fs.unlinkSync(req.file!.path);
-
-                    res.status(200).json({
-                        message: 'Importación finalizada',
-                        detalles: {
-                            creados,
-                            actualizados,
-                            errores
-                        }
-                    });
-
-                } catch (error: any) {
-                    // En caso de error dentro del stream, intentar limpiar archivo
-                    if (fs.existsSync(req.file!.path)) {
-                        fs.unlinkSync(req.file!.path);
-                    }
-                    console.error('Error procesando CSV:', error);
-                    res.status(500).json({ message: 'Error procesando los datos del CSV', error: error.message });
-                }
-            });
-
+        const filePath = req.file.path;
+        const result = await importarCsvService(filePath, req.negocioId as string, req.userId as string);
+        res.status(200).json({ message: 'Importación finalizada', detalles: result });
     } catch (error: any) {
         console.error('Error al importar CSV:', error);
         res.status(500).json({ message: 'Error general en la importación', error: error.message });
@@ -538,55 +417,8 @@ export const importarInventarioCsv = async (req: AuthRequest, res: Response) => 
 export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
     try {
         const { codigo } = req.params;
-        const negocioId = req.negocioId;
-
-        // 1. Buscar en el inventario local del negocio
-        const localItem = await Inventario.findOne({
-            codigoBarras: codigo,
-            negocioId
-        });
-
-        if (localItem) {
-            return res.json({
-                isLocal: true,
-                producto: localItem
-            });
-        }
-
-        // 2. Si no existe localmente, buscar en Open Food Facts
-        try {
-            const globalResponse = await fetch(`https://world.openfoodfacts.org/api/v0/product/${codigo}.json`);
-            const globalData: any = await globalResponse.json();
-
-            if (globalData.status === 1) {
-                const p = globalData.product;
-                return res.json({
-                    isLocal: false,
-                    producto: {
-                        nombre: p.product_name || p.generic_name || '',
-                        descripcion: p.brands ? `Marca: ${p.brands}` : 'Producto encontrado en catálogo global',
-                        categoria: 'ingrediente',
-                        unidad: 'unidades', // Default
-                        codigoBarras: codigo,
-                        costoUnitario: 0 // Usuario debe proveerlo
-                    }
-                });
-            }
-        } catch (fetchError) {
-            console.warn('Error llamando a Open Food Facts:', fetchError);
-        }
-
-        // 3. No se encontró en ningún lado
-        return res.json({
-            isLocal: false,
-            producto: {
-                nombre: '',
-                descripcion: '',
-                codigoBarras: codigo,
-                isNew: true
-            }
-        });
-
+        const result = await buscarProductoGlobalService(codigo, req.negocioId as string);
+        res.json(result);
     } catch (error: any) {
         console.error('Error en buscarProductoGlobal:', error);
         res.status(500).json({ message: 'Error al buscar el producto', error: error.message });
@@ -596,134 +428,16 @@ export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
 export const procesarLoteInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { items, imagen, metadata } = req.body;
-        const userId = req.userId;
-        const negocioId = req.negocioId;
-
         if (!items || !Array.isArray(items)) {
             return res.status(400).json({ message: 'Se requiere un array de items' });
         }
 
-        let creados = 0;
-        let actualizados = 0;
-        const errores: any[] = [];
-
-        let imageUrl = null;
-        let nuevoGasto: any = null;
-
-        // Subir imagen a Cloudinary y Gasto solo si viene la imagen
-        if (imagen) {
-            console.log('📸 Subiendo factura a Cloudinary (Lote)...');
-            try {
-                imageUrl = await uploadImage(imagen, 'facturas_caitlyn');
-                
-                // Si hay metadata la usamos, si no calculamos del lote
-                const montoTotal = metadata?.total || items.reduce((sum: number, p: any) => sum + ((parseFloat(p.precioUnitario) || 0) * (parseFloat(p.cantidad) || 0)), 0);
-                
-                nuevoGasto = new Gasto({
-                    descripcion: metadata?.proveedor ? `Compra en ${metadata.proveedor}` : `Factura: ${items.length} productos ingresados`,
-                    categoria: 'compras',
-                    monto: montoTotal,
-                    subtotal: metadata?.subtotal || montoTotal,
-                    itbms: metadata?.itbms || 0,
-                    proveedor: metadata?.proveedor,
-                    ruc: metadata?.ruc,
-                    dv: metadata?.dv,
-                    nroFactura: metadata?.nroFactura,
-                    fecha: metadata?.fecha ? new Date(metadata.fecha) : new Date(),
-                    comprobante: imageUrl,
-                    usuario: userId,
-                    negocioId: negocioId
-                });
-                await nuevoGasto.save();
-                console.log('✅ Gasto creado con metadata:', metadata?.proveedor || 'Sin proveedor');
-            } catch (imgError: any) {
-                console.error('Error al subir imagen o crear registro de gasto:', imgError);
-                // Si la imagen falla no petamos todo, pero lo avisamos.
-                errores.push({ item: 'Imagen/Gasto', error: imgError.message || 'Error desconocido' });
-            }
-        }
-
-        for (const item of items) {
-            try {
-                const { nombre, cantidad, unidad, precioUnitario, categoria, precioVenta } = item;
-                const qty = parseFloat(cantidad) || 0;
-                const price = parseFloat(precioUnitario) || 0;
-
-                // Buscar si existe (insensible a mayúsculas/minúsculas)
-                let producto = await Inventario.findOne({
-                    nombre: { $regex: new RegExp(`^${nombre.trim()}$`, 'i') },
-                    negocioId
-                });
-
-                if (producto) {
-                    // Actualizar Stock
-                    const cantidadAnterior = producto.cantidad;
-                    producto.cantidad += qty;
-
-                    // Actualizar costo unitario (promedio simple o reemplazo si el anterior era 0)
-                    if (price > 0) {
-                        if (producto.costoUnitario === 0) {
-                            producto.costoUnitario = price;
-                        } else {
-                            // Promedio ponderado básico
-                            producto.costoUnitario = ((cantidadAnterior * producto.costoUnitario) + (qty * price)) / (producto.cantidad || 1);
-                        }
-                    }
-
-                    // Actualizar precio de venta si viene en el item
-                    if (precioVenta) producto.precioVenta = parseFloat(precioVenta);
-
-                    producto.usuario = userId as any;
-                    await producto.save();
-
-                    // Registrar movimiento
-                    const movimiento = new MovimientoInventario({
-                        inventario: producto._id,
-                        tipo: 'entrada',
-                        cantidad: qty,
-                        costoTotal: qty * price,
-                        motivo: 'Carga masiva desde factura (Caitlyn)',
-                        usuario: userId,
-                        negocioId
-                    });
-                    await movimiento.save();
-                    actualizados++;
-                } else {
-                    // Crear Nuevo
-                    const nuevoProducto = new Inventario({
-                        nombre: nombre.trim(),
-                        cantidad: qty,
-                        unidad: unidad || 'unidades',
-                        costoUnitario: price,
-                        precioVenta: precioVenta ? parseFloat(precioVenta) : undefined,
-                        categoria: categoria || 'ingrediente',
-                        cantidadMinima: 1,
-                        usuario: userId,
-                        negocioId
-                    });
-                    await nuevoProducto.save();
-
-                    const movimiento = new MovimientoInventario({
-                        inventario: nuevoProducto._id,
-                        tipo: 'entrada',
-                        cantidad: qty,
-                        costoTotal: qty * price,
-                        motivo: 'Carga inicial desde factura (Caitlyn)',
-                        usuario: userId,
-                        negocioId
-                    });
-                    await movimiento.save();
-                    creados++;
-                }
-            } catch (err: any) {
-                errores.push({ item: item.nombre, error: err.message });
-            }
-        }
-
+        const result = await procesarLoteInventarioService(items, imagen, metadata, req.negocioId as string, req.userId as string);
+        
         res.json({
             message: 'Procesamiento de lote finalizado',
-            detalles: { creados, actualizados, errores },
-            gastoId: nuevoGasto ? nuevoGasto._id : null
+            detalles: { creados: result.creados, actualizados: result.actualizados, errores: result.errores },
+            gastoId: result.gastoId
         });
 
     } catch (error: any) {
