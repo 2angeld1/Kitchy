@@ -87,7 +87,9 @@ export const obtenerVentas = async (req: AuthRequest, res: Response) => {
         const ventas = await Venta.find(filtro)
             .sort({ createdAt: -1 })
             .limit(Number(limite))
-            .populate('usuario', 'nombre email');
+            .populate('usuario', 'nombre email')
+            .populate('especialista', 'nombre comision tipoComision')
+            .populate('items.producto', 'nombre precio categoria');
 
         res.json(ventas);
     } catch (error: any) {

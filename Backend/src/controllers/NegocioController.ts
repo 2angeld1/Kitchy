@@ -198,6 +198,20 @@ export const updateComisionReventaConfig = async (req: AuthRequest, res: Respons
     }
 };
 
+// Obtener los detalles del negocio actual
+export const obtenerNegocioActual = async (req: AuthRequest, res: Response) => {
+    try {
+        const negocio = await Negocio.findById(req.negocioId);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+        res.json(negocio);
+    } catch (error) {
+        console.error('Error fetching business info:', error);
+        res.status(500).json({ message: 'Error al obtener información del negocio' });
+    }
+};
+
 // Actualizar configuración del negocio (como el margen objetivo)
 export const updateConfig = async (req: AuthRequest, res: Response) => {
     try {

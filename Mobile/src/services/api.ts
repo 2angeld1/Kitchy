@@ -105,6 +105,7 @@ export const getNegocios = () => api.get('/negocios');
 export const createNegocio = (data: any) => api.post('/negocios', data);
 export const switchNegocio = (negocioId: string) => api.put(`/negocios/switch/${negocioId}`);
 export const updateNegocioConfig = (data: any) => api.put('/negocios/config', data);
+export const getNegocioActual = () => api.get('/negocios/me');
 
 // Comisiones (Belleza)
 export const getComisiones = (params?: any) => api.get('/comisiones', { params });

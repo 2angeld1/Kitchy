@@ -109,8 +109,8 @@ export const useBellezaVentas = () => {
     }, [montoRecibido, total]);
 
     const procesarCobro = useCallback(async (onSuccess?: () => void) => {
-        if (itemsSeleccionados.length === 0 || !especialistaSeleccionado) {
-            Toast.show({ type: 'info', text1: 'Atención', text2: 'Selecciona al menos un servicio y un especialista.' });
+        if (itemsSeleccionados.length === 0) {
+            Toast.show({ type: 'info', text1: 'Atención', text2: 'Selecciona al menos un servicio o producto.' });
             return;
         }
 

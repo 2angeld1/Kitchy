@@ -85,15 +85,24 @@ export default function BellezaVentasScreen() {
                 title="Punto de Venta"
                 onNotificationPress={abrirHistorial}
                 extraButtons={
-                    lastVentaId && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        {lastVentaId && (
+                            <TouchableOpacity
+                                onPress={anularUltimaVenta}
+                                style={styles.undoBtn}
+                            >
+                                <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                                <Text style={styles.undoText}>ANULAR</Text>
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity
-                            onPress={anularUltimaVenta}
-                            style={styles.undoBtn}
+                            onPress={() => navigation.navigate('BellezaResumen' as never)}
+                            style={[styles.undoBtn, { borderColor: colors.primary, backgroundColor: `${colors.primary}10` }]}
                         >
-                            <Ionicons name="trash-outline" size={16} color="#ef4444" />
-                            <Text style={styles.undoText}>ANULAR</Text>
+                            <Ionicons name="file-tray-full-outline" size={18} color={colors.primary} />
+                            <Text style={[styles.undoText, { color: colors.primary }]}>RESUMEN</Text>
                         </TouchableOpacity>
-                    )
+                    </View>
                 }
             />
 
@@ -111,7 +120,13 @@ export default function BellezaVentasScreen() {
                                             styles.especialistaCard,
                                             { backgroundColor: isSelected ? `${colors.primary}10` : colors.card, borderColor: isSelected ? colors.primary : colors.border }
                                         ]}
-                                        onPress={() => setEspecialistaSeleccionado(esp._id)}
+                                        onPress={() => {
+                                            if (especialistaSeleccionado === esp._id) {
+                                                setEspecialistaSeleccionado(null);
+                                            } else {
+                                                setEspecialistaSeleccionado(esp._id);
+                                            }
+                                        }}
                                     >
                                         {(esp.conteoDia || 0) > 0 && (
                                             <View style={styles.badgeContainer}>

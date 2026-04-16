@@ -42,7 +42,21 @@ export const BellezaCaitlynFAB: React.FC<Props> = ({ especialistas, config }) =>
     if (especialistas.length === 0) return null;
 
     const renderProgress = (conteo: number) => {
-        // Usamos modo escalonado siempre que existan tramos, para ser coherentes con el backend
+        const isFixed = config.tipo === 'fijo';
+
+        if (isFixed) {
+            return (
+                <View style={{ marginTop: 4 }}>
+                    <Text style={[styles.tierText, { color: colors.primary }]}>
+                        Comisión {config.fijo?.porcentajeBarbero || 50}% (Fija)
+                    </Text>
+                    <Text style={[styles.goalText, { color: colors.textMuted, fontStyle: 'italic' }]}>
+                        Rendimiento: {conteo > 10 ? '🔥 ¡Excelente ritmo!' : conteo > 5 ? '⚡ ¡Buen trabajo!' : '✨ ¡Vamos por más!'}
+                    </Text>
+                </View>
+            );
+        }
+
         const tieneTramos = config.escalonado && config.escalonado.length > 0;
 
         if (!tieneTramos) {
