@@ -10,7 +10,8 @@ export const crearVentaService = async (
     notas: string,
     especialista: any,
     userId: string,
-    negocioId: string
+    negocioId: string,
+    pagoCombinado?: any[]
 ) => {
     // Procesar items y calcular totales
     const itemsProcesados = [];
@@ -87,7 +88,8 @@ export const crearVentaService = async (
         negocioId: negocioId,
         cliente,
         notas,
-        especialista
+        especialista,
+        pagoCombinado
     });
 
     await venta.save();
@@ -157,7 +159,8 @@ export const actualizarVentaService = async (
     notas: string,
     especialista: any,
     userId: string,
-    negocioId: string
+    negocioId: string,
+    pagoCombinado?: any[]
 ) => {
     const ventaAnterior = await Venta.findOne({ _id: id, negocioId });
     if (!ventaAnterior) {
@@ -269,6 +272,7 @@ export const actualizarVentaService = async (
     ventaAnterior.cliente = cliente !== undefined ? cliente : ventaAnterior.cliente;
     ventaAnterior.notas = notas !== undefined ? notas : ventaAnterior.notas;
     ventaAnterior.especialista = especialista !== undefined ? especialista : ventaAnterior.especialista;
+    ventaAnterior.pagoCombinado = pagoCombinado !== undefined ? pagoCombinado : ventaAnterior.pagoCombinado;
 
     await ventaAnterior.save();
 

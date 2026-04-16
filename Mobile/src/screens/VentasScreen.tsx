@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn } from 'react-native-reanimated';
@@ -20,7 +20,7 @@ import { VentasNotebookModal } from './Ventas/components/VentasNotebookModal'; /
 
 export default function VentasScreen() {
     const { width, height } = useAppDimensions();
-    const isTablet = width > 800; // Umbral para mostrar sidebar
+    const isTablet = width >= 768; // Umbral seguro para mostrar sidebar (Vertical u Horizontal)
     const isLandscape = width > height;
 
     const {
@@ -29,6 +29,7 @@ export default function VentasScreen() {
         categoriaFiltro, setCategoriaFiltro, agregarAlCarrito,
         quitarDelCarrito, calcularTotal, procesarVenta,
         cliente, setCliente, metodoPago, setMetodoPago,
+        pagoCombinado, setPagoCombinado,
         ordenes, activeOrderId, activeOrder, nuevaOrden,
         seleccionarOrden, pedirConfirmacionEliminar,
         confirmarEliminarOrden, cancelarEliminarOrden, ordenAEliminar,
@@ -69,6 +70,24 @@ export default function VentasScreen() {
         setTimeout(() => setShowSuccess(false), 2000);
     };
 
+    // Doble-tap en sidebar: detectar dos taps rápidos para abrir pedido
+    const lastTapRef = useRef<{ id: string; time: number }>({ id: '', time: 0 });
+    const handleSidebarTap = useCallback((orderId: string) => {
+        const now = Date.now();
+        const last = lastTapRef.current;
+
+        if (last.id === orderId && now - last.time < 300) {
+            // Doble-tap detectado → abrir carrito
+            seleccionarOrden(orderId);
+            setShowModal(true);
+            lastTapRef.current = { id: '', time: 0 };
+        } else {
+            // Primer tap → solo seleccionar
+            seleccionarOrden(orderId);
+            lastTapRef.current = { id: orderId, time: now };
+        }
+    }, [seleccionarOrden, setShowModal]);
+
     const renderSidebar = () => {
         const ordenesActivas = ordenes.filter(o => !o.completada);
         return (
@@ -86,25 +105,108 @@ export default function VentasScreen() {
                         return (
                             <TouchableOpacity
                                 key={o.id}
-                                onPress={() => seleccionarOrden(o.id)}
+                                onPress={() => handleSidebarTap(o.id)}
+                                onLongPress={() => {
+                                    seleccionarOrden(o.id);
+                                    setShowModal(true);
+                                }}
+                                delayLongPress={400}
                                 style={[
                                     styles.orderItem,
-                                    { backgroundColor: isActive ? colors.primary + '15' : 'transparent', borderColor: isActive ? colors.primary : 'transparent' }
+                                    { 
+                                        backgroundColor: isActive ? colors.primary + '10' : 'transparent', 
+                                        borderColor: isActive ? colors.primary : colors.border + '50',
+                                        paddingVertical: isActive ? 16 : 12,
+                                        flexDirection: 'column', // Cambio a columna para mejor control
+                                        alignItems: 'stretch'
+                                    }
                                 ]}
                             >
-                                <View style={[styles.orderIcon, { backgroundColor: isActive ? colors.primary : colors.surface }]}>
-                                    <Ionicons name="receipt-outline" size={16} color={isActive ? '#fff' : colors.textMuted} />
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: isActive ? 12 : 0 }}>
+                                    <View style={[styles.orderIcon, { backgroundColor: isActive ? colors.primary : colors.surface }]}>
+                                        <Ionicons name="receipt-outline" size={16} color={isActive ? '#fff' : colors.textMuted} />
+                                        {o.items.length > 0 && (
+                                            <View style={{
+                                                position: 'absolute',
+                                                top: -6,
+                                                right: -6,
+                                                backgroundColor: colors.primary,
+                                                borderRadius: 9,
+                                                minWidth: 18,
+                                                height: 18,
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                borderWidth: 2,
+                                                borderColor: isActive ? colors.primary + '10' : colors.card
+                                            }}>
+                                                <Text style={{ color: '#fff', fontSize: 9, fontWeight: '900' }}>
+                                                    {o.items.reduce((acc: number, item: any) => acc + item.cantidad, 0)}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                    
+                                    <View style={{ flex: 1, marginLeft: 12 }}>
+                                        <Text style={[styles.orderName, { fontSize: isActive ? 16 : 14 }]} numberOfLines={1}>{o.nombre}</Text>
+                                        <Text style={styles.orderMeta}>
+                                            ${subtotal.toFixed(2)}
+                                        </Text>
+                                    </View>
+
+                                    {!isActive && (
+                                        <TouchableOpacity 
+                                            onPress={() => pedirConfirmacionEliminar(o.id)}
+                                            style={{ padding: 8 }}
+                                        >
+                                            <Ionicons name="trash-outline" size={18} color={colors.textMuted} />
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.orderName} numberOfLines={1}>{o.nombre}</Text>
-                                    <Text style={styles.orderMeta}>
-                                        {o.items.length} items · ${subtotal.toFixed(2)}
-                                    </Text>
-                                </View>
-                                {isActive && <View style={styles.activeDot} />}
+
+                                {isActive && (
+                                    <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+                                        <TouchableOpacity 
+                                            onPress={() => setShowModal(true)}
+                                            style={{ 
+                                                flex: 4,
+                                                backgroundColor: colors.primary, 
+                                                height: 40,
+                                                borderRadius: 12,
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                flexDirection: 'row',
+                                                gap: 6
+                                            }}
+                                        >
+                                            <Ionicons name="wallet-outline" size={16} color="#fff" />
+                                            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '900' }}>COBRAR</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity 
+                                            onPress={() => pedirConfirmacionEliminar(o.id)}
+                                            style={{ 
+                                                flex: 1,
+                                                backgroundColor: colors.surface, 
+                                                height: 40,
+                                                borderRadius: 12,
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                borderWidth: 1,
+                                                borderColor: colors.border
+                                            }}
+                                        >
+                                            <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </TouchableOpacity>
                         );
                     })}
+                    {ordenesActivas.length > 0 && (
+                        <Text style={{ fontSize: 10, color: colors.textMuted, textAlign: 'center', marginTop: 8, fontStyle: 'italic', paddingHorizontal: 8 }}>
+                            💡 Mantén pulsado para abrir el pedido
+                        </Text>
+                    )}
                 </ScrollView>
                 <View style={styles.sidebarFooter}>
                     <TouchableOpacity 
@@ -139,19 +241,21 @@ export default function VentasScreen() {
                     onNotificationPress={abrirHistorial}
                     notificationIcon="journal-outline" // Cambiado de campana a Libro de Ventas
                     extraButtons={
-                        <TouchableOpacity
-                            style={[styles.cartButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                            onPress={() => setShowModal(true)}
-                        >
-                            <Ionicons name="cart-outline" size={22} color={colors.textPrimary} />
-                            {carrito.length > 0 && (
-                                <View style={styles.cartBadge}>
-                                    <Text style={styles.cartBadgeText}>
-                                        {carrito.reduce((sum, item) => sum + item.cantidad, 0)}
-                                    </Text>
-                                </View>
-                            )}
-                        </TouchableOpacity>
+                        !isTablet && (
+                            <TouchableOpacity
+                                style={[styles.cartButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                                onPress={() => setShowModal(true)}
+                            >
+                                <Ionicons name="cart-outline" size={22} color={colors.textPrimary} />
+                                {carrito.length > 0 && (
+                                    <View style={styles.cartBadge}>
+                                        <Text style={styles.cartBadgeText}>
+                                            {carrito.reduce((sum, item) => sum + item.cantidad, 0)}
+                                        </Text>
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        )
                     }
                 />
 
@@ -224,10 +328,10 @@ export default function VentasScreen() {
                     ) : (
                         <View style={styles.productsGrid}>
                             {productosFiltrados.map((p: Producto, i: number) => {
-                                const qty = carrito.find(item => item.producto._id === p._id)?.cantidad || 0;
+                                const qty = carrito.find(item => String(item.producto._id) === String(p._id))?.cantidad || 0;
                                 return (
                                     <VentasProductCard
-                                        key={p._id}
+                                        key={`${p?._id || 'prod'}-${i}`}
                                         producto={p}
                                         index={i}
                                         cantidadEnCarrito={qty}
@@ -256,6 +360,8 @@ export default function VentasScreen() {
                 setCliente={setCliente}
                 metodoPago={metodoPago}
                 setMetodoPago={setMetodoPago}
+                pagoCombinado={pagoCombinado}
+                setPagoCombinado={setPagoCombinado}
                 montoRecibido={montoRecibido}
                 setMontoRecibido={setMontoRecibido}
                 cambio={cambio}

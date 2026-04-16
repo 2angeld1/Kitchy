@@ -10,7 +10,7 @@ import { crearVentaService, actualizarVentaService } from '../services/ventaServ
 // Crear una nueva venta
 export const crearVenta = async (req: AuthRequest, res: Response) => {
     try {
-        const { items, metodoPago, cliente, notas, especialista } = req.body;
+        const { items, metodoPago, cliente, notas, especialista, pagoCombinado } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'La venta debe tener al menos un producto' });
@@ -23,7 +23,8 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
             notas,
             especialista,
             req.userId as string,
-            req.negocioId as string
+            req.negocioId as string,
+            pagoCombinado
         );
 
         res.status(201).json({
@@ -230,7 +231,7 @@ export const eliminarVenta = async (req: AuthRequest, res: Response) => {
 export const actualizarVenta = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const { items, metodoPago, cliente, notas, especialista } = req.body;
+        const { items, metodoPago, cliente, notas, especialista, pagoCombinado } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'La venta debe tener al menos un producto' });
@@ -244,7 +245,8 @@ export const actualizarVenta = async (req: AuthRequest, res: Response) => {
             notas,
             especialista,
             req.userId as string,
-            req.negocioId as string
+            req.negocioId as string,
+            pagoCombinado
         );
 
         res.status(200).json({

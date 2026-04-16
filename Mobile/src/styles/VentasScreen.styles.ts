@@ -2,8 +2,20 @@ import { StyleSheet, Platform } from 'react-native';
 import { spacing, typography } from '../theme';
 
 export const createStyles = (colors: any, width: number, height: number) => {
-    const isTablet = width > 768;
+    const isTablet = width >= 768; // Alineado con VentasScreen (sidebar activo)
     const isLandscape = width > height;
+
+    // Calcular el grid inteligentemente según el espacio (deduciendo el sidebar de 280 si aplica)
+    const containerWidth = isTablet ? width - 280 : width;
+    let columns = 2;
+    if (containerWidth >= 1000) columns = 5;
+    else if (containerWidth >= 700) columns = 4;
+    else if (containerWidth >= 450) columns = 3; // Tablet Portrait con Sidebar (~480px a 520px de espacio libre)
+
+    const gap = isLandscape ? 12 : 16;
+    // XL y XXL asumen tamaños típicos del theme (aprox 20 y 32)
+    const gridPaddingHorizontal = isTablet ? spacing.xxl : spacing.xl;
+    const cardWidth = (containerWidth - (gridPaddingHorizontal * 2) - (gap * (columns - 1))) / columns;
 
     return StyleSheet.create({
         container: {
@@ -12,7 +24,7 @@ export const createStyles = (colors: any, width: number, height: number) => {
         },
         header: {
             paddingTop: Platform.OS === 'ios' ? 60 : (isLandscape ? 8 : 40),
-            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            paddingHorizontal: gridPaddingHorizontal,
             paddingBottom: isLandscape ? 2 : spacing.md,
             flexDirection: 'row',
             justifyContent: 'space-between',
@@ -57,7 +69,7 @@ export const createStyles = (colors: any, width: number, height: number) => {
             fontWeight: typography.fontWeight.black,
         },
         searchContainer: {
-            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            paddingHorizontal: gridPaddingHorizontal,
             marginBottom: isLandscape ? 4 : spacing.md,
         },
         searchInputWrapper: {
@@ -79,7 +91,7 @@ export const createStyles = (colors: any, width: number, height: number) => {
             color: colors.textPrimary,
         },
         categoriesContainer: {
-            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            paddingHorizontal: gridPaddingHorizontal,
             flexDirection: 'row',
             gap: 8,
             marginBottom: isLandscape ? 6 : spacing.lg,
@@ -110,18 +122,16 @@ export const createStyles = (colors: any, width: number, height: number) => {
             color: colors.white,
         },
         productsGrid: {
-            paddingHorizontal: isTablet ? spacing.xxl : spacing.xl,
+            paddingHorizontal: gridPaddingHorizontal,
             paddingTop: isLandscape ? 4 : 20,
             flexDirection: 'row',
             flexWrap: 'wrap',
             justifyContent: 'flex-start',
-            gap: isLandscape ? 12 : 16,
+            gap: gap,
             paddingBottom: 100,
         },
         productCard: {
-            width: isTablet 
-                ? (width - (isTablet ? spacing.xxl * 2 : spacing.xl * 2) - (isLandscape ? 48 : 48)) / (isLandscape ? 5 : 4) 
-                : (width - (spacing.xl * 2) - 16) / 2,
+            width: cardWidth,
             backgroundColor: colors.white,
             borderRadius: 20,
             padding: isLandscape ? 8 : 12,

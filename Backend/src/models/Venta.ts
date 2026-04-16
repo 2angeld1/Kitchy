@@ -11,7 +11,8 @@ export interface IItemVenta {
 export interface IVenta extends Document {
     items: IItemVenta[];
     total: number;
-    metodoPago: 'efectivo' | 'tarjeta' | 'yappy' | 'otro';
+    metodoPago: 'efectivo' | 'tarjeta' | 'yappy' | 'otro' | 'combinado';
+    pagoCombinado?: { metodo: string; monto: number }[];
     usuario: mongoose.Types.ObjectId;
     negocioId: mongoose.Types.ObjectId;
     especialista?: mongoose.Types.ObjectId;
@@ -66,9 +67,13 @@ const VentaSchema: Schema = new Schema({
     },
     metodoPago: {
         type: String,
-        enum: ['efectivo', 'yappy', 'tarjeta', 'otro'],
+        enum: ['efectivo', 'yappy', 'tarjeta', 'otro', 'combinado'],
         default: 'efectivo'
     },
+    pagoCombinado: [{
+        metodo: String,
+        monto: Number
+    }],
     usuario: {
         type: Schema.Types.ObjectId,
         ref: 'User',

@@ -50,7 +50,9 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit,
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <Text style={[styles.ventaMetodo, { color: colors.textSecondary }]}>
-                            {item.metodoPago?.toUpperCase()}
+                            {item.metodoPago === 'combinado' && item.pagoCombinado?.length > 0
+                                ? `COMBINADO (${item.pagoCombinado.map((c: any) => c.metodo).join(' + ').toUpperCase()})`
+                                : item.metodoPago?.toUpperCase()}
                         </Text>
                         <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
                     </View>
@@ -167,7 +169,11 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit,
                             <View style={[styles.detailFooter, { borderTopColor: colors.border }]}>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ fontSize: 12, color: colors.textSecondary }}>Método de Pago</Text>
-                                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.textPrimary, textTransform: 'uppercase' }}>{ventaSeleccionada?.metodoPago}</Text>
+                                    <Text style={{ fontSize: 12, fontWeight: '900', color: colors.textPrimary, textTransform: 'uppercase' }}>
+                                        {ventaSeleccionada?.metodoPago === 'combinado' && ventaSeleccionada?.pagoCombinado?.length > 0
+                                            ? `Combinado (${ventaSeleccionada.pagoCombinado.map((c: any) => c.metodo).join(' + ')})`
+                                            : ventaSeleccionada?.metodoPago}
+                                    </Text>
                                 </View>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                                     <Text style={{ fontSize: 18, fontWeight: '900', color: colors.textPrimary }}>TOTAL</Text>

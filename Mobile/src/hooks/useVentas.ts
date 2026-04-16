@@ -39,6 +39,8 @@ export interface Orden {
     metodoPago: string;
     completada?: boolean;
     completadoEn?: string; // ISO date string
+    creadoEn?: string; // ISO date string - para auto-cierre al cambiar de día
+    pagoCombinado?: { metodo: string; monto: number }[];
     _idDB?: string;
 }
 
@@ -46,7 +48,7 @@ export const useVentas = () => {
     const { user } = useAuth();
     const [productos, setProductos] = useState<Producto[]>([]);
     const [ordenes, setOrdenes] = useState<Orden[]>([
-        { id: Date.now().toString(), nombre: 'Pedido 1', items: [], cliente: '', metodoPago: 'efectivo' }
+        { id: Date.now().toString(), nombre: 'Pedido 1', items: [], cliente: '', metodoPago: 'efectivo', creadoEn: new Date().toISOString() }
     ]);
     const [activeOrderId, setActiveOrderId] = useState<string>(ordenes[0].id);
     const [ventas, setVentas] = useState<Venta[]>([]);
@@ -60,6 +62,7 @@ export const useVentas = () => {
 
     const carrito = activeOrder.items;
     const metodoPago = activeOrder.metodoPago;
+    const pagoCombinado = activeOrder.pagoCombinado || [];
     const cliente = activeOrder.cliente;
 
     // UI State
@@ -78,6 +81,95 @@ export const useVentas = () => {
     const [busqueda, setBusqueda] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState('');
 
+    // Helper: obtener la fecha actual en zona horaria de Panamá (America/Panama = EST, UTC-5)
+    const getFechaPanama = (date: Date = new Date()): string => {
+        return date.toLocaleDateString('en-CA', { timeZone: 'America/Panama' }); // formato YYYY-MM-DD
+    };
+
+    // Auto-cierre de pedidos pendientes del día anterior
+    const autoCerrarPedidosDelDiaAnterior = async (ordenesOriginales: Orden[]): Promise<Orden[]> => {
+        const hoyPanama = getFechaPanama();
+        const pendientesDeAyer: Orden[] = [];
+        let restoLimpiado: Orden[] = [];
+
+        // 1. Filtrar los pedidos
+        for (const o of ordenesOriginales) {
+            if (!o.completada && o.creadoEn) {
+                const diaPanamaOrden = getFechaPanama(new Date(o.creadoEn));
+                if (diaPanamaOrden < hoyPanama) {
+                    if (o.items.length > 0) {
+                        pendientesDeAyer.push(o); // Tiene items: agendar para cobrar
+                    }
+                    // Si NO tiene items y es de ayer, lo saltamos (desaparece porque no entra a restoLimpiado)
+                    continue;
+                }
+            }
+            restoLimpiado.push(o);
+        }
+
+        if (pendientesDeAyer.length === 0) return restoLimpiado; // Retornamos los limpiados aunque no haya que cobrar
+
+        console.log(`[Auto-Cierre] ${pendientesDeAyer.length} pedido(s) del día anterior detectados. Procesando...`);
+
+        // Insertamos nuevamente los que vamos a auto-completar en el array base
+        const ordenesActualizadas = [...restoLimpiado, ...pendientesDeAyer];
+
+        for (const orden of pendientesDeAyer) {
+            try {
+                const items = orden.items.map(item => ({
+                    productoId: item.producto._id,
+                    nombre: item.producto.nombre,
+                    precio: item.producto.precio,
+                    cantidad: item.cantidad
+                }));
+
+                const response = await createVenta({
+                    items,
+                    metodoPago: orden.metodoPago || 'efectivo',
+                    cliente: orden.cliente || ''
+                });
+
+                const dbId = response.data.venta?._id || response.data._id;
+                const totalFinal = orden.items.reduce((sum, item) => sum + (Number(item.producto.precio) * item.cantidad), 0);
+
+                // Marcar como completada en el array
+                const idx = ordenesActualizadas.findIndex(o => o.id === orden.id);
+                if (idx !== -1) {
+                    ordenesActualizadas[idx] = {
+                        ...ordenesActualizadas[idx],
+                        completada: true,
+                        completadoEn: new Date().toISOString(),
+                        _idDB: dbId,
+                        nombre: orden.cliente?.trim()
+                            ? `${orden.cliente.trim()} - $${totalFinal.toFixed(2)} (auto)`
+                            : `${orden.nombre} - $${totalFinal.toFixed(2)} (auto)`
+                    };
+                }
+
+                console.log(`[Auto-Cierre] ✅ Pedido "${orden.nombre}" procesado como venta exitosa ($${totalFinal.toFixed(2)})`);
+            } catch (err: any) {
+                console.error(`[Auto-Cierre] ❌ Error al procesar pedido "${orden.nombre}":`, err.message);
+                // Si falla, lo dejamos como estaba (no lo borramos)
+            }
+        }
+
+        // Toast de resumen
+        const completados = ordenesActualizadas.filter(o =>
+            pendientesDeAyer.some(p => p.id === o.id) && o.completada
+        ).length;
+
+        if (completados > 0) {
+            Toast.show({
+                type: 'success',
+                text1: '📋 Cierre Automático',
+                text2: `${completados} pedido(s) de ayer se registraron como ventas exitosas`,
+                visibilityTime: 5000
+            });
+        }
+
+        return ordenesActualizadas;
+    };
+
     // Persistencia de Ordenes
     useEffect(() => {
         const cargarOrdenesPersistidas = async () => {
@@ -85,7 +177,17 @@ export const useVentas = () => {
                 const storedValue = await AsyncStorage.getItem('kitchy_ordenes_pendientes');
                 const storedActiveId = await AsyncStorage.getItem('kitchy_active_order_id');
                 if (storedValue) {
-                    const parsed: Orden[] = JSON.parse(storedValue);
+                    let parsed: Orden[] = JSON.parse(storedValue);
+
+                    // Migración: agregar creadoEn a ordenes antiguas que no lo tengan
+                    parsed = parsed.map(o => ({
+                        ...o,
+                        creadoEn: o.creadoEn || new Date().toISOString()
+                    }));
+
+                    // 🔄 Auto-cierre: procesar pedidos del día anterior como ventas exitosas
+                    parsed = await autoCerrarPedidosDelDiaAnterior(parsed);
+
                     // Auto-limpieza: eliminar pedidos completados hace más de 24h
                     const ahora = Date.now();
                     const vigentes = parsed.filter(o => {
@@ -94,11 +196,30 @@ export const useVentas = () => {
                         return horasDesdeCompletado < 24;
                     });
                     if (vigentes.length > 0) {
-                        setOrdenes(vigentes);
-                        if (storedActiveId && vigentes.some(o => o.id === storedActiveId)) {
-                            setActiveOrderId(storedActiveId);
+                        const activas = vigentes.filter(o => !o.completada);
+
+                        if (activas.length === 0) {
+                            // Si todas se auto-completaron (o por alguna razón todas son completadas)
+                            // Generamos un pedido fresco en blanco para iniciar el día.
+                            const nuevoId = Date.now().toString();
+                            vigentes.push({
+                                id: nuevoId,
+                                nombre: 'Pedido 1', // O el conteo que corresponda
+                                items: [],
+                                cliente: '',
+                                metodoPago: 'efectivo',
+                                creadoEn: new Date().toISOString()
+                            });
+                            setOrdenes(vigentes);
+                            setActiveOrderId(nuevoId);
                         } else {
-                            setActiveOrderId(vigentes[0].id);
+                            setOrdenes(vigentes);
+                            if (storedActiveId && activas.some(o => o.id === storedActiveId)) {
+                                setActiveOrderId(storedActiveId);
+                            } else {
+                                // Seleccionar la primera orden activa confirmada
+                                setActiveOrderId(activas[0].id);
+                            }
                         }
                     }
                 }
@@ -158,11 +279,15 @@ export const useVentas = () => {
     };
 
     const setMetodoPago = (metodo: string) => {
-        setOrdenes(ordenes.map(o => o.id === activeOrderId ? { ...o, metodoPago: metodo } : o));
+        setOrdenes(prev => prev.map(o => o.id === activeOrderId ? { ...o, metodoPago: metodo } : o));
+    };
+
+    const setPagoCombinado = (combo: {metodo: string; monto: number}[]) => {
+        setOrdenes(prev => prev.map(o => o.id === activeOrderId ? { ...o, pagoCombinado: combo } : o));
     };
 
     const setCliente = (nombre: string) => {
-        setOrdenes(ordenes.map(o => {
+        setOrdenes(prev => prev.map(o => {
             if (o.id !== activeOrderId) return o;
             // Nombre dinámico: si el usuario pone nombre, el pedido se renombra
             const nuevoNombre = nombre.trim()
@@ -179,7 +304,8 @@ export const useVentas = () => {
             nombre: nombre || `Pedido ${ordenes.length + 1}`,
             items: [],
             cliente: '',
-            metodoPago: 'efectivo'
+            metodoPago: 'efectivo',
+            creadoEn: new Date().toISOString()
         };
         setOrdenes([...ordenes, nueva]);
         setActiveOrderId(id);
@@ -257,12 +383,12 @@ export const useVentas = () => {
         setOrdenes(ordenes.map(o => {
             if (o.id !== activeOrderId) return o;
 
-            const existe = o.items.find(item => item.producto._id === producto._id);
+            const existe = o.items.find(item => String(item.producto._id) === String(producto._id));
             if (existe) {
                 return {
                     ...o,
                     items: o.items.map(item =>
-                        item.producto._id === producto._id
+                        String(item.producto._id) === String(producto._id)
                             ? { ...item, cantidad: item.cantidad + 1 }
                             : item
                     )
@@ -289,12 +415,12 @@ export const useVentas = () => {
         setOrdenes(ordenes.map(o => {
             if (o.id !== activeOrderId) return o;
 
-            const existe = o.items.find(item => item.producto._id === productoId);
+            const existe = o.items.find(item => String(item.producto._id) === String(productoId));
             if (existe && existe.cantidad > 1) {
                 return {
                     ...o,
                     items: o.items.map(item =>
-                        item.producto._id === productoId
+                        String(item.producto._id) === String(productoId)
                             ? { ...item, cantidad: item.cantidad - 1 }
                             : item
                     )
@@ -345,18 +471,19 @@ export const useVentas = () => {
                 cantidad: item.cantidad
             }));
 
+            const payload = {
+                items,
+                metodoPago,
+                pagoCombinado: metodoPago === 'combinado' ? pagoCombinado : undefined,
+                cliente
+            };
+
             let response;
             if (activeOrder._idDB) {
-                response = await updateVenta(activeOrder._idDB, { items, metodoPago, cliente });
+                response = await updateVenta(activeOrder._idDB, payload);
             } else {
-                response = await createVenta({ items, metodoPago, cliente });
+                response = await createVenta(payload);
             }
-            
-            Toast.show({
-                type: 'success',
-                text1: activeOrder._idDB ? '¡Venta Editada!' : '¡Venta Registrada!',
-                text2: response.data.message || 'La orden se procesó con éxito'
-            });
 
             // Marcar como completada (NO borrar) con el ID real de la base de datos
             const totalFinal = calcularTotal();
@@ -383,7 +510,8 @@ export const useVentas = () => {
                 nombre: `Pedido ${ordenes.length + 1}`,
                 items: [],
                 cliente: '',
-                metodoPago: 'efectivo'
+                metodoPago: 'efectivo',
+                creadoEn: new Date().toISOString()
             };
             setOrdenes(prev => [...prev.map(o => {
                 if (o.id !== activeOrderId) return o;
@@ -506,7 +634,7 @@ export const useVentas = () => {
 
                 return {
                     producto: prod || { 
-                        _id: `manual-${Date.now()}-${index}`, 
+                        _id: `manual-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 5)}`, 
                         nombre: it.nombre, 
                         precio: it.precio || (venta.total / (venta.items?.length || 1)), 
                         categoria: 'comida', 
@@ -516,7 +644,8 @@ export const useVentas = () => {
                 };
             }),
             cliente: venta.cliente || '',
-            metodoPago: venta.metodoPago || 'efectivo'
+            metodoPago: venta.metodoPago || 'efectivo',
+            creadoEn: new Date().toISOString()
         };
         setOrdenes([...ordenes, nueva]);
         setActiveOrderId(id);
@@ -543,7 +672,9 @@ export const useVentas = () => {
             }),
             cliente: ventaObj.cliente || '',
             metodoPago: ventaObj.metodoPago || 'efectivo',
-            _idDB: ventaObj._id
+            pagoCombinado: ventaObj.pagoCombinado || undefined,
+            _idDB: ventaObj._id,
+            creadoEn: new Date().toISOString()
         };
         setOrdenes([...ordenes, nuevaOrden]);
         setActiveOrderId(id);
@@ -561,6 +692,7 @@ export const useVentas = () => {
         showModal, setShowModal,
         showHistorial, setShowHistorial,
         metodoPago, setMetodoPago,
+        pagoCombinado, setPagoCombinado,
         cliente, setCliente,
         busqueda, setBusqueda,
         categoriaFiltro, setCategoriaFiltro,

@@ -6,6 +6,7 @@ import { Producto } from '../../../hooks/useVentas';
 import { KitchyInput } from '../../../components/KitchyInput';
 import { KitchySelect } from '../../../components/KitchySelect';
 import { useAppDimensions } from '../../../context/DimensionsContext';
+import { PagoCombinadoModal } from './PagoCombinadoModal';
 
 interface Props {
     visible: boolean;
@@ -21,6 +22,8 @@ interface Props {
     setCliente: (c: string) => void;
     metodoPago: string;
     setMetodoPago: (m: string) => void;
+    pagoCombinado?: { metodo: string; monto: number }[];
+    setPagoCombinado?: (combo: { metodo: string; monto: number }[]) => void;
     montoRecibido: string;
     setMontoRecibido: (m: string) => void;
     cambio: number;
@@ -42,6 +45,8 @@ export const VentasCartModal: React.FC<Props> = ({
     setCliente,
     metodoPago,
     setMetodoPago,
+    pagoCombinado = [],
+    setPagoCombinado,
     montoRecibido,
     setMontoRecibido,
     cambio,
@@ -50,6 +55,7 @@ export const VentasCartModal: React.FC<Props> = ({
 }) => {
     const { width, height } = useAppDimensions();
     const isLandscape = width > height;
+    const [showCombinadoModal, setShowCombinadoModal] = React.useState(false);
 
     return (
         <Modal
@@ -90,9 +96,9 @@ export const VentasCartModal: React.FC<Props> = ({
                                 <Text style={[styles.emptyText, { color: colors.textMuted }]}>El carrito está vacío</Text>
                             </View>
                         ) : (
-                            carrito.map(item => (
+                            carrito.map((item, index) => (
                                 <View 
-                                    key={item.producto._id} 
+                                    key={`${item.producto?._id || 'unknown'}-${index}`} 
                                     style={[
                                         styles.cartItem, 
                                         isLandscape && { width: (width - 64) / 2, marginBottom: 8, paddingVertical: 8 }
@@ -165,9 +171,17 @@ export const VentasCartModal: React.FC<Props> = ({
                                                 { label: 'Efectivo', value: 'efectivo' },
                                                 { label: 'Yappy', value: 'yappy' },
                                                 { label: 'ACH/Trans', value: 'ach' },
-                                                { label: 'Tarjeta', value: 'tarjeta' }
+                                                { label: 'Tarjeta', value: 'tarjeta' },
+                                                { label: 'Combinado', value: 'combinado' }
                                             ]}
-                                            onSelect={setMetodoPago}
+                                            onSelect={(m) => {
+                                                if (m === 'combinado') {
+                                                    setShowCombinadoModal(true);
+                                                } else {
+                                                    setMetodoPago(m);
+                                                    if (setPagoCombinado) setPagoCombinado([]);
+                                                }
+                                            }}
                                             containerStyle={isLandscape && { marginBottom: 0 }}
                                         />
                                     </View>
@@ -201,6 +215,11 @@ export const VentasCartModal: React.FC<Props> = ({
                                         </View>
                                     )}
                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+                                        {metodoPago === 'combinado' && pagoCombinado && pagoCombinado.length > 0 && (
+                                            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800' }}>
+                                                ({pagoCombinado.map(c => `$${c.monto.toFixed(2)} ${c.metodo.toUpperCase()}`).join(' + ')})
+                                            </Text>
+                                        )}
                                         <Text style={[styles.totalLabel, { fontSize: 12, marginBottom: 0 }]}>TOTAL:</Text>
                                         <Text style={[styles.totalValue, { fontSize: isLandscape ? 22 : 24 }]}>${(Number(calcularTotal()) || 0).toFixed(2)}</Text>
                                     </View>
@@ -235,6 +254,23 @@ export const VentasCartModal: React.FC<Props> = ({
                     )}
                 </Animated.View>
             </Animated.View>
+
+            <PagoCombinadoModal
+                visible={showCombinadoModal}
+                total={calcularTotal()}
+                colors={colors}
+                onClose={() => {
+                    setShowCombinadoModal(false);
+                    if (metodoPago !== 'combinado' && pagoCombinado.length === 0) {
+                        setMetodoPago('efectivo');
+                    }
+                }}
+                onConfirm={(combinacion) => {
+                    setMetodoPago('combinado');
+                    if (setPagoCombinado) setPagoCombinado(combinacion);
+                    setShowCombinadoModal(false);
+                }}
+            />
         </Modal>
     );
 };

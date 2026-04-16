@@ -29,7 +29,8 @@ export const useBellezaVentas = () => {
     // Estado del "ticket" de belleza (Multiselección)
     const [itemsSeleccionados, setItemsSeleccionados] = useState<Producto[]>([]);
     const [especialistaSeleccionado, setEspecialistaSeleccionado] = useState<string | null>(null);
-    const [metodoPago, setMetodoPago] = useState<'efectivo' | 'yappy' | 'tarjeta'>('efectivo');
+    const [metodoPago, setMetodoPago] = useState<'efectivo' | 'yappy' | 'tarjeta' | 'combinado'>('efectivo');
+    const [pagoCombinado, setPagoCombinado] = useState<{ metodo: string; monto: number }[]>([]);
 
     // Sugerencias: Nombre cliente, Calculadora, Undo
     const [clienteNombre, setClienteNombre] = useState('');
@@ -118,6 +119,7 @@ export const useBellezaVentas = () => {
             const payload = {
                 items: itemsSeleccionados.map(s => ({ productoId: s._id, cantidad: 1 })),
                 metodoPago,
+                pagoCombinado: metodoPago === 'combinado' ? pagoCombinado : undefined,
                 especialista: especialistaSeleccionado,
                 cliente: clienteNombre
             };
@@ -127,20 +129,19 @@ export const useBellezaVentas = () => {
 
             if (onSuccess) onSuccess();
 
-            Toast.show({ type: 'success', text1: '¡Venta Lista!', text2: 'Cobro registrado correctamente.' });
-
             // Reset y recargar conteos
             setItemsSeleccionados([]);
             setEspecialistaSeleccionado(null);
             setClienteNombre('');
             setMontoRecibido('');
+            setPagoCombinado([]);
             cargarDatos();
         } catch (err: any) {
             Toast.show({ type: 'error', text1: 'Error', text2: err.response?.data?.message || 'Error al procesar' });
         } finally {
             setLoading(false);
         }
-    }, [itemsSeleccionados, especialistaSeleccionado, metodoPago, clienteNombre, cargarDatos]);
+    }, [itemsSeleccionados, especialistaSeleccionado, metodoPago, pagoCombinado, clienteNombre, cargarDatos]);
 
     const anularUltimaVenta = useCallback(async () => {
         if (!lastVentaId) return;
@@ -184,6 +185,7 @@ export const useBellezaVentas = () => {
         itemsSeleccionados, toggleItem,
         especialistaSeleccionado, setEspecialistaSeleccionado,
         metodoPago, setMetodoPago,
+        pagoCombinado, setPagoCombinado,
         clienteNombre, setClienteNombre,
         montoRecibido, setMontoRecibido,
         lastVentaId, anularUltimaVenta,

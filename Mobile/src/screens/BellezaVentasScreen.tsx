@@ -11,6 +11,7 @@ import { useAuth, Negocio } from '../context/AuthContext';
 import { createStyles } from '../styles/BellezaVentasScreen.styles';
 import { getBeautyIcon, formatMoney, getInventoryIcon } from '../utils/beauty-helpers';
 import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
+import { PagoCombinadoModal } from './Ventas/components/PagoCombinadoModal';
 import { BellezaCaitlynFAB } from '../components/BellezaCaitlynFAB';
 
 export default function BellezaVentasScreen() {
@@ -30,6 +31,7 @@ export default function BellezaVentasScreen() {
         itemsSeleccionados,
         especialistaSeleccionado,
         metodoPago,
+        pagoCombinado,
         loading,
         clienteNombre, setClienteNombre,
         montoRecibido, setMontoRecibido,
@@ -37,6 +39,7 @@ export default function BellezaVentasScreen() {
         toggleItem,
         setEspecialistaSeleccionado,
         setMetodoPago,
+        setPagoCombinado,
         procesarCobro,
         abrirHistorial,
         ventas,
@@ -54,6 +57,7 @@ export default function BellezaVentasScreen() {
     );
 
     const [showSuccess, setShowSuccess] = useState(false);
+    const [showCombinadoModal, setShowCombinadoModal] = useState(false);
     const successScale = useSharedValue(0);
 
     const handleCobrar = async () => {
@@ -78,7 +82,7 @@ export default function BellezaVentasScreen() {
             style={styles.container}
         >
             <KitchyToolbar
-                title="POS Belleza"
+                title="Punto de Venta"
                 onNotificationPress={abrirHistorial}
                 extraButtons={
                     lastVentaId && (
@@ -277,12 +281,19 @@ export default function BellezaVentasScreen() {
                     style={[styles.ticketContainer, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                     <View style={styles.paymentMethods}>
-                        {['efectivo', 'yappy', 'tarjeta'].map((m) => {
+                        {['efectivo', 'yappy', 'tarjeta', 'combinado'].map((m) => {
                             const isSelected = metodoPago === m;
                             return (
                                 <TouchableOpacity
                                     key={m}
-                                    onPress={() => setMetodoPago(m as any)}
+                                    onPress={() => {
+                                        if (m === 'combinado') {
+                                            setShowCombinadoModal(true);
+                                        } else {
+                                            setMetodoPago(m as any);
+                                            setPagoCombinado([]);
+                                        }
+                                    }}
                                     style={[
                                         styles.paymentBtn,
                                         { borderColor: isSelected ? colors.primary : colors.border, backgroundColor: isSelected ? `${colors.primary}10` : colors.surface }
@@ -313,7 +324,13 @@ export default function BellezaVentasScreen() {
 
                     <View style={styles.totalRow}>
                         <View>
-                            <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{itemsSeleccionados.length} items seleccionados</Text>
+                            {metodoPago === 'combinado' && pagoCombinado.length > 0 ? (
+                                <Text style={[styles.totalLabel, { color: colors.primary, fontWeight: '700' }]}>
+                                    {pagoCombinado.map(c => `$${c.monto.toFixed(2)} ${c.metodo.toUpperCase()}`).join(' + ')}
+                                </Text>
+                            ) : (
+                                <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{itemsSeleccionados.length} items seleccionados</Text>
+                            )}
                             <Text style={[styles.totalValue, { color: colors.textPrimary }]}>{formatMoney(total)}</Text>
                         </View>
                         {cambio > 0 && <Text style={styles.cambioText}>CAMBIO: {formatMoney(cambio)}</Text>}
@@ -355,6 +372,27 @@ export default function BellezaVentasScreen() {
                 onClose={() => setShowHistorial(false)}
                 ventas={ventas}
                 colors={colors}
+            />
+
+            <PagoCombinadoModal
+                visible={showCombinadoModal}
+                total={total}
+                colors={colors}
+                onClose={() => {
+                    console.log("[PagoCombinado] onClose called. Current metodoPago:", metodoPago, "pagoCombinado.length:", pagoCombinado.length);
+                    setShowCombinadoModal(false);
+                    // Si cerró sin confirmar, volver a efectivo si estaba en combinar
+                    if (metodoPago !== 'combinado' && pagoCombinado.length === 0) {
+                        console.log("[PagoCombinado] Reverting to efectivo...");
+                        setMetodoPago('efectivo');
+                    }
+                }}
+                onConfirm={(combinacion) => {
+                    console.log("[PagoCombinado] onConfirm CALLED. payload:", combinacion);
+                    setMetodoPago('combinado');
+                    setPagoCombinado(combinacion);
+                    setShowCombinadoModal(false);
+                }}
             />
         </KeyboardAvoidingView>
     );
