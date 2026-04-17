@@ -74,6 +74,13 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/comisiones', comisionRoutes);
 app.use('/api/especialistas', especialistaRoutes);
 
+// Rutas del sistema
+export const CURRENT_APP_VERSION = '1.0.0'; // Cambiar esto forzará una recarga en todos los clientes
+
+app.get('/api/system/version', (req, res) => {
+    res.json({ version: CURRENT_APP_VERSION });
+});
+
 // Ruta de prueba
 app.get('/', (req, res) => {
     res.json({ message: 'API de Kitchy POS funcionando correctamente' });

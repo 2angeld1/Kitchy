@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, Image, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, Image, Platform, ActivityIndicator, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { Producto } from '../../../hooks/useVentas';
@@ -20,6 +20,8 @@ interface Props {
     calcularTotal: () => number;
     cliente: string;
     setCliente: (c: string) => void;
+    telefono: string;
+    setTelefono: (t: string) => void;
     metodoPago: string;
     setMetodoPago: (m: string) => void;
     pagoCombinado?: { metodo: string; monto: number }[];
@@ -43,6 +45,8 @@ export const VentasCartModal: React.FC<Props> = ({
     calcularTotal,
     cliente,
     setCliente,
+    telefono,
+    setTelefono,
     metodoPago,
     setMetodoPago,
     pagoCombinado = [],
@@ -56,6 +60,15 @@ export const VentasCartModal: React.FC<Props> = ({
     const { width, height } = useAppDimensions();
     const isLandscape = width > height;
     const [showCombinadoModal, setShowCombinadoModal] = React.useState(false);
+
+    const handleBeeper = () => {
+        if (!telefono) return;
+        const msg = cliente 
+            ? `¡Hola ${cliente}! 👋🍔 Tu pedido está listo para retirar en mostrador.`
+            : `¡Hola! 👋🍔 Tu pedido está listo para retirar en mostrador.`;
+        const url = `https://wa.me/507${telefono}?text=${encodeURIComponent(msg)}`;
+        Linking.openURL(url).catch(() => {});
+    };
 
     return (
         <Modal
@@ -163,6 +176,17 @@ export const VentasCartModal: React.FC<Props> = ({
                                             containerStyle={isLandscape && { marginBottom: 0 }}
                                         />
                                     </View>
+                                    {/* Beeper Input */}
+                                    <View style={{ flex: 1 }}>
+                                        <KitchyInput
+                                            label="Teléfono (Beeper)"
+                                            placeholder="Ej. 61234567"
+                                            keyboardType="phone-pad"
+                                            value={telefono}
+                                            onChangeText={setTelefono}
+                                            containerStyle={isLandscape && { marginBottom: 0 }}
+                                        />
+                                    </View>
                                     <View style={{ flex: 1 }}>
                                         <KitchySelect
                                             label="Método de Pago"
@@ -231,7 +255,27 @@ export const VentasCartModal: React.FC<Props> = ({
                                         onPress={onClose}
                                         activeOpacity={0.8}
                                     >
-                                        <Text style={[styles.confirmBtnText, { color: colors.textSecondary, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>DEJAR PENDIENTE</Text>
+                                        <Text style={[styles.confirmBtnText, { color: colors.textSecondary, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>PENDIENTE</Text>
+                                    </TouchableOpacity>
+
+                                    {/* Beeper Button: Solo activo si hay teléfono */}
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.confirmBtn, 
+                                            { 
+                                                flex: 0.5, 
+                                                height: isLandscape ? 40 : 46, 
+                                                backgroundColor: telefono ? '#25D366' + '20' : colors.surface, 
+                                                borderWidth: 1.5, 
+                                                borderColor: telefono ? '#25D366' : colors.border 
+                                            }
+                                        ]}
+                                        onPress={handleBeeper}
+                                        disabled={!telefono}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Ionicons name="logo-whatsapp" size={16} color={telefono ? '#25D366' : colors.textMuted} style={{ marginRight: 4 }} />
+                                        <Text style={[styles.confirmBtnText, { color: telefono ? '#25D366' : colors.textMuted, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>AVISAR</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity

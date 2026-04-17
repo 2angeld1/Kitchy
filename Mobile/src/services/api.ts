@@ -127,6 +127,11 @@ export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${i
 export const getMenuConfig = () => api.get('/menu-config');
 export const updateMenuConfig = (data: any) => api.put('/menu-config', data);
 
+// Sistema
+export const getSystemVersion = () => api.get('/system/version', { 
+    params: { t: new Date().getTime() } // previene caché estricto
+});
+
 // Agente Caitlyn (IA)
 export const procesarFacturaCaitlyn = (imagenBase64: string) =>
     api.post('/agente/factura', { imagen: imagenBase64 });

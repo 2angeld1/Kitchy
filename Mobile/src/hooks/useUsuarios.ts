@@ -101,7 +101,7 @@ export const useUsuarios = () => {
 
     const [isSubmittingNegocio, setIsSubmittingNegocio] = useState(false);
 
-    const handleCreateNegocio = async (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' }) => {
+    const handleCreateNegocio = async (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string }) => {
         setIsSubmittingNegocio(true);
         try {
             const { createNegocio } = await import('../services/api');

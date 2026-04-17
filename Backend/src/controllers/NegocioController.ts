@@ -66,8 +66,8 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
 
         // Populate para que el usuario tenga los objetos negocio completos
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
         ]);
 
         res.status(201).json({
@@ -118,8 +118,8 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
         // Retornamos el user completo con los negocios parseados si es necesario, 
         // pero basta con actualizar token y context allá
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
         ]);
 
         res.json({

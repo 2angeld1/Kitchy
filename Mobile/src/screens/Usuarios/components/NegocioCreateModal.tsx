@@ -4,13 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KitchyInput } from '../../../components/KitchyInput';
+import { useAuth } from '../../../context/AuthContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface Props {
     visible: boolean;
     onClose: () => void;
-    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' }) => Promise<any>;
+    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string }) => Promise<any>;
     onSwitch: (user: any, token: string) => Promise<void>;
     loading: boolean;
     colors: any;
@@ -21,13 +22,24 @@ export const NegocioCreateModal: React.FC<Props> = ({
     visible, onClose, onConfirm, onSwitch, loading, colors, styles 
 }) => {
     const [nombre, setNombre] = useState('');
+    const [telefono, setTelefono] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
     const insets = useSafeAreaInsets();
+    
+    const { user } = useAuth();
+    const telefonosRegistrados = React.useMemo(() => {
+        if (!user?.negocioIds) return [];
+        const phones = (user.negocioIds as any[])
+            .map(n => typeof n === 'object' ? n.telefono : null)
+            .filter(t => t && t.trim() !== '');
+        return [...new Set(phones)] as string[];
+    }, [user?.negocioIds]);
 
     const handleSubmit = async () => {
-        const res = await onConfirm({ nombre, categoria });
+        const res = await onConfirm({ nombre, categoria, telefono });
         if (res?.success) {
             setNombre('');
+            setTelefono('');
             onClose();
             if (res.user && res.token) {
                 await onSwitch(res.user, res.token);
@@ -108,6 +120,47 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                     onChangeText={setNombre} 
                                     containerStyle={{ marginHorizontal: 0 }}
                                 />
+                            </View>
+
+                            <View style={{ marginBottom: 18 }}>
+                                <KitchyInput 
+                                    label="WhatsApp del Negocio (Opcional)" 
+                                    placeholder="Ej. 61234567" 
+                                    keyboardType="phone-pad"
+                                    value={telefono} 
+                                    onChangeText={setTelefono} 
+                                    containerStyle={{ marginHorizontal: 0 }}
+                                />
+                                {telefonosRegistrados.length > 0 && (
+                                    <ScrollView 
+                                        horizontal 
+                                        showsHorizontalScrollIndicator={false}
+                                        style={{ marginTop: 10, marginHorizontal: 2 }}
+                                    >
+                                        {telefonosRegistrados.map((tel, idx) => (
+                                            <TouchableOpacity 
+                                                key={idx}
+                                                style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    backgroundColor: telefono === tel ? colors.primary + '20' : colors.surface,
+                                                    borderWidth: 1,
+                                                    borderColor: telefono === tel ? colors.primary : colors.border,
+                                                    paddingHorizontal: 12,
+                                                    paddingVertical: 6,
+                                                    borderRadius: 16,
+                                                    marginRight: 8
+                                                }}
+                                                onPress={() => setTelefono(tel)}
+                                            >
+                                                <Ionicons name="logo-whatsapp" size={14} color={telefono === tel ? colors.primary : colors.textSecondary} style={{ marginRight: 6 }} />
+                                                <Text style={{ fontSize: 12, fontWeight: '600', color: telefono === tel ? colors.primary : colors.textSecondary }}>
+                                                    {tel}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </ScrollView>
+                                )}
                             </View>
 
                             <Text style={{ 

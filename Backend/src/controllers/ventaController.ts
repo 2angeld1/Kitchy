@@ -67,9 +67,16 @@ export const obtenerVentas = async (req: AuthRequest, res: Response) => {
                 $lte: fin
             };
         } else if (fechaInicio && fechaFin) {
+            const inicio = new Date(fechaInicio as string);
+            inicio.setUTCHours(5, 0, 0, 0); // 00:00 AM Panamá
+
+            const fin = new Date(fechaFin as string);
+            fin.setUTCDate(fin.getUTCDate() + 1);
+            fin.setUTCHours(4, 59, 59, 999); // 23:59:59 PM Panamá
+
             filtro.createdAt = {
-                $gte: new Date(fechaInicio as string),
-                $lte: new Date(fechaFin as string)
+                $gte: inicio,
+                $lte: fin
             };
         } else if (fechaInicio) {
             filtro.createdAt = { $gte: new Date(fechaInicio as string) };
@@ -156,9 +163,16 @@ export const obtenerEstadisticas = async (req: AuthRequest, res: Response) => {
 
         let filtro: any = { negocioId: req.negocioId };
         if (fechaInicio && fechaFin) {
+            const inicio = new Date(fechaInicio as string);
+            inicio.setUTCHours(5, 0, 0, 0);
+
+            const fin = new Date(fechaFin as string);
+            fin.setUTCDate(fin.getUTCDate() + 1);
+            fin.setUTCHours(4, 59, 59, 999);
+
             filtro.createdAt = {
-                $gte: new Date(fechaInicio as string),
-                $lte: new Date(fechaFin as string)
+                $gte: inicio,
+                $lte: fin
             };
         } else if (fechaInicio) {
             filtro.createdAt = { $gte: new Date(fechaInicio as string) };

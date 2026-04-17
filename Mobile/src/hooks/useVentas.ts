@@ -42,6 +42,7 @@ export interface Orden {
     creadoEn?: string; // ISO date string - para auto-cierre al cambiar de día
     pagoCombinado?: { metodo: string; monto: number }[];
     _idDB?: string;
+    telefono?: string;
 }
 
 export const useVentas = () => {
@@ -64,6 +65,7 @@ export const useVentas = () => {
     const metodoPago = activeOrder.metodoPago;
     const pagoCombinado = activeOrder.pagoCombinado || [];
     const cliente = activeOrder.cliente;
+    const telefono = activeOrder.telefono || '';
 
     // UI State
     const [showModal, setShowModal] = useState(false);
@@ -297,6 +299,10 @@ export const useVentas = () => {
         }));
     };
 
+    const setTelefono = (tel: string) => {
+        setOrdenes(prev => prev.map(o => o.id === activeOrderId ? { ...o, telefono: tel } : o));
+    };
+
     const nuevaOrden = (nombre: string = '') => {
         const id = Date.now().toString();
         const nueva: Orden = {
@@ -304,6 +310,7 @@ export const useVentas = () => {
             nombre: nombre || `Pedido ${ordenes.length + 1}`,
             items: [],
             cliente: '',
+            telefono: '',
             metodoPago: 'efectivo',
             creadoEn: new Date().toISOString()
         };
@@ -694,6 +701,7 @@ export const useVentas = () => {
         metodoPago, setMetodoPago,
         pagoCombinado, setPagoCombinado,
         cliente, setCliente,
+        telefono, setTelefono,
         busqueda, setBusqueda,
         categoriaFiltro, setCategoriaFiltro,
         agregarAlCarrito,

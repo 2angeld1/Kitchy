@@ -29,6 +29,7 @@ export default function VentasScreen() {
         categoriaFiltro, setCategoriaFiltro, agregarAlCarrito,
         quitarDelCarrito, calcularTotal, procesarVenta,
         cliente, setCliente, metodoPago, setMetodoPago,
+        telefono, setTelefono,
         pagoCombinado, setPagoCombinado,
         ordenes, activeOrderId, activeOrder, nuevaOrden,
         seleccionarOrden, pedirConfirmacionEliminar,
@@ -358,6 +359,8 @@ export default function VentasScreen() {
                 calcularTotal={calcularTotal}
                 cliente={cliente}
                 setCliente={setCliente}
+                telefono={telefono}
+                setTelefono={setTelefono}
                 metodoPago={metodoPago}
                 setMetodoPago={setMetodoPago}
                 pagoCombinado={pagoCombinado}

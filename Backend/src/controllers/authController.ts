@@ -11,8 +11,8 @@ import { AuthRequest } from '../middleware/auth';
 export const getProfile = async (req: AuthRequest, res: Response) => {
     try {
         const user = await User.findById(req.userId)
-            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig onboardingStep')
-            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig onboardingStep');
+            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig onboardingStep telefono')
+            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig onboardingStep telefono');
         if (!user) {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
         }
@@ -47,8 +47,8 @@ export const login = async (req: Request, res: Response) => {
         }
 
         const user = await User.findOne({ email })
-            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig onboardingStep')
-            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig onboardingStep');
+            .populate('negocioIds', 'nombre logo tipo categoria comisionConfig onboardingStep telefono')
+            .populate('negocioActivo', 'nombre logo tipo categoria comisionConfig onboardingStep telefono');
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
@@ -68,8 +68,8 @@ export const login = async (req: Request, res: Response) => {
 
         // Populate para que el frontend tenga los nombres de los negocios
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
         ]);
 
         await applyOnboardingBypass(user);
@@ -148,8 +148,8 @@ export const register = async (req: Request, res: Response) => {
         );
 
         await savedUser.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
         ]);
 
         res.status(201).json({

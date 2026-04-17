@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
@@ -22,6 +23,7 @@ import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
 import { lightTheme, darkTheme } from './src/theme';
 import KitchyToast from './src/components/KitchyToast';
+import { VersionChecker } from './src/components/VersionChecker';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { DimensionsProvider } from './src/context/DimensionsContext';
 import { StatusBar } from 'expo-status-bar';
@@ -154,10 +156,13 @@ export default function App() {
       <DimensionsProvider>
         <ThemeProvider>
           <AuthProvider>
-            <NavigationContainer>
-              <RootNavigator />
-              <KitchyToast />
-            </NavigationContainer>
+            <SafeAreaProvider>
+              <NavigationContainer>
+                <RootNavigator />
+                <KitchyToast />
+                <VersionChecker />
+              </NavigationContainer>
+            </SafeAreaProvider>
           </AuthProvider>
         </ThemeProvider>
       </DimensionsProvider>
