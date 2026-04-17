@@ -220,7 +220,8 @@ export const procesarLoteInventarioService = async (items: any[], imagen: string
         }
     }
 
-    const normalizeUnit = (u: string = '') => {
+    const normalizeUnit = (u: any) => {
+        if (!u || typeof u !== 'string') return 'unidades';
         const unit = u.toLowerCase().trim();
         if (['kg', 'kilo', 'kilos', 'kilogramo', 'kilogramos'].includes(unit)) return 'kg';
         if (['lb', 'libra', 'libras'].includes(unit)) return 'lb';
