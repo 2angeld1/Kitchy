@@ -220,9 +220,20 @@ export const procesarLoteInventarioService = async (items: any[], imagen: string
         }
     }
 
+    const normalizeUnit = (u: string = '') => {
+        const unit = u.toLowerCase().trim();
+        if (['kg', 'kilo', 'kilos', 'kilogramo', 'kilogramos'].includes(unit)) return 'kg';
+        if (['lb', 'libra', 'libras'].includes(unit)) return 'lb';
+        if (['l', 'litro', 'litros'].includes(unit)) return 'litros';
+        if (['ml', 'mililitro', 'mililitros'].includes(unit)) return 'ml';
+        if (['g', 'gramo', 'gramos'].includes(unit)) return 'gramos';
+        return 'unidades'; // Map 'unidad', 'empaque', 'caja', etc. to 'unidades' Default
+    };
+
     for (const item of items) {
         try {
-            const { nombre, cantidad, unidad, precioUnitario, categoria, precioVenta } = item;
+            const { nombre, cantidad, unidad: rawUnidad, precioUnitario, categoria, precioVenta } = item;
+            const unidad = normalizeUnit(rawUnidad);
             
             // GUARD: Saltar items sin nombre válido (pueden venir del OCR fallback)
             if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
