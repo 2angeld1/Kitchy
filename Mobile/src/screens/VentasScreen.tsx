@@ -239,7 +239,7 @@ export default function VentasScreen() {
                 <KitchyToolbar
                     title="Ventas"
                     notifications={ventas}
-                    onNotificationPress={abrirHistorial}
+                    onIconPress={abrirHistorial}
                     notificationIcon="journal-outline" // Cambiado de campana a Libro de Ventas
                     extraButtons={
                         !isTablet && (

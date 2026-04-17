@@ -5,6 +5,10 @@ export interface IEspecialista extends Document {
     negocioId: mongoose.Types.ObjectId;
     comision?: number; // % personalizado opcional, sino hereda el global del negocio
     tipoComision?: 'fijo' | 'escalonado'; // tipo individual, si no se define hereda del negocio
+    turnoActual?: 'mañana' | 'tarde' | 'ambos';
+    horarioSemanal?: {
+        [key: string]: { inicio: string; fin: string }[];
+    };
     activo: boolean;
     createdAt?: Date;
     updatedAt?: Date;
@@ -29,6 +33,21 @@ const EspecialistaSchema: Schema = new Schema({
         type: String,
         enum: ['fijo', 'escalonado'],
         default: null // null = hereda del negocio
+    },
+    turnoActual: {
+        type: String,
+        enum: ['mañana', 'tarde', 'ambos'],
+        default: 'ambos'
+    },
+    horarioSemanal: {
+        type: Map,
+        of: [{
+            inicio: { type: String },
+            fin: { type: String }
+        }],
+        default: {
+            lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: []
+        }
     },
     activo: {
         type: Boolean,

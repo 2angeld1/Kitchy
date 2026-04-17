@@ -144,7 +144,7 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
 // Actualizar configuración de comisiones (BELLEZA: Fijo o Escalonado)
 export const updateComisionConfig = async (req: AuthRequest, res: Response) => {
     try {
-        const { tipo, fijo, escalonado, cortesPorCiclo } = req.body;
+        const { tipo, fijo, escalonado, cortesPorCiclo, tareas, bonoPorTarea } = req.body;
 
         const negocio = await Negocio.findById(req.negocioId);
         if (!negocio) {
@@ -155,7 +155,9 @@ export const updateComisionConfig = async (req: AuthRequest, res: Response) => {
             tipo: tipo || 'escalonado',
             fijo: fijo || { porcentajeBarbero: 50, porcentajeDueno: 50 },
             escalonado: escalonado || [],
-            cortesPorCiclo: Number(cortesPorCiclo || 5)
+            cortesPorCiclo: Number(cortesPorCiclo || 5),
+            tareas: tareas || negocio.comisionConfig?.tareas || [],
+            bonoPorTarea: bonoPorTarea !== undefined ? Number(bonoPorTarea) : (negocio.comisionConfig?.bonoPorTarea ?? 5)
         };
 
         await negocio.save();
@@ -258,5 +260,70 @@ export const updateOnboardingStep = async (req: AuthRequest, res: Response) => {
     } catch (error) {
         console.error('Error updating onboarding step:', error);
         res.status(500).json({ message: 'Error al actualizar paso de onboarding' });
+    }
+};
+
+export const updateNegocio = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { nombre, tipo, categoria, direccion, telefono, logo, horarios } = req.body;
+
+        const negocio = await Negocio.findById(id);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+
+        if (negocio.propietario.toString() !== req.userId) {
+            return res.status(403).json({ message: 'No tienes permiso para editar este negocio' });
+        }
+
+        let logoUrl = logo;
+        if (logo && logo.startsWith('data:image')) {
+            logoUrl = (await uploadImage(logo, 'logos_negocios')) || undefined;
+        }
+
+        negocio.nombre = nombre || negocio.nombre;
+        negocio.tipo = tipo || negocio.tipo;
+        negocio.categoria = categoria || negocio.categoria;
+        negocio.direccion = direccion !== undefined ? direccion : negocio.direccion;
+        negocio.telefono = telefono !== undefined ? telefono : negocio.telefono;
+        if (logoUrl) negocio.logo = logoUrl;
+        if (horarios) negocio.horarios = horarios;
+
+        await negocio.save();
+        res.json({ success: true, negocio });
+    } catch (error) {
+        console.error('Error updating negocio:', error);
+        res.status(500).json({ message: 'Error al actualizar negocio' });
+    }
+};
+
+export const deleteNegocio = async (req: AuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const negocio = await Negocio.findById(id);
+        if (!negocio) {
+            return res.status(404).json({ message: 'Negocio no encontrado' });
+        }
+
+        if (negocio.propietario.toString() !== req.userId) {
+            return res.status(403).json({ message: 'No tienes permiso para eliminar este negocio' });
+        }
+
+        await Negocio.findByIdAndDelete(id);
+
+        const user = await User.findById(req.userId);
+        if (user) {
+            user.negocioIds = user.negocioIds.filter(nid => nid.toString() !== id);
+            if (user.negocioActivo?.toString() === id) {
+                user.negocioActivo = user.negocioIds.length > 0 ? user.negocioIds[0] : undefined as any;
+            }
+            await user.save();
+        }
+
+        res.json({ success: true, message: 'Negocio eliminado correctamente' });
+    } catch (error) {
+        console.error('Error deleting negocio:', error);
+        res.status(500).json({ message: 'Error al eliminar negocio' });
     }
 };

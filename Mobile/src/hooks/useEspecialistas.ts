@@ -15,10 +15,12 @@ export const useEspecialistas = () => {
         nombre: string;
         comision: string;
         tipoComision: 'fijo' | 'escalonado' | null;
+        turnoActual: 'mañana' | 'tarde' | 'ambos';
     }>({
         nombre: '',
         comision: '50',
         tipoComision: null, // null = hereda del local
+        turnoActual: 'ambos'
     });
 
     const cargar = useCallback(async () => {
@@ -34,7 +36,7 @@ export const useEspecialistas = () => {
     }, []);
 
     const resetForm = () => {
-        setForm({ nombre: '', comision: '50', tipoComision: null });
+        setForm({ nombre: '', comision: '50', tipoComision: null, turnoActual: 'ambos' });
         setSelectedId(null);
         setIsEditing(false);
     };
@@ -50,6 +52,7 @@ export const useEspecialistas = () => {
             nombre: esp.nombre,
             comision: (esp.comision || 50).toString(),
             tipoComision: esp.tipoComision || null,
+            turnoActual: esp.turnoActual || 'ambos'
         });
         setSelectedId(esp._id);
         setIsEditing(true);
@@ -67,7 +70,8 @@ export const useEspecialistas = () => {
             const payload = {
                 nombre: form.nombre,
                 comision: parseInt(form.comision),
-                tipoComision: form.tipoComision || undefined
+                tipoComision: form.tipoComision || undefined,
+                turnoActual: form.turnoActual
             };
 
             if (isEditing && selectedId) {
@@ -94,7 +98,7 @@ export const useEspecialistas = () => {
             Toast.show({ type: 'success', text1: 'Eliminado', text2: 'Especialista dado de baja' });
             cargar();
         } catch (err) {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo eliminar el especialista' });
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No se pudo eliminar the especialista' });
         }
     };
 

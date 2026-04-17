@@ -11,12 +11,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme, typography } from '../theme';
 import { useAuth, Negocio } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import CalendarioEspecialistasScreen from '../screens/CalendarioEspecialistasScreen';
 
 export type MainTabParamList = {
     Dashboard: undefined;
     Reventa: undefined;
     Ventas: undefined;
     Inventario: undefined;
+    Calendario: undefined;
     Panel: undefined; // Pestaña que agrupa todas las opciones de admin
 };
 
@@ -58,6 +60,8 @@ export default function MainAppNavigator() {
                         iconName = isBelleza 
                             ? (focused ? 'brush' : 'brush-outline')
                             : (focused ? 'cube' : 'cube-outline');
+                    } else if (route.name === 'Calendario') {
+                        iconName = focused ? 'calendar' : 'calendar-outline';
                     } else if (route.name === 'Panel') {
                         iconName = focused ? 'grid' : 'grid-outline';
                     }
@@ -98,6 +102,14 @@ export default function MainAppNavigator() {
                 component={InventarioScreen}
                 options={{ tabBarLabel: 'Inventario' }}
             />
+
+            {isAdmin && categoria === 'BELLEZA' && (
+                <Tab.Screen
+                    name="Calendario"
+                    component={CalendarioEspecialistasScreen}
+                    options={{ tabBarLabel: 'Turnos' }}
+                />
+            )}
 
             {/* Agrupación de todas las rutas "Pro/Admin" en una sola pestaña */}
             {isAdmin && (

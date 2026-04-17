@@ -13,11 +13,13 @@ export const getEspecialistas = async (req: AuthRequest, res: Response) => {
 
 export const crearEspecialista = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, comision, tipoComision } = req.body;
+        const { nombre, comision, tipoComision, turnoActual, horarioSemanal } = req.body;
         const nuevo = new Especialista({
             nombre,
             comision: comision || 50,
             tipoComision,
+            turnoActual: turnoActual || 'ambos',
+            horarioSemanal,
             negocioId: req.negocioId
         });
         await nuevo.save();
@@ -29,10 +31,10 @@ export const crearEspecialista = async (req: AuthRequest, res: Response) => {
 
 export const actualizarEspecialista = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, comision, tipoComision, activo } = req.body;
+        const { nombre, comision, tipoComision, turnoActual, horarioSemanal, activo } = req.body;
         const actualizado = await Especialista.findByIdAndUpdate(
             req.params.id,
-            { nombre, comision, tipoComision, activo },
+            { nombre, comision, tipoComision, turnoActual, horarioSemanal, activo },
             { new: true }
         );
         res.json(actualizado);

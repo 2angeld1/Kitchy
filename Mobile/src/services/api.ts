@@ -106,6 +106,8 @@ export const createNegocio = (data: any) => api.post('/negocios', data);
 export const switchNegocio = (negocioId: string) => api.put(`/negocios/switch/${negocioId}`);
 export const updateNegocioConfig = (data: any) => api.put('/negocios/config', data);
 export const getNegocioActual = () => api.get('/negocios/me');
+export const updateNegocio = (id: string, data: any) => api.put(`/negocios/${id}`, data);
+export const deleteNegocio = (id: string) => api.delete(`/negocios/${id}`);
 
 // Comisiones (Belleza)
 export const getComisiones = (params?: any) => api.get('/comisiones', { params });
@@ -113,14 +115,16 @@ export const updateComisionConfig = (data: {
     tipo: string, 
     fijo?: { porcentajeBarbero: number, porcentajeDueno: number }, 
     escalonado?: any[], 
-    cortesPorCiclo: number 
+    cortesPorCiclo: number,
+    tareas?: any[],
+    bonoPorTarea?: number
 }) => api.put('/negocios/config-comisiones', data);
 export const updateComisionReventaConfig = (data: { porcentajeGlobal: number }) => api.put('/negocios/config-comision-reventa', data);
 
 // Especialistas (Belleza)
 export const getEspecialistas = () => api.get('/especialistas');
-export const createEspecialista = (data: { nombre: string, comision?: number, tipoComision?: 'fijo' | 'escalonado' }) => api.post('/especialistas', data);
-export const updateEspecialista = (id: string, data: { nombre?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado' }) => api.put(`/especialistas/${id}`, data);
+export const createEspecialista = (data: { nombre: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.post('/especialistas', data);
+export const updateEspecialista = (id: string, data: { nombre?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.put(`/especialistas/${id}`, data);
 export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${id}`);
 
 // Configuración Pública

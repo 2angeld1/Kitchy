@@ -15,6 +15,7 @@ interface KitchyToolbarProps {
     showUserMenuButton?: boolean;
     showSwitchNegocioButton?: boolean;
     notificationIcon?: string; // Nuevo prop
+    onIconPress?: () => void; // Para sobreescribir el click del ícono directamente
 }
 
 export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
@@ -26,7 +27,8 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
     onNotificationPress,
     showUserMenuButton = true,
     showSwitchNegocioButton = true,
-    notificationIcon = "notifications-outline" // Valor por defecto
+    notificationIcon = "notifications-outline",
+    onIconPress
 }) => {
     const {
         user,
@@ -85,8 +87,8 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     <TouchableOpacity
                         style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, justifyContent: 'center', alignItems: 'center' }}
                         onPress={() => {
-                            if (onNotificationPress) {
-                                (onNotificationPress as any)();
+                            if (onIconPress) {
+                                onIconPress();
                             } else {
                                 setShowNotif(true);
                             }

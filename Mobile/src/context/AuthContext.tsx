@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api, { login as apiLogin, register as apiRegister } from '../services/api';
+import api, { login as apiLogin, register as apiRegister, switchNegocio as apiSwitchNegocio } from '../services/api';
 
 export interface Negocio {
     _id: string;
@@ -54,6 +54,7 @@ interface AuthContextType {
     }) => Promise<void>;
     logout: () => void;
     switchNegocioContext: (newUserContext: User, newToken: string) => Promise<void>;
+    switchNegocio: (negocioId: string) => Promise<any>;
     updateOnboardingProgress: (step: number) => Promise<void>;
     loading: boolean;
 }
@@ -149,6 +150,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const switchNegocio = async (negocioId: string) => {
+        const response = await apiSwitchNegocio(negocioId);
+        return response.data;
+    };
+
     const isAuthenticated = !!token && !!user;
     const isAdmin = user?.rol === 'admin';
 
@@ -162,6 +168,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             register,
             logout,
             switchNegocioContext,
+            switchNegocio,
             updateOnboardingProgress,
             loading
         }}>

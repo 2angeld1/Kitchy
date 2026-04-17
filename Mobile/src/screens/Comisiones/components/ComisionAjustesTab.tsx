@@ -215,6 +215,88 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                     </View>
                 )}
 
+                {/* TAREAS DE MANTENIMIENTO */}
+                <View style={{ marginTop: 32 }}>
+                    <Text style={[styles.sectionTitle, { fontSize: 16, marginBottom: 4 }]}>Tareas Extra (Deberes)</Text>
+                    <Text style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 16 }}>
+                        Define tareas que los especialistas pueden hacer para ganar un % extra de comisión. (Ej: Barrer, Limpiar sillas).
+                    </Text>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textPrimary }}>Bono por tarea</Text>
+                            <Text style={{ fontSize: 12, color: colors.textMuted }}>% que se suma a su comisión al completar una tarea.</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <KitchyInput
+                                value={form.bonoPorTarea?.toString() || '0'}
+                                onChangeText={(t) => setForm({ ...form, bonoPorTarea: t.replace(/[^0-9]/g, '') })}
+                                keyboardType="numeric"
+                                style={{ width: 60, height: 44, textAlign: 'center', fontSize: 18, fontWeight: '900', color: '#10b981', marginBottom: 0 }}
+                                containerStyle={{ marginBottom: 0 }}
+                            />
+                            <Text style={{ fontSize: 18, fontWeight: '900', color: colors.textMuted, marginLeft: 4 }}>%</Text>
+                        </View>
+                    </View>
+
+                    {form.tareas && form.tareas.map((tarea: any, index: number) => (
+                        <View key={index} style={{ flexDirection: 'row', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                            <View style={{ flex: 1.5 }}>
+                                <KitchyInput
+                                    placeholder="Nombre de la tarea (Ej: Barrer)"
+                                    value={tarea.nombre}
+                                    onChangeText={(t) => {
+                                        const nt = [...form.tareas];
+                                        nt[index].nombre = t;
+                                        setForm({ ...form, tareas: nt });
+                                    }}
+                                    style={{ height: 48, marginBottom: 0 }}
+                                    containerStyle={{ marginBottom: 0 }}
+                                />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                {/* Selector Básico de Turno */}
+                                <View style={{ flexDirection: 'row', backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' }}>
+                                    {['mañana', 'tarde', 'ambos'].map(t => (
+                                        <TouchableOpacity 
+                                            key={t}
+                                            style={{ flex: 1, height: 46, justifyContent: 'center', alignItems: 'center', backgroundColor: tarea.turno === t ? colors.primary : 'transparent' }}
+                                            onPress={() => {
+                                                const nt = [...form.tareas];
+                                                nt[index].turno = t;
+                                                setForm({ ...form, tareas: nt });
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 10, fontWeight: '800', color: tarea.turno === t ? '#fff' : colors.textMuted, textTransform: 'uppercase' }}>
+                                                {t === 'ambos' ? 'Todos' : t.substring(0, 3)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                            <TouchableOpacity 
+                                style={{ width: 44, height: 44, justifyContent: 'center', alignItems: 'center' }}
+                                onPress={() => {
+                                    const nt = form.tareas.filter((_: any, i: number) => i !== index);
+                                    setForm({ ...form, tareas: nt });
+                                }}
+                            >
+                                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                            </TouchableOpacity>
+                        </View>
+                    ))}
+
+                    <TouchableOpacity 
+                        style={{ backgroundColor: colors.surface, paddingVertical: 12, borderRadius: 12, borderStyle: 'dashed', borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', marginTop: 8 }}
+                        onPress={() => setForm({ 
+                            ...form, 
+                            tareas: [...(form.tareas || []), { id: Date.now().toString(), nombre: '', turno: 'ambos' }] 
+                        })}
+                    >
+                        <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary }}>+ Añadir Tarea de Mantenimiento</Text>
+                    </TouchableOpacity>
+                </View>
+
                 <KitchyButton
                     title="Guardar Configuración"
                     onPress={handleSaveConfig}

@@ -46,7 +46,9 @@ export const useComisiones = () => {
                     porcentajeBarbero: (res.data.config.fijo?.porcentajeBarbero || res.data.config.porcentajeBarbero || 50).toString(),
                     porcentajeDueno: (res.data.config.fijo?.porcentajeDueno || res.data.config.porcentajeDueno || 50).toString(),
                     cortesPorCiclo: (res.data.config.cortesPorCiclo || 5).toString(),
-                    escalonado: res.data.config.escalonado || []
+                    escalonado: res.data.config.escalonado || [],
+                    tareas: res.data.config.tareas || [],
+                    bonoPorTarea: (res.data.config.bonoPorTarea || 5).toString()
                 });
             }
         } catch (err: any) {
@@ -76,7 +78,9 @@ export const useComisiones = () => {
                     porcentajeDueno: pd || 50
                 },
                 escalonado: form.escalonado,
-                cortesPorCiclo: cc
+                cortesPorCiclo: cc,
+                tareas: form.tareas,
+                bonoPorTarea: parseInt(form.bonoPorTarea) || 0
             });
             Toast.show({ type: 'success', text1: 'Éxito', text2: 'Configuración actualizada' });
             setShowConfigModal(false);

@@ -18,6 +18,7 @@ import SoporteScreen from './src/screens/SoporteScreen';
 import CaitlynStrategyScreen from './src/screens/CaitlynStrategyScreen';
 import PresupuestarioScreen from './src/screens/PresupuestarioScreen';
 import BellezaResumenScreen from './src/screens/BellezaResumenScreen';
+import CalendarioEspecialistasScreen from './src/screens/CalendarioEspecialistasScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -68,6 +69,7 @@ export type RootStackParamList = {
   CaitlynStrategy: { alerta: any };
   Presupuestario: undefined;
   BellezaResumen: undefined;
+  CalendarioEspecialistas: undefined;
 };
 
 import { CaitlynOnboardingWizard } from './src/components/CaitlynOnboardingWizard';
@@ -121,6 +123,7 @@ function RootNavigator() {
             <Stack.Screen name="CaitlynStrategy" component={CaitlynStrategyScreen} />
             <Stack.Screen name="Presupuestario" component={PresupuestarioScreen} />
             <Stack.Screen name="BellezaResumen" component={BellezaResumenScreen} />
+            <Stack.Screen name="CalendarioEspecialistas" component={CalendarioEspecialistasScreen} />
           </>
         ) : (
           <>

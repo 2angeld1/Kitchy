@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { getUsers, updateUserRole, deleteUser, createUser } from '../services/api';
 
 export interface User {
@@ -100,6 +100,17 @@ export const useUsuarios = () => {
     const clearSuccess = () => setSuccess('');
 
     const [isSubmittingNegocio, setIsSubmittingNegocio] = useState(false);
+    const [negocios, setNegocios] = useState<any[]>([]);
+
+    const cargarNegocios = useCallback(async () => {
+        try {
+            const { getNegocios } = await import('../services/api');
+            const res = await getNegocios();
+            setNegocios(res.data);
+        } catch (err) {
+            console.error('Error al cargar negocios:', err);
+        }
+    }, []);
 
     const handleCreateNegocio = async (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string }) => {
         setIsSubmittingNegocio(true);
@@ -107,6 +118,7 @@ export const useUsuarios = () => {
             const { createNegocio } = await import('../services/api');
             const res = await createNegocio(data);
             setSuccess('Negocio creado correctamente');
+            await cargarNegocios();
             return res.data;
         } catch (err: any) {
             setError(err.response?.data?.message || 'Error al crear negocio');
@@ -115,6 +127,66 @@ export const useUsuarios = () => {
             setIsSubmittingNegocio(false);
         }
     };
+
+    const handleUpdateNegocio = async (id: string, data: any) => {
+        setIsSubmittingNegocio(true);
+        try {
+            const { updateNegocio } = await import('../services/api');
+            await updateNegocio(id, data);
+            setSuccess('Negocio actualizado');
+            await cargarNegocios();
+            return true;
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Error al actualizar negocio');
+            return false;
+        } finally {
+            setIsSubmittingNegocio(false);
+        }
+    };
+
+    const handleDeleteNegocio = (id: string) => {
+        if (negocios.length <= 1) {
+            setError('No puedes eliminar tu único local. Kitchy requiere al menos uno activo.');
+            return;
+        }
+
+        const executeDelete = async () => {
+            setIsSubmittingNegocio(true);
+            try {
+                const { deleteNegocio } = await import('../services/api');
+                await deleteNegocio(id);
+                setSuccess('Negocio eliminado correctamente');
+                await cargarNegocios();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Error al eliminar negocio');
+            } finally {
+                setIsSubmittingNegocio(false);
+            }
+        };
+
+        if (Platform.OS === 'web') {
+            if (window.confirm("¿Estás seguro? Se borrarán todos los datos vinculados. Esta acción es IRREVERSIBLE.")) {
+                executeDelete();
+            }
+        } else {
+            Alert.alert(
+                "Eliminar Negocio",
+                "¿Estás seguro? Se borrarán todos los datos vinculados. Esta acción es IRREVERSIBLE.",
+                [
+                    { text: "Cancelar", style: "cancel" },
+                    {
+                        text: "Eliminar",
+                        style: "destructive",
+                        onPress: executeDelete
+                    }
+                ]
+            );
+        }
+    };
+
+    useEffect(() => {
+        cargarNegocios();
+    }, [cargarNegocios]);
 
     const getRoleInfo = (rol: string) => {
         switch (rol) {
@@ -125,6 +197,7 @@ export const useUsuarios = () => {
 
     return {
         usuarios,
+        negocios,
         loading,
         refreshing,
         isSubmittingNegocio,
@@ -135,6 +208,8 @@ export const useUsuarios = () => {
         handleDeleteUser,
         handleCreateUser,
         handleCreateNegocio,
+        handleUpdateNegocio,
+        handleDeleteNegocio,
         getRoleInfo
     };
 };

@@ -25,6 +25,12 @@ export interface INegocio extends Document {
             porcentajeDueno: number;
         }[];
         cortesPorCiclo: number;
+        tareas?: {
+            id: string;
+            nombre: string;
+            turno: 'mañana' | 'tarde' | 'ambos';
+        }[];
+        bonoPorTarea?: number; // % extra por cada tarea realizada
     };
     comisionReventa?: {
         porcentajeGlobal: number; // % que se lleva el especialista por vender productos
@@ -46,6 +52,13 @@ export interface INegocio extends Document {
     totalSalesLifetime: number;
     totalCommissionLifetime: number;
     onboardingStep: number;
+    horarios?: {
+        [key: string]: {
+            abierto: boolean;
+            inicio: string;
+            fin: string;
+        }
+    };
 }
 
 const negocioSchema = new Schema({
@@ -96,7 +109,16 @@ const negocioSchema = new Schema({
                 { desde: 9, hasta: 99, porcentajeBarbero: 70, porcentajeDueno: 30 }
             ]
         },
-        cortesPorCiclo: { type: Number, default: 5 }
+        cortesPorCiclo: { type: Number, default: 5 },
+        tareas: {
+            type: [{
+                id: { type: String, required: true },
+                nombre: { type: String, required: true },
+                turno: { type: String, enum: ['mañana', 'tarde', 'ambos'], default: 'ambos' }
+            }],
+            default: []
+        },
+        bonoPorTarea: { type: Number, default: 5, min: 0 }
     },
     comisionReventa: {
         porcentajeGlobal: { type: Number, default: 10, min: 0, max: 100 }
@@ -144,7 +166,24 @@ const negocioSchema = new Schema({
     },
     totalSalesLifetime: { type: Number, default: 0 },
     totalCommissionLifetime: { type: Number, default: 0 },
-    onboardingStep: { type: Number, default: 0 }
+    onboardingStep: { type: Number, default: 0 },
+    horarios: {
+        type: Map,
+        of: {
+            abierto: { type: Boolean, default: true },
+            inicio: { type: String, default: '08:00' },
+            fin: { type: String, default: '20:00' }
+        },
+        default: {
+            lunes: { abierto: true, inicio: '08:00', fin: '20:00' },
+            martes: { abierto: true, inicio: '08:00', fin: '20:00' },
+            miercoles: { abierto: true, inicio: '08:00', fin: '20:00' },
+            jueves: { abierto: true, inicio: '08:00', fin: '20:00' },
+            viernes: { abierto: true, inicio: '08:00', fin: '20:00' },
+            sabado: { abierto: true, inicio: '08:00', fin: '20:00' },
+            domingo: { abierto: false, inicio: '08:00', fin: '20:00' }
+        }
+    }
 }, {
     timestamps: true
 });
