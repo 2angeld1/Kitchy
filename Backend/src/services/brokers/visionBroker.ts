@@ -13,7 +13,7 @@ export const procesarFacturaService = async (imagen: string, negocioId: string) 
     const caitlynResponse = await axios.post(
         `${CAITLYN_URL}/agent/invoice`,
         { imagen, negocio_tipo: negocioTipo },
-        { timeout: 60000 }
+        { timeout: 100000 } // Subido a 100s para soportar saltos de emergencia en la cascada de modelos
     );
 
     if (caitlynResponse.data.success) {
