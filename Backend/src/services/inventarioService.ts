@@ -223,11 +223,23 @@ export const procesarLoteInventarioService = async (items: any[], imagen: string
     for (const item of items) {
         try {
             const { nombre, cantidad, unidad, precioUnitario, categoria, precioVenta } = item;
+            
+            // GUARD: Saltar items sin nombre válido (pueden venir del OCR fallback)
+            if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
+                console.warn('⚠️ [Lote] Item ignorado por nombre vacío o inválido:', JSON.stringify(item));
+                errores.push({ item: JSON.stringify(item), error: 'Nombre vacío o inválido' });
+                continue;
+            }
+            
+            const nombreLimpio = nombre.trim();
             const qty = parseFloat(cantidad) || 0;
             const price = parseFloat(precioUnitario) || 0;
 
+            // Escapar caracteres especiales de regex para evitar errores con nombres como "Sodas (12 pack)"
+            const nombreEscapado = nombreLimpio.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
             let producto = await Inventario.findOne({
-                nombre: { $regex: new RegExp(`^${nombre.trim()}$`, 'i') },
+                nombre: { $regex: new RegExp(`^${nombreEscapado}$`, 'i') },
                 negocioId
             });
 
@@ -259,9 +271,10 @@ export const procesarLoteInventarioService = async (items: any[], imagen: string
                 });
                 await movimiento.save();
                 actualizados++;
+                console.log(`✅ [Lote] Actualizado: "${nombreLimpio}" (+${qty})`);
             } else {
                 const nuevoProducto = new Inventario({
-                    nombre: nombre.trim(),
+                    nombre: nombreLimpio,
                     cantidad: qty,
                     unidad: unidad || 'unidades',
                     costoUnitario: price,
@@ -284,9 +297,11 @@ export const procesarLoteInventarioService = async (items: any[], imagen: string
                 });
                 await movimiento.save();
                 creados++;
+                console.log(`🆕 [Lote] Creado: "${nombreLimpio}" (qty: ${qty}, precio: ${price})`);
             }
         } catch (err: any) {
-            errores.push({ item: item.nombre, error: err.message });
+            console.error(`❌ [Lote] Error procesando item "${item?.nombre}":`, err.message);
+            errores.push({ item: item?.nombre || 'desconocido', error: err.message });
         }
     }
 

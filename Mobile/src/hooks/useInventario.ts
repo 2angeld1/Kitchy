@@ -434,8 +434,9 @@ export const useInventario = () => {
         setLoading(true);
         try {
             const response = await procesarLoteInventario({ items: itemsToRegister, imagen: invoiceBase64 || undefined, metadata: invoiceMetadata });
-            const { creados, actualizados } = response.data.detalles;
-            setSuccess(`Carga completada. ${creados} nuevos, ${actualizados} actualizados.`);
+            const { creados, actualizados, errores } = response.data.detalles;
+            const errMsg = errores?.length > 0 ? ` (${errores.length} ignorados por datos incompletos)` : '';
+            setSuccess(`Carga completada. ${creados} nuevos, ${actualizados} actualizados${errMsg}.`);
             setShowInvoiceReview(false);
             setInvoiceBase64(null);
             setInvoiceMetadata(null);
