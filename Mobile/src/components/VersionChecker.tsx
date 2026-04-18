@@ -7,7 +7,7 @@ import { getSystemVersion } from '../services/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { SlideInDown, SlideInUp } from 'react-native-reanimated';
 
-export const CURRENT_CLIENT_VERSION = '1.0.0';
+export const CURRENT_CLIENT_VERSION = '1.0.1';
 
 export const VersionChecker = () => {
     const [updateAvailable, setUpdateAvailable] = useState(false);
