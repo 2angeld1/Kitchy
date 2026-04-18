@@ -148,24 +148,30 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         if (!data) return [];
         const notifs: any[] = [];
 
+        // Detectar categoría para personalizar emojis y términos
+        const negocio = user?.negocioActivo && typeof user.negocioActivo === 'object' ? user.negocioActivo : null;
+        const isComida = negocio?.categoria === 'COMIDA';
+        const emojiVenta = isComida ? '🍔' : '💈';
+        const labelActor = isComida ? 'Vendedor' : 'Barbero';
+
         if (data.ventas.recientes) {
             data.ventas.recientes.forEach((v: any) => {
                 // Si el especialista es solo un ID, tratar de encontrarlo en la data de comisiones
-                let nombreBarbero = 'Alguien';
+                let nombreVendedor = labelActor;
                 if (v.especialista?.nombre) {
-                    nombreBarbero = v.especialista.nombre.split(' ')[0];
+                    nombreVendedor = v.especialista.nombre.split(' ')[0];
                 } else if (v.especialista && data.comisiones?.especialistas) {
                     const found = data.comisiones.especialistas.find((e: any) => e.id === v.especialista || e._id === v.especialista);
-                    if (found) nombreBarbero = found.nombre.split(' ')[0];
+                    if (found) nombreVendedor = found.nombre.split(' ')[0];
                 }
 
-                const itemsStr = v.items?.map((i: any) => i.nombreProducto || i.producto?.nombre || i.nombre || 'Servicio').join(', ') || 'un servicio';
+                const itemsStr = v.items?.map((i: any) => i.nombreProducto || i.producto?.nombre || i.nombre || (isComida ? 'Producto' : 'Servicio')).join(', ') || (isComida ? 'un producto' : 'un servicio');
                 const detalle = v.cliente ? `a ${v.cliente}` : '';
                 
                 notifs.push({
                     id: v._id,
-                    title: 'Venta Procesada 💈',
-                    message: `${nombreBarbero} cobró: ${itemsStr}. Total: $${v.total.toFixed(2)} ${detalle}`,
+                    title: `Venta Procesada ${emojiVenta}`,
+                    message: `${nombreVendedor} cobró: ${itemsStr}. Total: $${v.total.toFixed(2)} ${detalle}`,
                     time: formatRelativeTime(v.createdAt || v.fecha)
                 });
             });

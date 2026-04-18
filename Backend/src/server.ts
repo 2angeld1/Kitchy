@@ -76,7 +76,7 @@ app.use('/api/comisiones', comisionRoutes);
 app.use('/api/especialistas', especialistaRoutes);
 
 // Rutas del sistema
-export const CURRENT_APP_VERSION = '1.0.1'; // Cambiar esto forzará una recarga en todos los clientes
+export const CURRENT_APP_VERSION = process.env.APP_VERSION || '1.0.0'; // Cambiar esto forzará una recarga en todos los clientes
 
 app.get('/api/system/version', (req, res) => {
     res.json({ version: CURRENT_APP_VERSION });
