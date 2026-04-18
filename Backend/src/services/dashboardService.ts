@@ -95,7 +95,8 @@ export const obtenerDashboardDataService = async (
         if (prod.ingredientes && prod.ingredientes.length > 0) {
             const faltantes: string[] = [];
             for (const ing of (prod.ingredientes as any[])) {
-                const invItem = (inventario as any[]).find((i: any) => i._id.toString() === (ing.inventario as any).toString());
+                if (!ing.inventario) continue; // Protección: el ingrediente no tiene referencia a inventario
+                const invItem = (inventario as any[]).find((i: any) => i._id && i._id.toString() === ing.inventario.toString());
                 if (invItem && invItem.cantidad <= invItem.cantidadMinima) {
                     faltantes.push(invItem.nombre);
                 }
@@ -129,7 +130,8 @@ export const obtenerDashboardDataService = async (
             let alertasMercado: string[] = [];
 
             for (const ing of (prod.ingredientes as any[])) {
-                const invItem = (inventario as any[]).find((i: any) => i._id.toString() === (ing.inventario as any).toString());
+                if (!ing.inventario) continue; // Protección: el ingrediente no tiene referencia a inventario
+                const invItem = (inventario as any[]).find((i: any) => i._id && i._id.toString() === ing.inventario.toString());
                 if (invItem) {
                     costoTotal += (invItem.costoUnitario * ing.cantidad);
 
@@ -317,7 +319,8 @@ export const obtenerDashboardDataService = async (
         const conteoHoy: { [key: string]: { nombre: string, servicios: number } } = {};
         
         for (const v of ventasHoyBeauty) {
-            const espId = v.especialista!.toString();
+            if (!v.especialista) continue; // Protección: venta sin especialista asignado
+            const espId = v.especialista.toString();
             if (!conteoHoy[espId]) {
                 const esp = await Especialista.findById(espId).select('nombre');
                 conteoHoy[espId] = { nombre: esp?.nombre || 'Especialista', servicios: 0 };
