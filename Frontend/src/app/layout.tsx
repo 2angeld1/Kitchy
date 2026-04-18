@@ -5,14 +5,14 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kitchy-gosen.vercel.app/"),
+  metadataBase: new URL("https://kitchy-one.vercel.app/"),
   title: "Kitchy | Conectando Negocios con Clientes",
   description: "Kitchy es la plataforma definitiva para la gestión de ventas, inventario y comunicación directa con tus clientes vía WhatsApp.",
   keywords: ["kitchy", "gestión de negocios", "ventas", "inventario", "whatsapp automation", "barberia", "restaurante"],
   openGraph: {
     title: "Kitchy | Conectando Negocios con Clientes",
     description: "Kitchy es la plataforma definitiva para la gestión de ventas, inventario y comunicación directa con tus clientes vía WhatsApp.",
-    url: "https://kitchy-gosen.vercel.app/",
+    url: "https://kitchy-one.vercel.app/",
     siteName: "Kitchy",
     locale: "es_PA",
     type: "website",
