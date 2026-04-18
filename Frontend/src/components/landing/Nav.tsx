@@ -35,9 +35,14 @@ export const Nav = () => {
           <a href="#caitlyn" className="hover:text-rose-500 transition-colors">Caitlyn AI</a>
           <a href="#radar" className="hover:text-rose-500 transition-colors">Radar</a>
           <a href="#founder" className="hover:text-rose-500 transition-colors">Creador</a>
-          <button className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-2xl shadow-lg shadow-rose-900/40 transition-all active:scale-95 glow-primary">
+          <a 
+            href="https://kitchy-gosen.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-2xl shadow-lg shadow-rose-900/40 transition-all active:scale-95 glow-primary flex items-center justify-center"
+          >
             ABRIR APP
-          </button>
+          </a>
         </div>
       </div>
     </nav>

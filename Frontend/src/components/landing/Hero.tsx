@@ -38,9 +38,14 @@ export const Hero = () => (
         </p>
 
         <div className="flex flex-col sm:flex-row gap-6 relative">
-          <button className="bg-rose-600 hover:bg-rose-700 text-white px-10 py-5 rounded-3xl font-black text-lg flex items-center justify-center gap-3 transition-all glow-primary h-16 group z-10">
+          <a 
+            href="https://kitchy-gosen.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-rose-600 hover:bg-rose-700 text-white px-10 py-5 rounded-3xl font-black text-lg flex items-center justify-center gap-3 transition-all glow-primary h-16 group z-10"
+          >
             PRUEBA GRATIS <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-          </button>
+          </a>
 
           {/* Decorative Semi-circle arc (Behind buttons) - Subtle again */}
           <div className="absolute -bottom-40 -left-60 w-[600px] h-[600px] rounded-full border border-rose-500/10 pointer-events-none hidden md:block" />
