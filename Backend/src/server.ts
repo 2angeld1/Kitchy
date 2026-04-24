@@ -21,6 +21,8 @@ import marketingRoutes from './routes/marketing';
 import feedbackRoutes from './routes/feedbackRoutes';
 
 import { initScheduler } from './config/scheduler';
+import { createServer } from 'http';
+import { initSocket } from './config/socket';
 
 dotenv.config();
 
@@ -28,7 +30,11 @@ dotenv.config();
 initScheduler();
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
+
+// Inicializar Sockets
+initSocket(httpServer);
 
 // Middleware
 app.use(cors({
@@ -42,7 +48,7 @@ app.use(cors({
         'ionic://localhost',
         'http://localhost:8081',
         'http://localhost:3001',
-        'https://agrolinkxbk.vercel.app'
+        'https://gosen-hub.vercel.app'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -93,6 +99,6 @@ app.get('/', (req, res) => {
     res.json({ message: 'API de Kitchy POS funcionando correctamente' });
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor Kitchy corriendo en puerto ${PORT}`);
+httpServer.listen(PORT, () => {
+    console.log(`🚀 Servidor Kitchy (con Sockets) corriendo en puerto ${PORT}`);
 });

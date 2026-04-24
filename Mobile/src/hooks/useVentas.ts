@@ -244,10 +244,37 @@ export const useVentas = () => {
         guardarOrdenes();
     }, [ordenes, activeOrderId]);
 
+    const negocioId = useMemo(() => {
+        if (!user?.negocioActivo) return null;
+        return typeof user.negocioActivo === 'object' ? user.negocioActivo._id : user.negocioActivo;
+    }, [user?.negocioActivo]);
+
     useEffect(() => {
         cargarProductos();
         cargarVentas();
-    }, [user?.negocioActivo]);
+
+        // Socket para actualizaciones en tiempo real
+        let socket: any;
+        if (negocioId) {
+            const { io } = require('socket.io-client');
+            const baseUrl = require('../config/api').default.replace('/api', '');
+            
+            socket = io(baseUrl, {
+                query: { negocioId },
+                transports: ['websocket']
+            });
+
+            socket.on('dashboard_update', (payload: any) => {
+                console.log('💰 Venta o Stock actualizado vía Socket');
+                cargarProductos(); // Refrescar disponibilidad
+                cargarVentas();    // Refrescar historial
+            });
+        }
+
+        return () => {
+            if (socket) socket.disconnect();
+        };
+    }, [user?.negocioActivo, negocioId]);
 
     const cargarProductos = async () => {
         setLoading(true);

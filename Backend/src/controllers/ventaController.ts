@@ -6,6 +6,7 @@ import Negocio from '../models/Negocio';
 import { AuthRequest } from '../middleware/auth';
 import { getPeriodRanges } from '../utils/date-ranges';
 import { crearVentaService, actualizarVentaService } from '../services/ventaService';
+import { emitToBusiness } from '../config/socket';
 
 // Crear una nueva venta
 export const crearVenta = async (req: AuthRequest, res: Response) => {
@@ -26,6 +27,11 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
             req.negocioId as string,
             pagoCombinado
         );
+
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { 
+            tipo: 'VENTA_CREADA',
+            total: result.venta.total 
+        });
 
         res.status(201).json({
             venta: result.venta,
@@ -264,6 +270,11 @@ export const actualizarVenta = async (req: AuthRequest, res: Response) => {
             req.negocioId as string,
             pagoCombinado
         );
+
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { 
+            tipo: 'VENTA_ACTUALIZADA',
+            total: venta.total 
+        });
 
         res.status(200).json({
             venta,

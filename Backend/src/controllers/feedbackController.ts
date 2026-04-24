@@ -3,6 +3,7 @@ import Feedback from '../models/Feedback';
 import Venta from '../models/Venta';
 import { getFeedbackPage } from '../templates/web/feedbackPage';
 import { AuthRequest } from '../middleware/auth';
+import { emitToBusiness } from '../config/socket';
 
 /**
  * Renderiza la página de captura de feedback (HTML Público)
@@ -42,6 +43,10 @@ export const submitFeedback = async (req: Request, res: Response) => {
         });
 
         await feedback.save();
+
+        // Notificar al dashboard que hay nuevo feedback
+        emitToBusiness(negocioId, 'dashboard_update', { tipo: 'NUEVO_FEEDBACK', puntuacion });
+
         res.json({ success: true });
     } catch (error: any) {
         res.status(500).json({ message: 'Error al guardar feedback', error: error.message });

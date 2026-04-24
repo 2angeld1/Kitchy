@@ -2,6 +2,7 @@ import { Response } from 'express';
 import Gasto, { IGasto } from '../models/Gasto';
 import { AuthRequest } from '../middleware/auth';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { emitToBusiness } from '../config/socket';
 
 // Crear un nuevo gasto
 export const crearGasto = async (req: AuthRequest, res: Response) => {
@@ -26,6 +27,12 @@ export const crearGasto = async (req: AuthRequest, res: Response) => {
         });
 
         await gasto.save();
+
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { 
+            tipo: 'GASTO_CREADO',
+            monto: gasto.monto 
+        });
+
         res.status(201).json(gasto);
     } catch (error: any) {
         console.error('Error al crear gasto:', error);

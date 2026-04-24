@@ -22,30 +22,67 @@ export const getFeedbackPage = (ventaId: string, negocio: any, stars: any) => {
             }
             .card { 
                 background: white; 
-                padding: 40px 25px; 
-                border-radius: 28px; 
-                box-shadow: 0 10px 40px rgba(0,0,0,0.06); 
-                max-width: 450px; 
+                padding: 40px 30px; 
+                border-radius: 24px; 
+                box-shadow: 0 10px 40px rgba(0,0,0,0.04); 
+                max-width: 420px; 
                 width: 100%; 
                 text-align: center; 
             }
-            .logo { max-width: 80px; margin-bottom: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-            h1 { font-size: 22px; color: #1f2937; margin-bottom: 10px; font-weight: 800; }
-            p { color: #6b7280; font-size: 15px; line-height: 1.6; margin-bottom: 30px; }
-            .stars-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 30px; }
-            .star { font-size: 42px; color: #f1f5f9; cursor: pointer; transition: transform 0.2s, color 0.2s; }
+            .logo { 
+                max-width: 70px; 
+                margin-bottom: 20px; 
+                border-radius: 18px; 
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            }
+            h1 { 
+                font-size: 22px; 
+                color: #1f2937; 
+                margin-bottom: 8px; 
+                font-weight: 700; 
+                letter-spacing: -0.5px;
+            }
+            p { 
+                color: #64748b; 
+                font-size: 15px; 
+                line-height: 1.6; 
+                margin: 0 0 30px 0; 
+            }
+            .stars-container { 
+                display: flex; 
+                justify-content: center; 
+                gap: 10px; 
+                margin-bottom: 25px; 
+            }
+            .star { 
+                font-size: 40px; 
+                color: #f1f5f9; 
+                cursor: pointer; 
+                transition: transform 0.2s, color 0.2s; 
+            }
             .star.active { color: #fbbf24; }
-            .star:hover { transform: scale(1.15); }
+            .star:active { transform: scale(0.9); }
             
+            .input-group { 
+                text-align: left; 
+                margin-bottom: 15px; 
+            }
+            label { 
+                display: block; 
+                font-size: 13px; 
+                font-weight: 600; 
+                color: #94a3b8; 
+                margin-bottom: 6px; 
+                padding-left: 4px;
+            }
             textarea { 
                 width: 100%; 
-                border: 2px solid #f8fafc; 
+                border: 1.5px solid #f1f5f9; 
                 background-color: #f8fafc;
-                border-radius: 18px; 
-                padding: 18px; 
+                border-radius: 14px; 
+                padding: 14px 18px; 
                 font-size: 15px; 
                 resize: none; 
-                margin-bottom: 15px; 
                 outline: none; 
                 transition: all 0.2s; 
                 font-family: inherit;
@@ -60,12 +97,13 @@ export const getFeedbackPage = (ventaId: string, negocio: any, stars: any) => {
                 color: white; 
                 border: none; 
                 padding: 18px; 
-                border-radius: 18px; 
+                border-radius: 14px; 
                 font-weight: bold; 
                 font-size: 16px; 
                 cursor: pointer; 
                 width: 100%; 
-                box-shadow: 0 6px 20px rgba(236,72,153,0.3); 
+                margin-top: 5px;
+                box-shadow: 0 6px 20px rgba(236,72,153,0.25); 
                 transition: all 0.2s; 
             }
             .submit-btn:active { transform: scale(0.98); }
@@ -75,9 +113,10 @@ export const getFeedbackPage = (ventaId: string, negocio: any, stars: any) => {
 
             @media (max-width: 480px) {
                 body { padding: 15px; }
-                .card { padding: 35px 20px; }
+                .card { padding: 30px 20px; }
                 h1 { font-size: 20px; }
-                .star { font-size: 36px; }
+                .star { font-size: 36px; gap: 6px; }
+                .stars-container { gap: 6px; }
             }
         </style>
     </head>
@@ -97,18 +136,26 @@ export const getFeedbackPage = (ventaId: string, negocio: any, stars: any) => {
                     <span class="star" data-value="5">★</span>
                 </div>
 
-                <textarea id="comentario" rows="3" placeholder="¿Qué fue lo que más te gustó?"></textarea>
-                <textarea id="sugerencias" rows="2" placeholder="¿Alguna sugerencia de mejora?"></textarea>
+                <div class="input-group">
+                    <label>¿Qué te pareció?</label>
+                    <textarea id="comentario" rows="3" placeholder="Cuéntanos tu experiencia (opcional)"></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Sugerencias</label>
+                    <textarea id="sugerencias" rows="2" placeholder="¿Cómo podemos mejorar?"></textarea>
+                </div>
 
                 <button type="submit" class="submit-btn" id="submit-btn">Enviar Opinión</button>
             </form>
         </div>
 
         <div class="card success-view" id="success-card">
-            <div style="font-size: 60px; margin-bottom: 20px;">✨</div>
-            <h1>¡Gracias!</h1>
-            <p>Hemos recibido tus comentarios. Valoramos mucho tu tiempo.</p>
-            <p style="font-size: 13px; color: #9ca3af;">Ya puedes cerrar esta ventana.</p>
+            <div style="font-size: 50px; margin-bottom: 20px;">✨</div>
+            ${negocio.logo ? `<img src="${negocio.logo}" class="logo" alt="Logo">` : ''}
+            <h1>¡Muchas Gracias!</h1>
+            <p>Hemos recibido tus comentarios. Valoramos mucho tu tiempo y nos ayuda a mejorar para ti en <strong>${negocio.nombre}</strong>.</p>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 0;">Ya puedes cerrar esta ventana.</p>
         </div>
 
         <script>

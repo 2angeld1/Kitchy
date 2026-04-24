@@ -22,6 +22,7 @@ import { InventarioMovimientoModal } from './Inventario/components/InventarioMov
 import { InventarioScannerModal } from './Inventario/components/InventarioScannerModal';
 import { InventarioInvoiceReviewModal } from './Inventario/components/InventarioInvoiceReviewModal';
 import { InventarioConfigModal } from './Inventario/components/InventarioConfigModal';
+import InventarioComparativaModal from './Inventario/components/InventarioComparativaModal';
 import { updateNegocioConfig, updateComisionReventaConfig } from '../services/api';
 
 export default function InventarioScreen() {
@@ -53,7 +54,8 @@ export default function InventarioScreen() {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, startListening, tomarFotoFactura, seleccionarImagenGaleria, handleConfirmInvoiceItems
+        pickDocument, startListening, tomarFotoFactura, seleccionarImagenGaleria, handleConfirmInvoiceItems,
+        comparativaData, loadingComparativa, showComparativa, setShowComparativa, cargarComparativa
     } = useInventario();
 
     const [isFabOpen, setIsFabOpen] = useState(false);
@@ -227,10 +229,10 @@ export default function InventarioScreen() {
                 {isFabOpen && (
                     <Animated.View entering={FadeInDown.springify().damping(15)} exiting={FadeOutDown.duration(200)} style={{ gap: 12, alignItems: 'flex-end', marginBottom: 12 }}>
                         {[
+                            { label: 'Cierre del Día', color: '#10b981', icon: 'analytics', action: cargarComparativa },
                             { label: 'Crear Manualmente', color: colors.primary, icon: 'pencil', action: () => { resetForm(); setShowModal(true); } },
                             { label: 'Foto de Factura', color: '#4f46e5', icon: 'camera', action: tomarFotoFactura },
                             { label: 'Factura de Galería', color: '#6366f1', icon: 'images', action: seleccionarImagenGaleria },
-                            // { label: 'Escanear Código', color: colors.surface, icon: 'barcode-outline', action: openScanner, dark: true },
                             { label: 'Subir CSV / Excel', color: colors.surface, icon: 'cloud-download-outline', action: pickDocument, dark: true },
                         ].map((m, i) => (
                             <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -323,6 +325,13 @@ export default function InventarioScreen() {
                 categoriaNegocio={categoriaNegocio as any}
                 colors={colors}
                 styles={styles}
+            />
+
+            <InventarioComparativaModal
+                visible={showComparativa}
+                onClose={() => setShowComparativa(false)}
+                data={comparativaData}
+                loading={loadingComparativa}
             />
         </View>
     );

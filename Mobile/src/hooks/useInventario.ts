@@ -59,6 +59,11 @@ export const useInventario = () => {
     const [showInvoiceReview, setShowInvoiceReview] = useState(false);
     const [invoiceFiltro, setInvoiceFiltro] = useState('todos');
 
+    // Comparativa Report
+    const [comparativaData, setComparativaData] = useState<{ resumen: any, comparativa: any[] } | null>(null);
+    const [loadingComparativa, setLoadingComparativa] = useState(false);
+    const [showComparativa, setShowComparativa] = useState(false);
+
     const getInvoiceItemStatus = useCallback((item: any): 'coincide' | 'similar' | 'nuevo' | 'incompleto' => {
         if (!item.nombre || item.nombre.trim() === '' || !item.cantidad || item.cantidad <= 0) {
             return 'incompleto';
@@ -185,9 +190,50 @@ export const useInventario = () => {
         }
     }, [filtro, user?.negocioActivo]);
 
+    const negocioId = useMemo(() => {
+        if (!user?.negocioActivo) return null;
+        return typeof user.negocioActivo === 'object' ? user.negocioActivo._id : user.negocioActivo;
+    }, [user?.negocioActivo]);
+
     useEffect(() => {
         cargarInventario();
-    }, [cargarInventario]);
+
+        // Socket para actualizaciones en tiempo real
+        let socket: any;
+        if (negocioId) {
+            const { io } = require('socket.io-client');
+            const baseUrl = require('../config/api').default.replace('/api', '');
+            
+            socket = io(baseUrl, {
+                query: { negocioId },
+                transports: ['websocket']
+            });
+
+            socket.on('dashboard_update', (payload: any) => {
+                // Si el evento es de inventario o una venta (que afecta stock), refrescamos
+                if (payload.tipo.includes('INVENTARIO') || payload.tipo.includes('VENTA')) {
+                    console.log('📦 Stock actualizado vía Socket:', payload.tipo);
+                    
+                    if (payload.tipo === 'INVENTARIO_LOTE_CAITLYN') {
+                        const Toast = require('react-native-toast-message').default;
+                        Toast.show({
+                            type: 'success',
+                            text1: '🤖 ¡Caitlyn ha terminado!',
+                            text2: 'Los productos de tu factura ya están en el inventario.',
+                            position: 'bottom',
+                            visibilityTime: 4000
+                        });
+                    }
+                    
+                    cargarInventario(true);
+                }
+            });
+        }
+
+        return () => {
+            if (socket) socket.disconnect();
+        };
+    }, [negocioId, filtro]);
 
     const handleRefresh = async () => {
         await cargarInventario(true);
@@ -602,6 +648,20 @@ export const useInventario = () => {
         handleRefresh, resetForm, openEditModal, handleSubmit, handleDelete,
         openMovModal, handleMovimiento, handleSmartAction,
         handleBarCodeScanned, openScanner, handleScannerTap, requestCameraPermission,
-        pickDocument, startListening, tomarFotoFactura, seleccionarImagenGaleria, handleConfirmInvoiceItems
+        pickDocument, startListening, tomarFotoFactura, seleccionarImagenGaleria, handleConfirmInvoiceItems,
+        comparativaData, loadingComparativa, showComparativa, setShowComparativa,
+        cargarComparativa: async () => {
+            setLoadingComparativa(true);
+            try {
+                const { getComparativaInventario } = require('../services/api');
+                const res = await getComparativaInventario({ periodo: 'hoy' });
+                setComparativaData(res.data);
+                setShowComparativa(true);
+            } catch (err) {
+                setError('No se pudo cargar la comparativa');
+            } finally {
+                setLoadingComparativa(false);
+            }
+        }
     };
 };

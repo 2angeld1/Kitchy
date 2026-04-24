@@ -319,3 +319,115 @@ export const procesarLoteInventarioService = async (items: any[], imagen: string
 
     return { creados, actualizados, errores, gastoId: nuevoGasto ? nuevoGasto._id : null };
 };
+
+export const registrarMovimientoService = async (params: {
+    inventarioId: string,
+    tipo: 'entrada' | 'salida' | 'merma' | 'ajuste',
+    cantidad: number,
+    motivo?: string,
+    costoTotal?: number,
+    usuarioId: string,
+    negocioId: string
+}) => {
+    const { inventarioId, tipo, cantidad, motivo, costoTotal, usuarioId, negocioId } = params;
+
+    const producto = await Inventario.findOne({ _id: inventarioId, negocioId });
+    if (!producto) throw new Error('Producto no encontrado');
+
+    const operacion = (tipo === 'entrada' || (tipo === 'ajuste' && cantidad > 0)) ? 1 : -1;
+    const variacion = Math.abs(cantidad) * operacion;
+
+    producto.cantidad += variacion;
+    if (producto.cantidad < 0) producto.cantidad = 0; // No stock negativo
+
+    if (tipo === 'entrada' && costoTotal && costoTotal > 0) {
+        // Actualizar costo unitario promedio
+        const costoUnitarioNuevo = costoTotal / Math.abs(cantidad);
+        const valorAnterior = (producto.cantidad - variacion) * producto.costoUnitario;
+        producto.costoUnitario = (valorAnterior + costoTotal) / (producto.cantidad || 1);
+    }
+
+    producto.usuario = usuarioId as any;
+    await producto.save();
+
+    const movimiento = new MovimientoInventario({
+        inventario: inventarioId,
+        tipo,
+        cantidad: Math.abs(cantidad),
+        costoTotal,
+        motivo,
+        usuario: usuarioId,
+        negocioId
+    });
+
+    await movimiento.save();
+    return { producto, movimiento };
+};
+
+export const obtenerResumenInventarioService = async (negocioId: string) => {
+    const inventario = await Inventario.find({ negocioId });
+    
+    const resumen = {
+        totalItems: inventario.length,
+        valorTotal: inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0).toFixed(2),
+        itemsBajoStock: inventario.filter(item => item.cantidad <= item.cantidadMinima).length,
+        porCategoria: {} as { [key: string]: number }
+    };
+
+    inventario.forEach(item => {
+        const cat = item.categoria || 'otros';
+        resumen.porCategoria[cat] = (resumen.porCategoria[cat] || 0) + 1;
+    });
+
+    return resumen;
+};
+
+export const obtenerComparativaService = async (negocioId: string, periodo: string = 'hoy') => {
+    const inventarioActual = await Inventario.find({ negocioId });
+    const inicioRango = new Date();
+    inicioRango.setHours(0, 0, 0, 0);
+
+    const movimientos = await MovimientoInventario.find({
+        negocioId,
+        createdAt: { $gte: inicioRango }
+    });
+
+    const comparativa = inventarioActual.map((item: any) => {
+        const itemId = item._id.toString();
+        const movsItem = movimientos.filter(m => m.inventario.toString() === itemId);
+        
+        const totalEntradas = movsItem
+            .filter(m => m.tipo === 'entrada' || (m.tipo === 'ajuste' && m.cantidad > 0))
+            .reduce((sum, m) => sum + Math.abs(m.cantidad), 0);
+        
+        const totalSalidas = movsItem
+            .filter(m => m.tipo === 'salida' || m.tipo === 'merma' || (m.tipo === 'ajuste' && m.cantidad < 0))
+            .reduce((sum, m) => sum + Math.abs(m.cantidad), 0);
+
+        const stockInicial = item.cantidad - totalEntradas + totalSalidas;
+        const variacionNeta = item.cantidad - stockInicial;
+        const variacionPorcentaje = stockInicial > 0 ? (variacionNeta / stockInicial) * 100 : 0;
+
+        return {
+            _id: item._id,
+            nombre: item.nombre,
+            unidad: item.unidad,
+            categoria: item.categoria,
+            stockInicial,
+            stockActual: item.cantidad,
+            entradas: totalEntradas,
+            salidas: totalSalidas,
+            variacionNeta,
+            variacionPorcentaje: variacionPorcentaje.toFixed(2),
+            valorVariacion: (variacionNeta * item.costoUnitario).toFixed(2)
+        };
+    });
+
+    const resumen = {
+        totalItems: comparativa.length,
+        itemsConMovimiento: comparativa.filter(c => c.entradas > 0 || c.salidas > 0).length,
+        valorVariacionTotal: comparativa.reduce((sum, c) => sum + parseFloat(c.valorVariacion), 0).toFixed(2)
+    };
+
+    return { resumen, comparativa };
+};

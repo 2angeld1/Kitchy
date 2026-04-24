@@ -1,8 +1,16 @@
 import { Response } from 'express';
-import Inventario, { IInventario } from '../models/Inventario';
+import Inventario from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
 import { AuthRequest } from '../middleware/auth';
-import { importarCsvService, buscarProductoGlobalService, procesarLoteInventarioService } from '../services/inventarioService';
+import { 
+    importarCsvService, 
+    buscarProductoGlobalService, 
+    procesarLoteInventarioService,
+    registrarMovimientoService,
+    obtenerResumenInventarioService,
+    obtenerComparativaService
+} from '../services/inventarioService';
+import { emitToBusiness } from '../config/socket';
 
 // ==================== INVENTARIO ====================
 
@@ -30,112 +38,56 @@ export const crearInventario = async (req: AuthRequest, res: Response) => {
         });
 
         await inventario.save();
-
-        // Registrar movimiento inicial si hay cantidad
-        if (cantidad > 0) {
-            const movimiento = new MovimientoInventario({
-                inventario: inventario._id,
-                tipo: 'entrada',
-                cantidad,
-                costoTotal: cantidad * costoUnitario,
-                motivo: 'Inventario inicial',
-                usuario: userId,
-                negocioId: req.negocioId
-            });
-            await movimiento.save();
-        }
-
+        
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_NUEVO', item: nombre });
+        
         res.status(201).json(inventario);
     } catch (error: any) {
-        console.error('Error al crear inventario:', error);
-        res.status(500).json({ message: 'Error al crear el inventario', error: error.message });
+        res.status(500).json({ message: 'Error al crear item de inventario', error: error.message });
     }
 };
 
-// Obtener todo el inventario
+// Obtener todos los items del negocio
 export const obtenerInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { categoria, stockBajo, busqueda, codigoBarras } = req.query;
-        const filtro: any = { negocioId: req.negocioId };
-
-        if (codigoBarras) {
-            filtro.codigoBarras = codigoBarras;
-        }
-
-        if (categoria) {
-            filtro.categoria = categoria;
-        }
-        if (busqueda) {
-            filtro.nombre = new RegExp(busqueda as string, 'i');
-        }
-
-        let inventario = await Inventario.find(filtro)
-            .populate('usuario', 'nombre email')
-            .sort({ categoria: 1, nombre: 1 });
-
-        // Filtrar por stock bajo si se solicita
-        if (stockBajo === 'true') {
-            inventario = inventario.filter(item => item.cantidad <= item.cantidadMinima);
-        }
-
+        const inventario = await Inventario.find({ negocioId: req.negocioId }).sort({ nombre: 1 });
         res.json(inventario);
     } catch (error: any) {
-        console.error('Error al obtener inventario:', error);
         res.status(500).json({ message: 'Error al obtener inventario', error: error.message });
     }
 };
 
-// Obtener un item de inventario por ID
+// Obtener un item por ID
 export const obtenerInventarioPorId = async (req: AuthRequest, res: Response) => {
     try {
-        const { id } = req.params;
-        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId }).populate('usuario', 'nombre email');
-
+        const inventario = await Inventario.findOne({ _id: req.params.id, negocioId: req.negocioId });
         if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
+            return res.status(404).json({ message: 'Item no encontrado' });
         }
-
         res.json(inventario);
     } catch (error: any) {
-        console.error('Error al obtener inventario:', error);
-        res.status(500).json({ message: 'Error al obtener el inventario', error: error.message });
+        res.status(500).json({ message: 'Error al obtener el item', error: error.message });
     }
 };
 
-// Actualizar item de inventario
+// Actualizar un item
 export const actualizarInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const { id } = req.params;
-        const { nombre, descripcion, unidad, cantidadMinima, costoUnitario, precioVenta, comisionEspecialista, categoria, proveedor, codigoBarras, fechaVencimiento } = req.body;
-        const userId = req.userId;
-
         const inventario = await Inventario.findOneAndUpdate(
-            { _id: id, negocioId: req.negocioId },
-            {
-                nombre,
-                descripcion,
-                unidad,
-                cantidadMinima,
-                costoUnitario,
-                precioVenta,
-                comisionEspecialista,
-                categoria,
-                proveedor,
-                codigoBarras,
-                fechaVencimiento,
-                usuario: userId
-            },
-            { new: true, runValidators: true }
+            { _id: req.params.id, negocioId: req.negocioId },
+            { ...req.body, usuario: req.userId },
+            { new: true }
         );
 
         if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
+            return res.status(404).json({ message: 'Item no encontrado' });
         }
 
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_ACTUALIZADO', item: inventario.nombre });
+        
         res.json(inventario);
     } catch (error: any) {
-        console.error('Error al actualizar inventario:', error);
-        res.status(500).json({ message: 'Error al actualizar el inventario', error: error.message });
+        res.status(500).json({ message: 'Error al actualizar inventario', error: error.message });
     }
 };
 
@@ -143,214 +95,95 @@ export const actualizarInventario = async (req: AuthRequest, res: Response) => {
 export const eliminarInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-
-        // Eliminar movimientos asociados (opcional, podrías querer mantener historial o asegurar que el negocio sea el mismo)
-        // Pero primero verificamos que el item exista y sea del negocio
         const itemCheck = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
         if (!itemCheck) {
             return res.status(404).json({ message: 'Item de inventario no encontrado' });
         }
 
         await MovimientoInventario.deleteMany({ inventario: id });
-
-        const inventario = await Inventario.findByIdAndDelete(id);
-        if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
-        }
+        await Inventario.findByIdAndDelete(id);
 
         res.json({ message: 'Item de inventario eliminado correctamente' });
     } catch (error: any) {
-        console.error('Error al eliminar inventario:', error);
         res.status(500).json({ message: 'Error al eliminar el inventario', error: error.message });
     }
 };
 
 // ==================== MOVIMIENTOS ====================
 
-// Registrar entrada de inventario (compra)
+// Registrar entrada
 export const registrarEntrada = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { cantidad, costoTotal, motivo } = req.body;
-        const userId = req.userId;
-
-        if (!cantidad || cantidad <= 0) {
-            return res.status(400).json({ message: 'La cantidad debe ser mayor a 0' });
-        }
-
-        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
-        if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
-        }
-
-        // Actualizar cantidad
-        inventario.cantidad += cantidad;
-        if (costoTotal && cantidad > 0) {
-            inventario.costoUnitario = costoTotal / cantidad;
-        }
-        inventario.usuario = userId as any;
-        await inventario.save();
-
-        // Registrar movimiento
-        const movimiento = new MovimientoInventario({
-            inventario: id,
-            tipo: 'entrada',
-            cantidad,
-            costoTotal,
-            motivo: motivo || 'Compra/reposición',
-            usuario: userId,
-            negocioId: req.negocioId
+        const { producto } = await registrarMovimientoService({
+            inventarioId: id, tipo: 'entrada', cantidad, motivo, costoTotal,
+            usuarioId: req.userId as string, negocioId: req.negocioId as string
         });
-        await movimiento.save();
-
-        res.json({ inventario, movimiento });
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_ENTRADA', item: producto.nombre });
+        res.json(producto);
     } catch (error: any) {
-        console.error('Error al registrar entrada:', error);
-        res.status(500).json({ message: 'Error al registrar entrada', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// Registrar salida de inventario
+// Registrar salida
 export const registrarSalida = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { cantidad, motivo } = req.body;
-        const userId = req.userId;
-
-        if (!cantidad || cantidad <= 0) {
-            return res.status(400).json({ message: 'La cantidad debe ser mayor a 0' });
-        }
-
-        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
-        if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
-        }
-
-        if (inventario.cantidad < cantidad) {
-            return res.status(400).json({ message: 'No hay suficiente stock disponible' });
-        }
-
-        // Actualizar cantidad
-        inventario.cantidad -= cantidad;
-        inventario.usuario = userId as any;
-        await inventario.save();
-
-        // Registrar movimiento
-        const movimiento = new MovimientoInventario({
-            inventario: id,
-            tipo: 'salida',
-            cantidad,
-            motivo: motivo || 'Uso/consumo',
-            usuario: userId,
-            negocioId: req.negocioId
+        const { producto } = await registrarMovimientoService({
+            inventarioId: id, tipo: 'salida', cantidad, motivo,
+            usuarioId: req.userId as string, negocioId: req.negocioId as string
         });
-        await movimiento.save();
-
-        res.json({ inventario, movimiento });
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_SALIDA', item: producto.nombre });
+        res.json(producto);
     } catch (error: any) {
-        console.error('Error al registrar salida:', error);
-        res.status(500).json({ message: 'Error al registrar salida', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// Registrar merma de inventario (desperdicio)
+// Registrar merma
 export const registrarMerma = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { cantidad, motivo } = req.body;
-        const userId = req.userId;
-
-        if (!cantidad || cantidad <= 0) {
-            return res.status(400).json({ message: 'La cantidad debe ser mayor a 0' });
-        }
-
-        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
-        if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
-        }
-
-        if (inventario.cantidad < cantidad) {
-            return res.status(400).json({ message: 'No hay suficiente stock para reportar merma' });
-        }
-
-        // Actualizar cantidad
-        inventario.cantidad -= cantidad;
-        inventario.usuario = userId as any;
-        await inventario.save();
-
-        // Registrar movimiento de merma
-        const movimiento = new MovimientoInventario({
-            inventario: id,
-            tipo: 'merma',
-            cantidad,
-            motivo: motivo || 'Merma/Desperdicio',
-            usuario: userId,
-            negocioId: req.negocioId
+        const { producto } = await registrarMovimientoService({
+            inventarioId: id, tipo: 'merma', cantidad, motivo,
+            usuarioId: req.userId as string, negocioId: req.negocioId as string
         });
-        await movimiento.save();
-
-        res.json({ inventario, movimiento });
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_MERMA', item: producto.nombre });
+        res.json(producto);
     } catch (error: any) {
-        console.error('Error al registrar merma:', error);
-        res.status(500).json({ message: 'Error al registrar merma', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// Ajustar inventario (corrección)
+// Ajustar inventario
 export const ajustarInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { cantidadReal, motivo } = req.body;
-        const userId = req.userId;
-
-        if (cantidadReal === undefined || cantidadReal < 0) {
-            return res.status(400).json({ message: 'La cantidad real debe ser 0 o mayor' });
-        }
-
-        const inventario = await Inventario.findOne({ _id: id, negocioId: req.negocioId });
-        if (!inventario) {
-            return res.status(404).json({ message: 'Item de inventario no encontrado' });
-        }
-
-        const diferencia = cantidadReal - inventario.cantidad;
-
-        // Actualizar cantidad
-        inventario.cantidad = cantidadReal;
-        inventario.usuario = userId as any;
-        await inventario.save();
-
-        // Registrar movimiento de ajuste
-        const movimiento = new MovimientoInventario({
-            inventario: id,
-            tipo: 'ajuste',
-            cantidad: diferencia,
-            motivo: motivo || 'Ajuste de inventario',
-            usuario: userId,
-            negocioId: req.negocioId
+        const { producto } = await registrarMovimientoService({
+            inventarioId: id, tipo: 'ajuste', cantidad: cantidadReal, motivo,
+            usuarioId: req.userId as string, negocioId: req.negocioId as string
         });
-        await movimiento.save();
-
-        res.json({ inventario, movimiento, diferencia });
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_AJUSTE', item: producto.nombre });
+        res.json(producto);
     } catch (error: any) {
-        console.error('Error al ajustar inventario:', error);
-        res.status(500).json({ message: 'Error al ajustar inventario', error: error.message });
+        res.status(500).json({ message: error.message });
     }
 };
 
-// Obtener historial de movimientos de un item
+// Obtener historial de movimientos
 export const obtenerMovimientos = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
         const { limite = 50 } = req.query;
-
         const movimientos = await MovimientoInventario.find({ inventario: id, negocioId: req.negocioId })
-            .sort({ createdAt: -1 })
-            .limit(Number(limite))
-            .populate('usuario', 'nombre email');
-
+            .sort({ createdAt: -1 }).limit(Number(limite)).populate('usuario', 'nombre email');
         res.json(movimientos);
     } catch (error: any) {
-        console.error('Error al obtener movimientos:', error);
         res.status(500).json({ message: 'Error al obtener movimientos', error: error.message });
     }
 };
@@ -362,10 +195,8 @@ export const obtenerStockBajo = async (req: AuthRequest, res: Response) => {
             negocioId: req.negocioId,
             $expr: { $lte: ['$cantidad', '$cantidadMinima'] }
         }).sort({ cantidad: 1 });
-
         res.json(inventario);
     } catch (error: any) {
-        console.error('Error al obtener stock bajo:', error);
         res.status(500).json({ message: 'Error al obtener stock bajo', error: error.message });
     }
 };
@@ -373,75 +204,58 @@ export const obtenerStockBajo = async (req: AuthRequest, res: Response) => {
 // Obtener resumen de inventario
 export const obtenerResumenInventario = async (req: AuthRequest, res: Response) => {
     try {
-        const inventario = await Inventario.find({ negocioId: req.negocioId });
-
-        const totalItems = inventario.length;
-        const valorTotal = inventario.reduce((sum, item) => sum + (item.cantidad * item.costoUnitario), 0);
-        const itemsStockBajo = inventario.filter(item => item.cantidad <= item.cantidadMinima).length;
-
-        const porCategoria: { [key: string]: { cantidad: number; valor: number } } = {};
-        inventario.forEach(item => {
-            if (!porCategoria[item.categoria]) {
-                porCategoria[item.categoria] = { cantidad: 0, valor: 0 };
-            }
-            porCategoria[item.categoria].cantidad++;
-            porCategoria[item.categoria].valor += item.cantidad * item.costoUnitario;
-        });
-
-        res.json({
-            totalItems,
-            valorTotal: valorTotal.toFixed(2),
-            itemsStockBajo,
-            porCategoria
-        });
+        const resumen = await obtenerResumenInventarioService(req.negocioId as string);
+        res.json(resumen);
     } catch (error: any) {
-        console.error('Error al obtener resumen:', error);
         res.status(500).json({ message: 'Error al obtener resumen', error: error.message });
     }
 };
 
 export const importarInventarioCsv = async (req: AuthRequest, res: Response) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ message: 'No se subió ningún archivo CSV.' });
-        }
-        const filePath = req.file.path;
-        const result = await importarCsvService(filePath, req.negocioId as string, req.userId as string);
+        if (!req.file) return res.status(400).json({ message: 'No se subió ningún archivo CSV.' });
+        const result = await importarCsvService(req.file.path, req.negocioId as string, req.userId as string);
         res.status(200).json({ message: 'Importación finalizada', detalles: result });
     } catch (error: any) {
-        console.error('Error al importar CSV:', error);
         res.status(500).json({ message: 'Error general en la importación', error: error.message });
     }
 };
-// Buscar producto por código de barras (local y global)
+
+// Buscar producto por código de barras
 export const buscarProductoGlobal = async (req: AuthRequest, res: Response) => {
     try {
         const { codigo } = req.params;
         const result = await buscarProductoGlobalService(codigo, req.negocioId as string);
         res.json(result);
     } catch (error: any) {
-        console.error('Error en buscarProductoGlobal:', error);
         res.status(500).json({ message: 'Error al buscar el producto', error: error.message });
     }
 };
-// Procesar un lote de productos (usado por Caitlyn / Importaciones rápidas)
+
+// Procesar lote de inventario (Caitlyn AI)
 export const procesarLoteInventario = async (req: AuthRequest, res: Response) => {
     try {
         const { items, imagen, metadata } = req.body;
-        if (!items || !Array.isArray(items)) {
-            return res.status(400).json({ message: 'Se requiere un array de items' });
-        }
-
+        if (!items || !Array.isArray(items)) return res.status(400).json({ message: 'Se requiere un array de items' });
         const result = await procesarLoteInventarioService(items, imagen, metadata, req.negocioId as string, req.userId as string);
-        
+        emitToBusiness(req.negocioId as string, 'dashboard_update', { tipo: 'INVENTARIO_LOTE_CAITLYN' });
         res.json({
             message: 'Procesamiento de lote finalizado',
             detalles: { creados: result.creados, actualizados: result.actualizados, errores: result.errores },
             gastoId: result.gastoId
         });
-
     } catch (error: any) {
-        console.error('Error en procesarLoteInventario:', error);
         res.status(500).json({ message: 'Error interno al procesar lote', error: error.message });
+    }
+};
+
+// Obtener comparativa de inventario (Inicial vs Actual)
+export const obtenerComparativaInventario = async (req: AuthRequest, res: Response) => {
+    try {
+        const { periodo = 'hoy' } = req.query;
+        const data = await obtenerComparativaService(req.negocioId as string, periodo as string);
+        res.json(data);
+    } catch (error: any) {
+        res.status(500).json({ message: 'Error al generar la comparativa', error: error.message });
     }
 };

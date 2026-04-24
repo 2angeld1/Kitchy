@@ -87,6 +87,7 @@ export const importarInventario = (data: any) => api.post('/inventario/importar'
 });
 export const procesarLoteInventario = (payload: { items: any[], imagen?: string, metadata?: any }) => api.post('/inventario/lote', payload);
 export const lookupProducto = (codigo: string) => api.get(`/inventario/lookup/${codigo}`);
+export const getComparativaInventario = (params?: { periodo: string }) => api.get('/inventario/comparativa', { params });
 
 // Users
 export const getUsers = () => api.get('/users');

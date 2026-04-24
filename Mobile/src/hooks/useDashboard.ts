@@ -96,12 +96,43 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         }
     };
 
+    const negocioId = useMemo(() => {
+        if (!user?.negocioActivo) return null;
+        return typeof user.negocioActivo === 'object' ? user.negocioActivo._id : user.negocioActivo;
+    }, [user?.negocioActivo]);
+
     useFocusEffect(
         useCallback(() => {
             cargarDashboard();
-            const interval = setInterval(() => cargarDashboard(true), 15000); // 15 seg es más que suficiente
-            return () => clearInterval(interval);
-        }, [user?.negocioActivo, periodo])
+
+            // Configurar WebSockets para tiempo real
+            let socket: any;
+            
+            if (negocioId) {
+                const { io } = require('socket.io-client');
+                const baseUrl = require('../config/api').default.replace('/api', '');
+                
+                socket = io(baseUrl, {
+                    query: { negocioId },
+                    transports: ['websocket']
+                });
+
+                socket.on('dashboard_update', (payload: any) => {
+                    console.log('⚡ Dashboard Update Recibido vía Socket:', payload.tipo);
+                    cargarDashboard(true); // Refrescar data sin loading spinner
+                });
+
+                socket.on('connect_error', (error: any) => {
+                    console.warn('⚠️ Error de conexión Socket:', error.message);
+                });
+            }
+
+            return () => {
+                if (socket) {
+                    socket.disconnect();
+                }
+            };
+        }, [negocioId, periodo])
     );
 
     const onRefresh = useCallback(async () => {

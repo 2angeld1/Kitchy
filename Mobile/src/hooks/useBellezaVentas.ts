@@ -86,9 +86,37 @@ export const useBellezaVentas = () => {
         }
     }, [user?.negocioActivo]);
 
+    const negocioId = useMemo(() => {
+        if (!user?.negocioActivo) return null;
+        return typeof user.negocioActivo === 'object' ? user.negocioActivo._id : user.negocioActivo;
+    }, [user?.negocioActivo]);
+
     useEffect(() => {
         cargarDatos();
-    }, [cargarDatos]);
+
+        // Socket para actualizaciones en tiempo real
+        let socket: any;
+        if (negocioId) {
+            const { io } = require('socket.io-client');
+            const baseUrl = require('../config/api').default.replace('/api', '');
+            
+            socket = io(baseUrl, {
+                query: { negocioId },
+                transports: ['websocket']
+            });
+
+            socket.on('dashboard_update', (payload: any) => {
+                if (payload.tipo.includes('VENTA') || payload.tipo.includes('INVENTARIO')) {
+                    console.log('💇‍♂️ Actualización de Belleza vía Socket');
+                    cargarDatos();
+                }
+            });
+        }
+
+        return () => {
+            if (socket) socket.disconnect();
+        };
+    }, [negocioId]);
 
     const toggleItem = useCallback((item: Producto) => {
         setItemsSeleccionados(prev => {
