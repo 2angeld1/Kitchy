@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { Producto } from '../../../hooks/useVentas';
 import { KitchyInput } from '../../../components/KitchyInput';
-import { KitchySelect } from '../../../components/KitchySelect';
 import { useAppDimensions } from '../../../context/DimensionsContext';
 import { PagoCombinadoModal } from './PagoCombinadoModal';
 
@@ -69,6 +68,8 @@ export const VentasCartModal: React.FC<Props> = ({
         const url = `https://wa.me/507${telefono}?text=${encodeURIComponent(msg)}`;
         Linking.openURL(url).catch(() => {});
     };
+
+    const total = calcularTotal();
 
     return (
         <Modal
@@ -161,147 +162,194 @@ export const VentasCartModal: React.FC<Props> = ({
                     </ScrollView>
 
                     {carrito.length > 0 && (
-                            <View style={[
-                                styles.checkoutFooter, 
-                                isLandscape && { paddingBottom: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }
-                            ]}>
-                                {/* Inputs en Fila si es Landscape */}
-                                <View style={{ flexDirection: 'row', gap: 12, marginBottom: isLandscape ? 4 : 0 }}>
-                                    <View style={{ flex: 1.5 }}>
-                                        <KitchyInput
-                                            label="Nombre del Cliente"
-                                            placeholder="..."
-                                            value={cliente}
-                                            onChangeText={setCliente}
-                                            containerStyle={isLandscape && { marginBottom: 0 }}
-                                        />
-                                    </View>
-                                    {/* Beeper Input */}
-                                    <View style={{ flex: 1 }}>
-                                        <KitchyInput
-                                            label="Teléfono (Beeper)"
-                                            placeholder="Ej. 61234567"
-                                            keyboardType="phone-pad"
-                                            value={telefono}
-                                            onChangeText={setTelefono}
-                                            containerStyle={isLandscape && { marginBottom: 0 }}
-                                        />
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                        <KitchySelect
-                                            label="Método de Pago"
-                                            value={metodoPago}
-                                            options={[
-                                                { label: 'Efectivo', value: 'efectivo' },
-                                                { label: 'Yappy', value: 'yappy' },
-                                                { label: 'ACH/Trans', value: 'ach' },
-                                                { label: 'Tarjeta', value: 'tarjeta' },
-                                                { label: 'Combinado', value: 'combinado' }
-                                            ]}
-                                            onSelect={(m) => {
-                                                if (m === 'combinado') {
-                                                    setShowCombinadoModal(true);
-                                                } else {
-                                                    setMetodoPago(m);
-                                                    if (setPagoCombinado) setPagoCombinado([]);
-                                                }
-                                            }}
-                                            containerStyle={isLandscape && { marginBottom: 0 }}
-                                        />
-                                    </View>
-                                    {metodoPago === 'efectivo' && isLandscape && (
-                                        <View style={{ flex: 1 }}>
-                                            <KitchyInput
-                                                label="RECIBIDO"
-                                                placeholder="0.00"
-                                                keyboardType="numeric"
-                                                value={montoRecibido}
-                                                onChangeText={setMontoRecibido}
-                                                containerStyle={{ marginBottom: 0 }}
-                                            />
-                                        </View>
-                                    )}
+                        <View style={[
+                            styles.checkoutFooter, 
+                            isLandscape && { paddingVertical: 10, paddingBottom: Platform.OS === 'ios' ? 20 : 10 }
+                        ]}>
+                            
+                            {/* FILA 1: DATOS Y PAGOS (Compacta en Landscape) */}
+                            <View style={{ flexDirection: 'row', gap: 12, marginBottom: isLandscape ? 8 : 12, alignItems: 'flex-end' }}>
+                                <View style={{ flex: isLandscape ? 1.2 : 1 }}>
+                                    <KitchyInput
+                                        label="Cliente"
+                                        placeholder="..."
+                                        value={cliente}
+                                        onChangeText={setCliente}
+                                        containerStyle={{ marginBottom: 0 }}
+                                        style={{ height: 38, paddingVertical: 4, fontSize: 13 }}
+                                    />
                                 </View>
+                                <View style={{ flex: isLandscape ? 1 : 1 }}>
+                                    <KitchyInput
+                                        label="Beeper"
+                                        placeholder="6123..."
+                                        keyboardType="phone-pad"
+                                        value={telefono}
+                                        onChangeText={setTelefono}
+                                        containerStyle={{ marginBottom: 0 }}
+                                        style={{ height: 38, paddingVertical: 4, fontSize: 13 }}
+                                    />
+                                </View>
+                                
+                                {isLandscape && (
+                                    <View style={{ flex: 2.5, flexDirection: 'row', gap: 6 }}>
+                                        {[
+                                            { id: 'efectivo', icon: 'cash-outline', label: 'Efe' },
+                                            { id: 'yappy', icon: 'qr-code-outline', label: 'Yap' },
+                                            { id: 'tarjeta', icon: 'card-outline', label: 'Tar' },
+                                            { id: 'combinado', icon: 'options-outline', label: 'Comb' }
+                                        ].map((m) => (
+                                            <TouchableOpacity
+                                                key={m.id}
+                                                onPress={() => {
+                                                    if (m.id === 'combinado') setShowCombinadoModal(true);
+                                                    else setMetodoPago(m.id);
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    height: 38,
+                                                    backgroundColor: metodoPago === m.id ? colors.primary : colors.surface,
+                                                    borderRadius: 8,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    borderWidth: 1.5,
+                                                    borderColor: metodoPago === m.id ? colors.primary : colors.border
+                                                }}
+                                            >
+                                                <Ionicons name={m.icon as any} size={16} color={metodoPago === m.id ? '#fff' : colors.textSecondary} />
+                                                <Text style={{ fontSize: 8, fontWeight: '800', color: metodoPago === m.id ? '#fff' : colors.textMuted }}>{m.label}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
 
-                                {/* Cambio y Total en la misma fila en Landscape */}
+                            {/* MÉTODO DE PAGO (Solo Mobile Portrait) */}
+                            {!isLandscape && (
+                                <View style={{ marginBottom: 15 }}>
+                                    <Text style={{ fontSize: 10, fontWeight: '900', color: colors.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 }}>Método de Pago</Text>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                        {[
+                                            { id: 'efectivo', icon: 'cash-outline', label: 'Efectivo' },
+                                            { id: 'yappy', icon: 'qr-code-outline', label: 'Yappy' },
+                                            { id: 'tarjeta', icon: 'card-outline', label: 'Tarjeta' },
+                                            { id: 'combinado', icon: 'options-outline', label: 'Combo' }
+                                        ].map((m) => (
+                                            <TouchableOpacity
+                                                key={m.id}
+                                                onPress={() => {
+                                                    if (m.id === 'combinado') setShowCombinadoModal(true);
+                                                    else setMetodoPago(m.id);
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    height: 54,
+                                                    backgroundColor: metodoPago === m.id ? colors.primary : colors.surface,
+                                                    borderRadius: 12,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    marginHorizontal: 3,
+                                                    borderWidth: 1.5,
+                                                    borderColor: metodoPago === m.id ? colors.primary : colors.border
+                                                }}
+                                            >
+                                                <Ionicons name={m.icon as any} size={20} color={metodoPago === m.id ? '#fff' : colors.textSecondary} />
+                                                <Text style={{ fontSize: 9, fontWeight: '800', color: metodoPago === m.id ? '#fff' : colors.textMuted, marginTop: 2 }}>{m.label}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* FILA 2: RESUMEN Y BOTONES */}
+                            <View style={{ flexDirection: isLandscape ? 'row' : 'column', gap: 12, alignItems: 'center' }}>
+                                
+                                {/* CAJA DE TOTAL */}
                                 <View style={{ 
-                                    flexDirection: 'row', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center', 
-                                    marginVertical: isLandscape ? 4 : 8 
+                                    flex: isLandscape ? 1.5 : undefined,
+                                    backgroundColor: colors.surface,
+                                    paddingHorizontal: 12,
+                                    paddingVertical: isLandscape ? 6 : 12,
+                                    borderRadius: 12,
+                                    borderStyle: 'dashed',
+                                    borderWidth: 1.5,
+                                    borderColor: colors.border,
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    width: isLandscape ? 'auto' : '100%'
                                 }}>
-                                    {metodoPago === 'efectivo' && (
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                             <Text style={{ fontSize: 10, color: colors.textSecondary, fontWeight: '900' }}>CAMBIO:</Text>
-                                             <Text style={{ fontSize: isLandscape ? 18 : 22, fontWeight: '900', color: colors.primary }}>
-                                                ${(Number(cambio) || 0).toFixed(2)}
-                                            </Text>
-                                        </View>
-                                    )}
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
-                                        {metodoPago === 'combinado' && pagoCombinado && pagoCombinado.length > 0 && (
-                                            <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800' }}>
-                                                ({pagoCombinado.map(c => `$${c.monto.toFixed(2)} ${c.metodo.toUpperCase()}`).join(' + ')})
-                                            </Text>
-                                        )}
-                                        <Text style={[styles.totalLabel, { fontSize: 12, marginBottom: 0 }]}>TOTAL:</Text>
-                                        <Text style={[styles.totalValue, { fontSize: isLandscape ? 22 : 24 }]}>${(Number(calcularTotal()) || 0).toFixed(2)}</Text>
+                                    <View>
+                                        <Text style={{ fontSize: 8, color: colors.textSecondary, fontWeight: '900' }}>{metodoPago === 'efectivo' ? 'CAMBIO' : 'VÍA'}</Text>
+                                        <Text style={{ fontSize: isLandscape ? 16 : 20, fontWeight: '900', color: colors.primary }}>
+                                            {metodoPago === 'efectivo' ? `$${(Number(cambio) || 0).toFixed(2)}` : metodoPago.toUpperCase()}
+                                        </Text>
+                                    </View>
+                                    <View style={{ alignItems: 'flex-end' }}>
+                                        <Text style={{ fontSize: 8, color: colors.textSecondary, fontWeight: '900' }}>TOTAL</Text>
+                                        <Text style={{ fontSize: isLandscape ? 22 : 28, fontWeight: '900', color: colors.textPrimary }}>${total.toFixed(2)}</Text>
                                     </View>
                                 </View>
 
-                                <View style={{ flexDirection: 'row', gap: 10 }}>
-                                    <TouchableOpacity
-                                        style={[styles.confirmBtn, { flex: 0.6, height: isLandscape ? 40 : 46, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border }]}
-                                        onPress={onClose}
-                                        activeOpacity={0.8}
-                                    >
-                                        <Text style={[styles.confirmBtnText, { color: colors.textSecondary, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>PENDIENTE</Text>
-                                    </TouchableOpacity>
+                                {metodoPago === 'efectivo' && (
+                                    <View style={{ flex: isLandscape ? 1 : undefined, width: isLandscape ? 'auto' : '100%' }}>
+                                        <TextInput 
+                                            placeholder="Recibido..."
+                                            placeholderTextColor={colors.textMuted}
+                                            keyboardType="numeric"
+                                            value={montoRecibido}
+                                            onChangeText={setMontoRecibido}
+                                            style={{ 
+                                                backgroundColor: colors.card, 
+                                                height: 38, 
+                                                borderRadius: 8, 
+                                                paddingHorizontal: 10, 
+                                                fontSize: 13,
+                                                fontWeight: '700',
+                                                color: colors.textPrimary,
+                                                borderWidth: 1,
+                                                borderColor: colors.border
+                                            }}
+                                        />
+                                    </View>
+                                )}
 
-                                    {/* Beeper Button: Solo activo si hay teléfono */}
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.confirmBtn, 
-                                            { 
-                                                flex: 0.5, 
-                                                height: isLandscape ? 40 : 46, 
-                                                backgroundColor: telefono ? '#25D366' + '20' : colors.surface, 
-                                                borderWidth: 1.5, 
-                                                borderColor: telefono ? '#25D366' : colors.border 
-                                            }
-                                        ]}
-                                        onPress={handleBeeper}
-                                        disabled={!telefono}
-                                        activeOpacity={0.8}
-                                    >
-                                        <Ionicons name="logo-whatsapp" size={16} color={telefono ? '#25D366' : colors.textMuted} style={{ marginRight: 4 }} />
-                                        <Text style={[styles.confirmBtnText, { color: telefono ? '#25D366' : colors.textMuted, fontSize: isLandscape ? 11 : 12, fontWeight: '800' }]}>AVISAR</Text>
-                                    </TouchableOpacity>
+                                {/* BOTONES DE ACCIÓN */}
+                                <View style={{ flex: isLandscape ? 2.5 : undefined, width: isLandscape ? 'auto' : '100%', gap: 8 }}>
+                                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                                        <TouchableOpacity
+                                            style={{ flex: 1, height: 38, borderRadius: 10, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, justifyContent: 'center', alignItems: 'center' }}
+                                            onPress={onClose}
+                                        >
+                                            <Text style={{ fontSize: 10, fontWeight: '800', color: colors.textSecondary }}>PENDIENTE</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={{ flex: 1, height: 38, borderRadius: 10, backgroundColor: telefono ? '#25D366' + '15' : colors.surface, borderWidth: 1.5, borderColor: telefono ? '#25D366' : colors.border, justifyContent: 'center', alignItems: 'center' }}
+                                            onPress={handleBeeper}
+                                            disabled={!telefono}
+                                        >
+                                            <Text style={{ fontSize: 10, fontWeight: '800', color: telefono ? '#25D366' : colors.textMuted }}>AVISAR</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
                                     <TouchableOpacity
-                                        style={[styles.confirmBtn, { flex: 1, height: isLandscape ? 40 : 46 }]}
+                                        style={{ height: 42, borderRadius: 12, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 8 }}
                                         onPress={procesarVenta}
                                         disabled={loading}
-                                        activeOpacity={0.9}
                                     >
-                                        {loading ? (
-                                            <ActivityIndicator size="small" color="#FFF" />
-                                        ) : (
-                                            <>
-                                                <Ionicons name="wallet-outline" size={isLandscape ? 20 : 20} color={colors.white} />
-                                                <Text style={[styles.confirmBtnText, { fontSize: isLandscape ? 13 : 13, fontWeight: '900' }]}>PAGADO</Text>
-                                            </>
-                                        )}
+                                        {loading ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={{ fontSize: 15, fontWeight: '900', color: '#fff' }}>COBRAR Y PAGAR</Text>}
                                     </TouchableOpacity>
                                 </View>
                             </View>
+                        </View>
                     )}
                 </Animated.View>
             </Animated.View>
 
             <PagoCombinadoModal
                 visible={showCombinadoModal}
-                total={calcularTotal()}
+                total={total}
                 colors={colors}
                 onClose={() => {
                     setShowCombinadoModal(false);
