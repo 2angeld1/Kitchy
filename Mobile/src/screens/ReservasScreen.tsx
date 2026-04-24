@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, ActivityIndicator, RefreshControl } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
@@ -9,6 +10,7 @@ import { getCategoriaNegocio } from '../utils/beauty-helpers';
 import { KitchyToolbar } from '../components/KitchyToolbar';
 
 const ReservasScreen = () => {
+    const navigation = useNavigation();
     const { isDark } = useTheme();
     const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
@@ -33,7 +35,10 @@ const ReservasScreen = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar title="Gestión de Reservas" />
+            <KitchyToolbar 
+                title="Gestión de Reservas" 
+                onBack={() => navigation.goBack()} 
+            />
 
             {/* LISTA DE RESERVAS */}
             <ScrollView 
