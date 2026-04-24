@@ -55,6 +55,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                         secureTextEntry
                         placeholder="••••••••"
                     />
+
+                    <TouchableOpacity 
+                        onPress={() => navigation.navigate('ForgotPassword')}
+                        style={{ alignSelf: 'flex-end', marginTop: -8, marginBottom: 20 }}
+                    >
+                        <Text style={[styles.footerLink, { fontSize: 13, fontWeight: '600' }]}>¿Olvidaste tu contraseña?</Text>
+                    </TouchableOpacity>
                 </View>
 
                 <KitchyButton

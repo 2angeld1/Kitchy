@@ -10,6 +10,8 @@ export type MenuItemId =
     | 'comisiones' 
     | 'presupuestario' 
     | 'reportes' 
+    | 'encuestas'
+    | 'feedbacks'
     | 'soporte';
 
 export interface AdminMenuItem {
@@ -132,6 +134,22 @@ const BELLEZA_CONFIG: AdminHubConfig = {
             icon: 'cloud-download-outline',
             color: '#6366f1',
             navigation: 'Reportes'
+        },
+        {
+            id: 'encuestas',
+            title: 'Encuestas',
+            desc: 'Satisfacción y Marketing',
+            icon: 'mail-unread-outline',
+            color: '#ec4899',
+            navigation: 'Encuestas'
+        },
+        {
+            id: 'feedbacks',
+            title: 'Resultados',
+            desc: 'Opiniones y Estrellas',
+            icon: 'chatbubbles-outline',
+            color: '#f43f5e',
+            navigation: 'Feedbacks'
         }
     ]
 };

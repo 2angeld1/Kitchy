@@ -19,6 +19,9 @@ import CaitlynStrategyScreen from './src/screens/CaitlynStrategyScreen';
 import PresupuestarioScreen from './src/screens/PresupuestarioScreen';
 import BellezaResumenScreen from './src/screens/BellezaResumenScreen';
 import CalendarioEspecialistasScreen from './src/screens/CalendarioEspecialistasScreen';
+import EncuestasScreen from './src/screens/EncuestasScreen';
+import FeedbacksScreen from './src/screens/FeedbacksScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -70,6 +73,9 @@ export type RootStackParamList = {
   Presupuestario: undefined;
   BellezaResumen: undefined;
   CalendarioEspecialistas: undefined;
+  Encuestas: undefined;
+  Feedbacks: undefined;
+  ForgotPassword: undefined;
 };
 
 import { CaitlynOnboardingWizard } from './src/components/CaitlynOnboardingWizard';
@@ -124,11 +130,14 @@ function RootNavigator() {
             <Stack.Screen name="Presupuestario" component={PresupuestarioScreen} />
             <Stack.Screen name="BellezaResumen" component={BellezaResumenScreen} />
             <Stack.Screen name="CalendarioEspecialistas" component={CalendarioEspecialistasScreen} />
+            <Stack.Screen name="Encuestas" component={EncuestasScreen} />
+            <Stack.Screen name="Feedbacks" component={FeedbacksScreen} />
           </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           </>
         )}
       </Stack.Navigator>

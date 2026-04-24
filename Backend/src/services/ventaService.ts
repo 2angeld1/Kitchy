@@ -2,6 +2,7 @@ import Venta from '../models/Venta';
 import Producto from '../models/Producto';
 import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
+import Cliente from '../models/Cliente';
 
 export const crearVentaService = async (
     items: any[],
@@ -80,13 +81,66 @@ export const crearVentaService = async (
         total += subtotal;
     }
 
+    // Procesar identificación de Cliente para Loyalty
+    let clienteFinalId = null;
+    let nombreClienteDisplay = '';
+
+    if (cliente) {
+        // cliente puede ser un string (viejo) o un objeto {nombre, telefono, email...}
+        if (typeof cliente === 'object') {
+            const { nombre, telefono, email, esFrecuente, especialistaFrecuente } = cliente;
+            nombreClienteDisplay = nombre;
+
+            // Intentar encontrar cliente por teléfono o email en este negocio
+            let clienteDoc = null;
+            if (telefono) {
+                clienteDoc = await Cliente.findOne({ negocioId, telefono });
+            }
+            if (!clienteDoc && email) {
+                clienteDoc = await Cliente.findOne({ negocioId, email });
+            }
+
+            if (clienteDoc) {
+                // Actualizar cliente existente
+                clienteDoc.conteoVisitas += 1;
+                clienteDoc.totalGastado += total;
+                clienteDoc.ultimaVisita = new Date();
+                // Si viene como frecuente en esta venta, lo marcamos
+                if (esFrecuente) {
+                    clienteDoc.esFrecuente = true;
+                    if (especialistaFrecuente) clienteDoc.especialistaFrecuente = especialistaFrecuente;
+                }
+                await clienteDoc.save();
+                clienteFinalId = clienteDoc._id;
+            } else if (nombre && nombre !== 'Anónimo') {
+                // Crear nuevo cliente
+                const nuevoCliente = new Cliente({
+                    nombre,
+                    telefono,
+                    email,
+                    esFrecuente: esFrecuente || false,
+                    especialistaFrecuente: esFrecuente ? especialistaFrecuente : null,
+                    conteoVisitas: 1,
+                    totalGastado: total,
+                    ultimaVisita: new Date(),
+                    negocioId
+                });
+                await nuevoCliente.save();
+                clienteFinalId = nuevoCliente._id;
+            }
+        } else {
+            nombreClienteDisplay = cliente;
+        }
+    }
+
     const venta = new Venta({
         items: itemsProcesados,
         total,
         metodoPago: (metodoPago as any) || 'efectivo',
         usuario: userId,
         negocioId: negocioId,
-        cliente,
+        cliente: nombreClienteDisplay || 'Anónimo',
+        clienteId: clienteFinalId,
         notas,
         especialista,
         pagoCombinado

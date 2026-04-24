@@ -5,7 +5,6 @@ import DashboardScreen from '../screens/DashboardScreen';
 import BellezaDashboardScreen from '../screens/BellezaDashboardScreen';
 import AdminHubScreen from '../screens/AdminHubScreen';
 import VentasScreen from '../screens/VentasScreen';
-import BellezaReventaScreen from '../screens/BellezaReventaScreen';
 import InventarioScreen from '../screens/InventarioScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme, typography } from '../theme';
@@ -15,7 +14,6 @@ import CalendarioEspecialistasScreen from '../screens/CalendarioEspecialistasScr
 
 export type MainTabParamList = {
     Dashboard: undefined;
-    Reventa: undefined;
     Ventas: undefined;
     Inventario: undefined;
     Calendario: undefined;
@@ -50,8 +48,6 @@ export default function MainAppNavigator() {
                         iconName = isBelleza 
                             ? (focused ? 'sparkles' : 'sparkles-outline')
                             : (focused ? 'home' : 'home-outline');
-                    } else if (route.name === 'Reventa') {
-                        iconName = focused ? 'bag-handle' : 'bag-handle-outline';
                     } else if (route.name === 'Ventas') {
                         iconName = isBelleza 
                             ? (focused ? 'cut' : 'cut-outline')

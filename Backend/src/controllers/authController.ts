@@ -5,6 +5,7 @@ import Negocio from '../models/Negocio';
 import Producto from '../models/Producto';
 import Venta from '../models/Venta';
 import { enviarEmailRecuperacion } from '../services/emailService';
+import { getResetPasswordPage } from '../templates/web/resetPasswordPage';
 import { uploadImage } from '../utils/imageUpload';
 import { AuthRequest } from '../middleware/auth';
 
@@ -25,7 +26,7 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
                 id: user._id,
                 email: user.email,
                 name: user.nombre,
-                nombre: user.nombre, // para compatibilidad con ambos
+                nombre: user.nombre,
                 role: user.rol,
                 rol: user.rol,
                 negocioIds: user.negocioIds,
@@ -66,7 +67,6 @@ export const login = async (req: Request, res: Response) => {
             { expiresIn: '30d' } as SignOptions
         );
 
-        // Populate para que el frontend tenga los nombres de los negocios
         await user.populate([
             { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
             { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
@@ -116,7 +116,6 @@ export const register = async (req: Request, res: Response) => {
 
         const savedUser = await user.save();
 
-        // Subir logo a Cloudinary si existe (base64)
         let logoUrl = logo;
         if (logo && logo.startsWith('data:image')) {
             logoUrl = (await uploadImage(logo, 'logos_negocios')) || undefined;
@@ -134,7 +133,6 @@ export const register = async (req: Request, res: Response) => {
 
         const savedNegocio = await negocio.save();
 
-        // Enlazar negocio al usuario
         savedUser.negocioIds = [savedNegocio._id as any];
         savedUser.negocioActivo = savedNegocio._id as any;
         await savedUser.save();
@@ -189,7 +187,10 @@ export const forgotPassword = async (req: Request, res: Response) => {
             { expiresIn: '1h' }
         );
 
-        await enviarEmailRecuperacion(email, resetToken);
+        const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+        const resetUrl = `${baseUrl}/api/auth/reset-password-view/${resetToken}`;
+
+        await enviarEmailRecuperacion(email, resetUrl); 
 
         res.json({ success: true, message: 'Email de recuperación enviado' });
     } catch (error) {
@@ -222,7 +223,16 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 };
 
-// --- Helper para Smart Bypass de Onboarding ---
+export const renderResetPasswordPage = async (req: Request, res: Response) => {
+    try {
+        const { token } = req.params;
+        const html = getResetPasswordPage(token);
+        res.send(html);
+    } catch (error) {
+        res.status(500).send('Error al cargar la página de recuperación');
+    }
+};
+
 export const applyOnboardingBypass = async (user: any) => {
     let checkList: any[] = [];
     if (user.negocioIds && Array.isArray(user.negocioIds)) {
@@ -237,7 +247,7 @@ export const applyOnboardingBypass = async (user: any) => {
             const hasActivity = await Producto.exists({ negocioId: n._id }) || await Venta.exists({ negocioId: n._id });
             if (hasActivity) {
                 await Negocio.findByIdAndUpdate(n._id, { onboardingStep: 4 });
-                n.onboardingStep = 4; // actualizar en memoria
+                n.onboardingStep = 4;
             }
         }
     }

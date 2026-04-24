@@ -9,6 +9,7 @@ export interface Producto {
     nombre: string;
     precio: number;
     categoria: string;
+    isInventory?: boolean;
 }
 
 export interface Especialista {
@@ -32,8 +33,6 @@ export const useBellezaVentas = () => {
     const [metodoPago, setMetodoPago] = useState<'efectivo' | 'yappy' | 'tarjeta' | 'combinado'>('efectivo');
     const [pagoCombinado, setPagoCombinado] = useState<{ metodo: string; monto: number }[]>([]);
 
-    // Sugerencias: Nombre cliente, Calculadora, Undo
-    const [clienteNombre, setClienteNombre] = useState('');
     const [montoRecibido, setMontoRecibido] = useState<string>('');
     const [lastVentaId, setLastVentaId] = useState<string | null>(null);
 
@@ -108,7 +107,7 @@ export const useBellezaVentas = () => {
         return recibido > total ? recibido - total : 0;
     }, [montoRecibido, total]);
 
-    const procesarCobro = useCallback(async (onSuccess?: () => void) => {
+    const procesarCobro = useCallback(async (clienteInfo?: any, onSuccess?: () => void) => {
         if (itemsSeleccionados.length === 0) {
             Toast.show({ type: 'info', text1: 'Atención', text2: 'Selecciona al menos un servicio o producto.' });
             return;
@@ -121,7 +120,7 @@ export const useBellezaVentas = () => {
                 metodoPago,
                 pagoCombinado: metodoPago === 'combinado' ? pagoCombinado : undefined,
                 especialista: especialistaSeleccionado,
-                cliente: clienteNombre
+                cliente: clienteInfo // Cambiado a 'cliente' para matchear el backend
             };
 
             const res = await createVenta(payload);
@@ -132,7 +131,6 @@ export const useBellezaVentas = () => {
             // Reset y recargar conteos
             setItemsSeleccionados([]);
             setEspecialistaSeleccionado(null);
-            setClienteNombre('');
             setMontoRecibido('');
             setPagoCombinado([]);
             cargarDatos();
@@ -141,7 +139,7 @@ export const useBellezaVentas = () => {
         } finally {
             setLoading(false);
         }
-    }, [itemsSeleccionados, especialistaSeleccionado, metodoPago, pagoCombinado, clienteNombre, cargarDatos]);
+    }, [itemsSeleccionados, especialistaSeleccionado, metodoPago, pagoCombinado, cargarDatos]);
 
     const anularUltimaVenta = useCallback(async () => {
         if (!lastVentaId) return;
@@ -186,7 +184,6 @@ export const useBellezaVentas = () => {
         especialistaSeleccionado, setEspecialistaSeleccionado,
         metodoPago, setMetodoPago,
         pagoCombinado, setPagoCombinado,
-        clienteNombre, setClienteNombre,
         montoRecibido, setMontoRecibido,
         lastVentaId, anularUltimaVenta,
         procesarCobro,

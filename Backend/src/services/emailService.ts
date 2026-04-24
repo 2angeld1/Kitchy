@@ -1,74 +1,43 @@
 import nodemailer from 'nodemailer';
+import { getSurveyTemplate } from '../templates/email/surveyTemplate';
+import { getPasswordResetTemplate } from '../templates/email/passwordResetTemplate';
 
-/**
- * Interfaz para las opciones de envío de correo
- */
-interface EmailOptions {
-    to: string;
-    subject: string;
-    html: string;
-    text?: string;
-}
-
-/**
- * Configuración del transporte SMTP usando las credenciales del .env
- */
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true para 465, false para otros puertos
+    service: 'gmail',
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+        user: process.env.SMTP_USER || 'adfp21900@gmail.com',
+        pass: process.env.SMTP_PASS || 'qvruxdpztyzwubji'
     }
 });
 
 /**
- * Servicio genérico para envío de correos
- * Cumple con el principio de Responsabilidad Única (SOLID)
+ * Envía un correo de encuesta de satisfacción al cliente
  */
-export const sendEmail = async ({ to, subject, html, text }: EmailOptions): Promise<void> => {
+export const sendSurveyEmail = async (to: string, clientName: string, businessName: string, serviceName: string, ventaId: string) => {
+    const html = getSurveyTemplate(clientName, businessName, serviceName, ventaId);
+
     const mailOptions = {
-        from: `"Kitchy" <${process.env.SMTP_USER}>`,
+        from: `"${businessName}" <${process.env.SMTP_USER}>`,
         to,
-        subject,
-        html,
-        text: text || 'Contenido del correo' // Fallback si no hay texto plano
+        subject: `¿Cómo te fue hoy en ${businessName}? ✨`,
+        html
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Email enviado exitosamente a: ${to}`);
-    } catch (error) {
-        console.error('❌ Error en EmailService:', error);
-        throw new Error('No se pudo enviar el correo electrónico');
-    }
+    return transporter.sendMail(mailOptions);
 };
 
 /**
- * MÉTODO DE COMPATIBILIDAD (Temporal)
- * Mantenemos esto para no romper el flujo de recuperación de contraseña actual
+ * Envía un correo de recuperación de contraseña
  */
-export const enviarEmailRecuperacion = async (email: string, token: string) => {
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-    
-    const htmlContent = `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; padding: 20px;">
-            <h2 style="color: #3880ff; text-align: center;">Recuperación de Contraseña</h2>
-            <p>Hola,</p>
-            <p>Has solicitado restablecer tu contraseña en <strong>Kitchy</strong>. Haz clic en el botón a continuación:</p>
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="${resetUrl}" style="background-color: #3880ff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Restablecer mi Contraseña</a>
-            </div>
-            <p style="font-size: 0.9em; color: #666;">Si no solicitaste este cambio, puedes ignorar este correo con seguridad.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <p style="text-align: center; color: #999; font-size: 0.8em;">© 2024 Kitchy. Todos los derechos reservados.</p>
-        </div>
-    `;
+export const enviarEmailRecuperacion = async (to: string, resetUrl: string) => {
+    const html = getPasswordResetTemplate(resetUrl);
 
-    return sendEmail({
-        to: email,
-        subject: 'Kitchy - Recuperación de Contraseña',
-        html: htmlContent
-    });
+    const mailOptions = {
+        from: `"Kitchy Support" <${process.env.SMTP_USER}>`,
+        to,
+        subject: 'Recuperar Contraseña - Kitchy',
+        html
+    };
+
+    return transporter.sendMail(mailOptions);
 };

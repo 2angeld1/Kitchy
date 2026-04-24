@@ -91,6 +91,7 @@ export const lookupProducto = (codigo: string) => api.get(`/inventario/lookup/${
 // Users
 export const getUsers = () => api.get('/users');
 export const createUser = (data: any) => api.post('/users', data);
+export const forgotPassword = (email: string) => api.post('/auth/forgot-password', { email });
 export const updateUserRole = (id: string, data: { rol: string }) => api.put(`/users/${id}/role`, data);
 export const deleteUser = (id: string) => api.delete(`/users/${id}`);
 
@@ -126,6 +127,15 @@ export const getEspecialistas = () => api.get('/especialistas');
 export const createEspecialista = (data: { nombre: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.post('/especialistas', data);
 export const updateEspecialista = (id: string, data: { nombre?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.put(`/especialistas/${id}`, data);
 export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${id}`);
+
+// Clientes
+export const buscarClientes = (q: string) => api.get('/clientes/buscar', { params: { q } });
+export const getClientesRecientes = () => api.get('/clientes/recientes');
+
+// Marketing
+export const getVentasElegibles = () => api.get('/marketing/ventas-elegibles');
+export const enviarEncuesta = (ventaId: string) => api.post('/marketing/enviar-encuesta', { ventaId });
+export const getFeedbacks = () => api.get('/feedback/list');
 
 // Configuración Pública
 export const getMenuConfig = () => api.get('/menu-config');
