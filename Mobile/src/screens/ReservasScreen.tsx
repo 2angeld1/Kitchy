@@ -30,6 +30,7 @@ const ReservasScreen = () => {
         nombreRecurso, setNombreRecurso,
         notas, setNotas,
         sugerencias, buscandoCliente, seleccionarCliente,
+        sugerenciasEspecialistas, seleccionarEspecialista,
         handleCrearReserva, handleCancelarReserva, resetForm
     } = useReservas();
 
@@ -171,6 +172,22 @@ const ReservasScreen = () => {
                                 onChangeText={setNombreRecurso} 
                                 placeholder={isBelleza ? 'Ej: Juan Pérez' : 'Ej: Mesa 5'} 
                             />
+
+                            {/* Sugerencias de Especialistas */}
+                            {isBelleza && sugerenciasEspecialistas.length > 0 && (
+                                <View style={{ backgroundColor: colors.surface, borderRadius: 15, marginTop: 5, padding: 5, borderWidth: 1, borderColor: colors.border }}>
+                                    {sugerenciasEspecialistas.map((esp) => (
+                                        <TouchableOpacity 
+                                            key={esp._id} 
+                                            onPress={() => seleccionarEspecialista(esp)}
+                                            style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }}
+                                        >
+                                            <Ionicons name="person-circle-outline" size={20} color={colors.primary} style={{ marginRight: 10 }} />
+                                            <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>{esp.nombre}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            )}
 
                             <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>NOTAS</Text>
                             <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary, height: 80 }} multiline value={notas} onChangeText={setNotas} />
