@@ -12,6 +12,12 @@ export interface INegocio extends Document {
         impuesto: number;
         margenObjetivo: number;
     };
+    shiftPresets?: {
+        nombre: string;
+        inicio: string;
+        fin: string;
+        color?: string;
+    }[];
     comisionConfig?: {
         tipo: 'fijo' | 'escalonado';
         fijo?: {
@@ -167,6 +173,19 @@ const negocioSchema = new Schema({
     totalSalesLifetime: { type: Number, default: 0 },
     totalCommissionLifetime: { type: Number, default: 0 },
     onboardingStep: { type: Number, default: 0 },
+    shiftPresets: {
+        type: [{
+            nombre: { type: String, required: true },
+            inicio: { type: String, required: true },
+            fin: { type: String, required: true },
+            color: { type: String, default: '#3b82f6' }
+        }],
+        default: [
+            { nombre: 'Jornada Completa', inicio: '08:00', fin: '18:00', color: '#10b981' },
+            { nombre: 'Mañana', inicio: '08:00', fin: '14:00', color: '#3b82f6' },
+            { nombre: 'Tarde', inicio: '14:00', fin: '20:00', color: '#f59e0b' }
+        ]
+    },
     horarios: {
         type: Map,
         of: {
