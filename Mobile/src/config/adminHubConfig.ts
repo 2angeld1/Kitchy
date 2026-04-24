@@ -12,6 +12,7 @@ export type MenuItemId =
     | 'reportes' 
     | 'encuestas'
     | 'feedbacks'
+    | 'reservas'
     | 'soporte';
 
 export interface AdminMenuItem {
@@ -79,6 +80,14 @@ const COMIDA_CONFIG: AdminHubConfig = {
             icon: 'cloud-download-outline',
             color: '#6366f1',
             navigation: 'Reportes' // Manejado por modal en el screen
+        },
+        {
+            id: 'reservas',
+            title: 'Reservas',
+            desc: 'Gestión de Mesas',
+            icon: 'calendar-outline',
+            color: '#8b5cf6',
+            navigation: 'Reservas'
         }
     ]
 };
@@ -150,6 +159,14 @@ const BELLEZA_CONFIG: AdminHubConfig = {
             icon: 'chatbubbles-outline',
             color: '#f43f5e',
             navigation: 'Feedbacks'
+        },
+        {
+            id: 'reservas',
+            title: 'Reservas',
+            desc: 'Agenda de Citas',
+            icon: 'calendar-outline',
+            color: '#8b5cf6',
+            navigation: 'Reservas'
         }
     ]
 };

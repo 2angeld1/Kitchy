@@ -89,6 +89,11 @@ export const procesarLoteInventario = (payload: { items: any[], imagen?: string,
 export const lookupProducto = (codigo: string) => api.get(`/inventario/lookup/${codigo}`);
 export const getComparativaInventario = (params?: { periodo: string }) => api.get('/inventario/comparativa', { params });
 
+// Reservas
+export const getReservas = (fecha?: string) => api.get('/reservas', { params: { fecha } });
+export const crearReserva = (data: any) => api.post('/reservas', data);
+export const cancelarReserva = (id: string) => api.patch(`/reservas/${id}/cancelar`);
+
 // Users
 export const getUsers = () => api.get('/users');
 export const createUser = (data: any) => api.post('/users', data);

@@ -22,6 +22,7 @@ import CalendarioEspecialistasScreen from './src/screens/CalendarioEspecialistas
 import EncuestasScreen from './src/screens/EncuestasScreen';
 import FeedbacksScreen from './src/screens/FeedbacksScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import ReservasScreen from './src/screens/ReservasScreen';
 import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
@@ -76,6 +77,7 @@ export type RootStackParamList = {
   Encuestas: undefined;
   Feedbacks: undefined;
   ForgotPassword: undefined;
+  Reservas: undefined;
 };
 
 import { CaitlynOnboardingWizard } from './src/components/CaitlynOnboardingWizard';
@@ -132,6 +134,7 @@ function RootNavigator() {
             <Stack.Screen name="CalendarioEspecialistas" component={CalendarioEspecialistasScreen} />
             <Stack.Screen name="Encuestas" component={EncuestasScreen} />
             <Stack.Screen name="Feedbacks" component={FeedbacksScreen} />
+            <Stack.Screen name="Reservas" component={ReservasScreen} />
           </>
         ) : (
           <>

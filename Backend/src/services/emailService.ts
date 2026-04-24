@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { getSurveyTemplate } from '../templates/email/surveyTemplate';
 import { getPasswordResetTemplate } from '../templates/email/passwordResetTemplate';
+import { getReservaTemplate } from '../templates/email/reservaTemplate';
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -20,6 +21,31 @@ export const sendSurveyEmail = async (to: string, clientName: string, businessNa
         from: `"${businessName}" <${process.env.SMTP_USER}>`,
         to,
         subject: `¿Cómo te fue hoy en ${businessName}? ✨`,
+        html
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+/**
+ * Envía un correo de confirmación de reserva
+ */
+export const sendReservationEmail = async (
+    to: string, 
+    clientName: string, 
+    businessName: string, 
+    tipo: 'GASTRONOMIA' | 'BELLEZA',
+    fecha: string,
+    hora: string,
+    recurso: string,
+    reservaId: string
+) => {
+    const html = getReservaTemplate(clientName, businessName, tipo, fecha, hora, recurso, reservaId);
+
+    const mailOptions = {
+        from: `"${businessName}" <${process.env.SMTP_USER}>`,
+        to,
+        subject: `📅 Reserva Confirmada - ${businessName}`,
         html
     };
 

@@ -19,6 +19,7 @@ import especialistaRoutes from './routes/especialistas';
 import clienteRoutes from './routes/clienteRoutes';
 import marketingRoutes from './routes/marketing';
 import feedbackRoutes from './routes/feedbackRoutes';
+import reservaRoutes from './routes/reservaRoutes';
 
 import { initScheduler } from './config/scheduler';
 import { createServer } from 'http';
@@ -86,6 +87,7 @@ app.use('/api/especialistas', especialistaRoutes);
 app.use('/api/clientes', clienteRoutes);
 app.use('/api/marketing', marketingRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/reservas', reservaRoutes);
 
 // Rutas del sistema
 export const CURRENT_APP_VERSION = process.env.APP_VERSION || '1.0.0'; // Cambiar esto forzará una recarga en todos los clientes
