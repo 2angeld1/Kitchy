@@ -4,20 +4,13 @@ import { getPasswordResetTemplate } from '../templates/email/passwordResetTempla
 import { getReservaTemplate } from '../templates/email/reservaTemplate';
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // true para puerto 465, false para otros
-    family: 4, // Forzar IPv4 para evitar problemas de ruteo en nubes
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: process.env.SMTP_SECURE === 'true', // STARTTLS por defecto en 587
     auth: {
-        user: process.env.SMTP_USER || 'adfp21900@gmail.com',
-        pass: process.env.SMTP_PASS || 'qvruxdpztyzwubji'
-    },
-    tls: {
-        rejectUnauthorized: false // Ayuda en algunos entornos de red restrictivos
-    },
-    connectionTimeout: 10000, // 10 segundos
-    greetingTimeout: 10000,
-    socketTimeout: 15000
+        user: process.env.SMTP_USER || '',
+        pass: process.env.SMTP_PASS || ''
+    }
 } as any);
 
 // Verificar conexión al iniciar
@@ -37,7 +30,7 @@ export const sendSurveyEmail = async (to: string, clientName: string, businessNa
     const html = getSurveyTemplate(clientName, businessName, serviceName, ventaId);
 
     const mailOptions = {
-        from: `"${businessName}" <${process.env.SMTP_USER}>`,
+        from: `"${businessName}" <${process.env.SMTP_FROM || 'adfp21900@gmail.com'}>`,
         to,
         subject: `¿Cómo te fue hoy en ${businessName}? ✨`,
         html
@@ -57,9 +50,9 @@ export const sendSurveyEmail = async (to: string, clientName: string, businessNa
  * Envía un correo de confirmación de reserva
  */
 export const sendReservationEmail = async (
-    to: string, 
-    clientName: string, 
-    businessName: string, 
+    to: string,
+    clientName: string,
+    businessName: string,
     tipo: 'GASTRONOMIA' | 'BELLEZA',
     fecha: string,
     hora: string,
@@ -70,7 +63,7 @@ export const sendReservationEmail = async (
     const html = getReservaTemplate(clientName, businessName, tipo, fecha, hora, recurso, reservaId);
 
     const mailOptions = {
-        from: `"${businessName}" <${process.env.SMTP_USER}>`,
+        from: `"${businessName}" <${process.env.SMTP_FROM || 'adfp21900@gmail.com'}>`,
         to,
         subject: `📅 Reserva Confirmada - ${businessName}`,
         html
@@ -94,7 +87,7 @@ export const enviarEmailRecuperacion = async (to: string, resetUrl: string) => {
     const html = getPasswordResetTemplate(resetUrl);
 
     const mailOptions = {
-        from: `"Kitchy Support" <${process.env.SMTP_USER}>`,
+        from: `"Kitchy Support" <${process.env.SMTP_FROM || 'adfp21900@gmail.com'}>`,
         to,
         subject: 'Recuperar Contraseña - Kitchy',
         html
