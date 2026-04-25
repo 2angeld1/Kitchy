@@ -7,6 +7,7 @@ const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, // true para puerto 465, false para otros
+    family: 4, // Forzar IPv4 para evitar problemas de ruteo en nubes
     auth: {
         user: process.env.SMTP_USER || 'adfp21900@gmail.com',
         pass: process.env.SMTP_PASS || 'qvruxdpztyzwubji'
@@ -17,7 +18,7 @@ const transporter = nodemailer.createTransport({
     connectionTimeout: 10000, // 10 segundos
     greetingTimeout: 10000,
     socketTimeout: 15000
-});
+} as any);
 
 // Verificar conexión al iniciar
 transporter.verify((error, success) => {
