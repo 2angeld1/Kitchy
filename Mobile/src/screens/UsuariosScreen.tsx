@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
@@ -18,7 +18,7 @@ import { UserCreateModal } from './Usuarios/components/UserCreateModal';
 import { NegocioCreateModal } from './Usuarios/components/NegocioCreateModal';
 import { NegocioEditModal } from './Usuarios/components/NegocioEditModal';
 import { NegocioItemCard } from './Usuarios/components/NegocioItemCard';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+// import { TouchableOpacity } from 'react-native-gesture-handler'; // Eliminado para evitar conflictos de layout
 
 export default function UsuariosScreen() {
     const { isDark } = useTheme();
@@ -79,28 +79,45 @@ export default function UsuariosScreen() {
         <View style={styles.container}>
             <KitchyToolbar title="Usuarios" onBack={() => navigation.goBack()} />
 
-            {/* TAB SELECTOR */}
+            {/* SEGMENTED TAB SELECTOR (GLASSMORPHISM) */}
             {currentUser?.rol === 'admin' && (
-                <View style={{ flexDirection: 'row', paddingHorizontal: 20, paddingTop: 10, gap: 10 }}>
+                <View style={styles.tabContainer}>
                     <TouchableOpacity 
                         onPress={() => setActiveTab('usuarios')}
-                        style={{
-                            flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center',
-                            backgroundColor: activeTab === 'usuarios' ? colors.primary + '15' : colors.surface,
-                            borderWidth: 1.5, borderColor: activeTab === 'usuarios' ? colors.primary : colors.border
-                        }}
+                        activeOpacity={0.7}
+                        style={[
+                            styles.tabButton,
+                            activeTab === 'usuarios' && styles.activeTabButton
+                        ]}
                     >
-                        <Text style={{ fontWeight: '800', fontSize: 13, color: activeTab === 'usuarios' ? colors.primary : colors.textMuted }}>EQUIPO</Text>
+                        <Ionicons 
+                            name={activeTab === 'usuarios' ? "people" : "people-outline"} 
+                            size={18} 
+                            color={activeTab === 'usuarios' ? colors.primary : colors.textMuted} 
+                        />
+                        <Text style={[
+                            styles.tabText, 
+                            { color: activeTab === 'usuarios' ? (isDark ? '#fff' : colors.primary) : colors.textMuted }
+                        ]}>Equipo</Text>
                     </TouchableOpacity>
+                    
                     <TouchableOpacity 
                         onPress={() => setActiveTab('negocios')}
-                        style={{
-                            flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center',
-                            backgroundColor: activeTab === 'negocios' ? colors.primary + '15' : colors.surface,
-                            borderWidth: 1.5, borderColor: activeTab === 'negocios' ? colors.primary : colors.border
-                        }}
+                        activeOpacity={0.7}
+                        style={[
+                            styles.tabButton,
+                            activeTab === 'negocios' && styles.activeTabButton
+                        ]}
                     >
-                        <Text style={{ fontWeight: '800', fontSize: 13, color: activeTab === 'negocios' ? colors.primary : colors.textMuted }}>NEGOCIOS</Text>
+                        <Ionicons 
+                            name={activeTab === 'negocios' ? "business" : "business-outline"} 
+                            size={18} 
+                            color={activeTab === 'negocios' ? colors.primary : colors.textMuted} 
+                        />
+                        <Text style={[
+                            styles.tabText, 
+                            { color: activeTab === 'negocios' ? (isDark ? '#fff' : colors.primary) : colors.textMuted }
+                        ]}>Negocios</Text>
                     </TouchableOpacity>
                 </View>
             )}

@@ -22,7 +22,7 @@ export const getUserNegocios = async (req: AuthRequest, res: Response) => {
 // Crear un nuevo negocio (solo admin)
 export const createNegocio = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, tipo, categoria, direccion, telefono, logo } = req.body;
+        const { nombre, tipo, categoria, direccion, telefono, logo, googleMapsReviewUrl } = req.body;
 
         if (!nombre) {
             return res.status(400).json({ message: 'El nombre del negocio es obligatorio' });
@@ -46,7 +46,8 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
             propietario: user._id,
             direccion,
             telefono,
-            logo: logoUrl
+            logo: logoUrl,
+            googleMapsReviewUrl
         });
 
         const savedNegocio = await nuevoNegocio.save();
@@ -266,7 +267,7 @@ export const updateOnboardingStep = async (req: AuthRequest, res: Response) => {
 export const updateNegocio = async (req: AuthRequest, res: Response) => {
     try {
         const { id } = req.params;
-        const { nombre, tipo, categoria, direccion, telefono, logo, horarios } = req.body;
+        const { nombre, tipo, categoria, direccion, telefono, logo, horarios, googleMapsReviewUrl } = req.body;
 
         const negocio = await Negocio.findById(id);
         if (!negocio) {
@@ -289,6 +290,7 @@ export const updateNegocio = async (req: AuthRequest, res: Response) => {
         negocio.telefono = telefono !== undefined ? telefono : negocio.telefono;
         if (logoUrl) negocio.logo = logoUrl;
         if (horarios) negocio.horarios = horarios;
+        if (googleMapsReviewUrl !== undefined) negocio.googleMapsReviewUrl = googleMapsReviewUrl;
 
         await negocio.save();
         res.json({ success: true, negocio });

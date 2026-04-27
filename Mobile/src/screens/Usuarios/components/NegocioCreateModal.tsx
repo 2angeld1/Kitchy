@@ -11,7 +11,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface Props {
     visible: boolean;
     onClose: () => void;
-    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string }) => Promise<any>;
+    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string, googleMapsReviewUrl?: string }) => Promise<any>;
     onSwitch: (user: any, token: string) => Promise<void>;
     loading: boolean;
     colors: any;
@@ -24,6 +24,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
+    const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const insets = useSafeAreaInsets();
     
     const { user } = useAuth();
@@ -36,7 +37,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
     }, [user?.negocioIds]);
 
     const handleSubmit = async () => {
-        const res = await onConfirm({ nombre, categoria, telefono });
+        const res = await onConfirm({ nombre, categoria, telefono, googleMapsReviewUrl });
         if (res?.success) {
             setNombre('');
             setTelefono('');
@@ -161,6 +162,16 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                         ))}
                                     </ScrollView>
                                 )}
+                            </View>
+                            
+                            <View style={{ marginBottom: 18 }}>
+                                <KitchyInput 
+                                    label="Link de Reseñas de Google" 
+                                    placeholder="https://g.page/r/..." 
+                                    value={googleMapsReviewUrl} 
+                                    onChangeText={setGoogleMapsReviewUrl} 
+                                    containerStyle={{ marginHorizontal: 0 }}
+                                />
                             </View>
 
                             <Text style={{ 

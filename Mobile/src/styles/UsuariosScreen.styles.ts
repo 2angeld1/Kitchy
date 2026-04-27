@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -11,6 +11,49 @@ export const createStyles = (colors: any) => StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 16,
         paddingBottom: 100,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        marginHorizontal: 16,
+        marginTop: 20,
+        backgroundColor: colors.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+        borderRadius: 24,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: colors.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+        width: width - 32,
+        alignSelf: 'center',
+        // Glassmorphism effect for Web
+        ...Platform.select({
+            web: {
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+            }
+        })
+    },
+    tabButton: {
+        flex: 1,
+        height: 44,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    activeTabButton: {
+        backgroundColor: colors.isDark ? 'rgba(255, 255, 255, 0.12)' : colors.card,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: colors.isDark ? 0.3 : 0.1,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: colors.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.05)',
+    },
+    tabText: {
+        fontSize: 13,
+        fontWeight: '700',
+        letterSpacing: 0.5,
     },
     userCard: {
         flexDirection: 'row',

@@ -40,6 +40,7 @@ export const NegocioEditModal: React.FC<Props> = ({
     const [telefono, setTelefono] = useState('');
     const [direccion, setDireccion] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
+    const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const [horarios, setHorarios] = useState<any>({});
     
     const insets = useSafeAreaInsets();
@@ -49,6 +50,7 @@ export const NegocioEditModal: React.FC<Props> = ({
             setNombre(negocio.nombre || '');
             setTelefono(negocio.telefono || '');
             setDireccion(negocio.direccion || '');
+            setGoogleMapsReviewUrl(negocio.googleMapsReviewUrl || '');
             setCategoria(negocio.categoria || 'COMIDA');
             setHorarios(negocio.horarios || {
                 lunes: { abierto: true, inicio: '08:00', fin: '20:00' },
@@ -78,7 +80,7 @@ export const NegocioEditModal: React.FC<Props> = ({
 
     const handleSubmit = async () => {
         const success = await onConfirm(negocio._id, { 
-            nombre, categoria, telefono, direccion, horarios 
+            nombre, categoria, telefono, direccion, googleMapsReviewUrl, horarios 
         });
         if (success) {
             onClose();
@@ -110,7 +112,9 @@ export const NegocioEditModal: React.FC<Props> = ({
                             { 
                                 backgroundColor: colors.background,
                                 paddingBottom: Math.max(insets.bottom, 24),
+                                paddingTop: insets.top,
                                 width: '100%',
+                                height: SCREEN_HEIGHT, // Full height
                                 borderTopLeftRadius: 32,
                                 borderTopRightRadius: 32,
                                 marginBottom: 0
@@ -140,6 +144,7 @@ export const NegocioEditModal: React.FC<Props> = ({
                             <KitchyInput label="Nombre del Negocio" value={nombre} onChangeText={setNombre} />
                             <KitchyInput label="WhatsApp" placeholder="Ej. 61234567" keyboardType="phone-pad" value={telefono} onChangeText={setTelefono} />
                             <KitchyInput label="Dirección Física" placeholder="Ej. Calle 50, local 4" value={direccion} onChangeText={setDireccion} />
+                            <KitchyInput label="Link de Reseñas de Google" placeholder="https://g.page/r/..." value={googleMapsReviewUrl} onChangeText={setGoogleMapsReviewUrl} />
 
                             <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 16, marginBottom: 12 }}>
                                 HORARIOS DE ATENCIÓN

@@ -65,6 +65,7 @@ export interface INegocio extends Document {
             fin: string;
         }
     };
+    googleMapsReviewUrl?: string;
 }
 
 const negocioSchema = new Schema({
@@ -202,6 +203,10 @@ const negocioSchema = new Schema({
             sabado: { abierto: true, inicio: '08:00', fin: '20:00' },
             domingo: { abierto: false, inicio: '08:00', fin: '20:00' }
         }
+    },
+    googleMapsReviewUrl: {
+        type: String,
+        trim: true
     }
 }, {
     timestamps: true
