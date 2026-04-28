@@ -97,7 +97,10 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
         ? user.negocioActivo as Negocio
         : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
 
-    if (negocioActual?.categoria === 'BELLEZA') {
+    const isBelleza = (negocioActual as any)?.categoria === 'BELLEZA';
+    const isFruteria = (negocioActual as any)?.categoria === 'FRUTERIA';
+
+    if (isBelleza) {
         return <BellezaDashboardScreen navigation={navigation} />;
     }
 
@@ -152,7 +155,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(400)} style={[styles.glassCardGrid, { width: cardWidth }]}>
                                 <View style={[styles.glassIconContainerPrimary, { backgroundColor: 'rgba(16, 185, 129, 0.1)', overflow: 'hidden' }]}>
                                     <Image
-                                        source={require('../../assets/caitlyn_avatar.png')}
+                                        source={isFruteria ? require('../../assets/caitlyn_frutera.png') : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'))}
                                         style={{ width: 44, height: 44, borderRadius: 22 }}
                                     />
                                 </View>

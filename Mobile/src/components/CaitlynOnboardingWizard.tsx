@@ -26,6 +26,7 @@ export const CaitlynOnboardingWizard = () => {
     const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
     const step = negocioActual?.onboardingStep;
     const isBelleza = negocioActual?.categoria === 'BELLEZA';
+    const isFruteria = negocioActual?.categoria === 'FRUTERIA';
 
     const validatedRef = React.useRef(false);
 
@@ -69,7 +70,9 @@ export const CaitlynOnboardingWizard = () => {
         return null;
     }
 
-    const avatarSource = isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png');
+    const avatarSource = isFruteria 
+        ? require('../../assets/caitlyn_frutera.png')
+        : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'));
 
     const handleNextStep = async (nextStep: number) => {
         setLoading(true);
@@ -256,7 +259,7 @@ export const CaitlynOnboardingWizard = () => {
                                     <>
                                         <TextInput 
                                             style={[styles.input, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.background, marginBottom: 16 }]} 
-                                            placeholder={isBelleza ? "Ej: Tinturado Balayage" : "Ej: Hamburguesa Doble"} 
+                                            placeholder={isFruteria ? "Ej: Saco de Papas o Tomates" : (isBelleza ? "Ej: Tinturado Balayage" : "Ej: Hamburguesa Doble")} 
                                             placeholderTextColor={colors.textMuted}
                                             value={platoDeseado} onChangeText={setPlatoDeseado}
                                         />

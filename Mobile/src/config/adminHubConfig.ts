@@ -13,6 +13,7 @@ export type MenuItemId =
     | 'encuestas'
     | 'feedbacks'
     | 'reservas'
+    | 'inventario'
     | 'soporte';
 
 export interface AdminMenuItem {
@@ -88,6 +89,61 @@ const COMIDA_CONFIG: AdminHubConfig = {
             icon: 'calendar-outline',
             color: '#8b5cf6',
             navigation: 'Reservas'
+        }
+    ]
+};
+
+// Configuración para negocios de FRUTERÍA
+const FRUTERIA_CONFIG: AdminHubConfig = {
+    subtitle: 'Gestión de tu frutería y mercadito',
+    menuItems: [
+        {
+            id: 'productos',
+            title: 'Catálogo',
+            desc: 'Frutas y Vegetales',
+            icon: 'leaf-outline',
+            color: '#10b981',
+            navigation: 'Productos'
+        },
+        {
+            id: 'inventario',
+            title: 'Inventario',
+            desc: 'Stock y Suministros',
+            icon: 'cube-outline',
+            color: '#3b82f6',
+            navigation: 'Inventario'
+        },
+        {
+            id: 'usuarios',
+            title: 'Usuarios',
+            desc: 'Cajeros y Ayudantes',
+            icon: 'people-outline',
+            color: '#6366f1',
+            navigation: 'Usuarios'
+        },
+        {
+            id: 'gastos',
+            title: 'Facturas',
+            desc: 'Compras y Gastos',
+            icon: 'receipt-outline',
+            color: '#f59e0b',
+            navigation: 'Gastos'
+        },
+        {
+            id: 'finanzas',
+            title: 'Salud Financiera',
+            desc: 'Cierre y Ganancias',
+            icon: 'analytics-outline',
+            color: '#ec4899',
+            navigation: 'Finanzas'
+        },
+        {
+            id: 'reportes',
+            title: 'Reportes CSV',
+            desc: 'Exportar para contador',
+            icon: 'cloud-download-outline',
+            color: '#475569',
+            navigation: 'Reportes'
         }
     ]
 };
@@ -176,6 +232,8 @@ export const getAdminHubConfig = (categoria: string): AdminHubConfig => {
     switch (categoria?.toUpperCase()) {
         case 'BELLEZA':
             return BELLEZA_CONFIG;
+        case 'FRUTERIA':
+            return FRUTERIA_CONFIG;
         case 'COMIDA':
         default:
             return COMIDA_CONFIG;

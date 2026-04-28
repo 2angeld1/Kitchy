@@ -11,7 +11,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface Props {
     visible: boolean;
     onClose: () => void;
-    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string, googleMapsReviewUrl?: string }) => Promise<any>;
+    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA', telefono?: string, googleMapsReviewUrl?: string }) => Promise<any>;
     onSwitch: (user: any, token: string) => Promise<void>;
     loading: boolean;
     colors: any;
@@ -23,7 +23,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
 }) => {
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
-    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
+    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA'>('COMIDA');
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const insets = useSafeAreaInsets();
     
@@ -181,7 +181,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                 ¿Qué tipo de negocio es?
                             </Text>
 
-                            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+                            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
                                 <CategoryOption 
                                     selected={categoria === 'COMIDA'}
                                     onPress={() => setCategoria('COMIDA')}
@@ -196,6 +196,14 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                     icon="cut-outline"
                                     label="Belleza"
                                     color="#8b5cf6"
+                                    colors={colors}
+                                />
+                                <CategoryOption 
+                                    selected={categoria === 'FRUTERIA'}
+                                    onPress={() => setCategoria('FRUTERIA')}
+                                    icon="leaf-outline"
+                                    label="Frutería"
+                                    color="#10b981"
                                     colors={colors}
                                 />
                             </View>

@@ -15,7 +15,7 @@ export const useRegister = () => {
     const [direccion, setDireccion] = useState('');
     const [telefono, setTelefono] = useState('');
     const [logo, setLogo] = useState('');
-    const [categoriaNegocio, setCategoriaNegocio] = useState<'COMIDA' | 'BELLEZA'>('COMIDA');
+    const [categoriaNegocio, setCategoriaNegocio] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA'>('COMIDA');
     const [loading, setLoading] = useState(false);
     const [gpsLoading, setGpsLoading] = useState(false);
     const [error, setError] = useState('');

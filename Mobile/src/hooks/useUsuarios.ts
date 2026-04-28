@@ -112,7 +112,7 @@ export const useUsuarios = () => {
         }
     }, []);
 
-    const handleCreateNegocio = async (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA', telefono?: string }) => {
+    const handleCreateNegocio = async (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA', telefono?: string }) => {
         setIsSubmittingNegocio(true);
         try {
             const { createNegocio } = await import('../services/api');

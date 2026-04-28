@@ -52,7 +52,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                         />
 
                         <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 8 }]}>¿Qué tipo de negocio es?</Text>
-                        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
                             <TouchableOpacity
                                 onPress={() => setCategoriaNegocio('COMIDA')}
                                 style={{
@@ -62,8 +62,8 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                                     borderColor: categoriaNegocio === 'COMIDA' ? colors.primary : colors.border
                                 }}
                             >
-                                <Ionicons name="restaurant-outline" size={28} color={categoriaNegocio === 'COMIDA' ? colors.primary : colors.textMuted} />
-                                <Text style={{ color: categoriaNegocio === 'COMIDA' ? colors.primary : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 13 }}>Comida</Text>
+                                <Ionicons name="restaurant-outline" size={24} color={categoriaNegocio === 'COMIDA' ? colors.primary : colors.textMuted} />
+                                <Text style={{ color: categoriaNegocio === 'COMIDA' ? colors.primary : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 11 }}>Comida</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setCategoriaNegocio('BELLEZA')}
@@ -74,8 +74,20 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                                     borderColor: categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.border
                                 }}
                             >
-                                <Ionicons name="cut-outline" size={28} color={categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.textMuted} />
-                                <Text style={{ color: categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 13 }}>Salud y Belleza</Text>
+                                <Ionicons name="cut-outline" size={24} color={categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.textMuted} />
+                                <Text style={{ color: categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 11 }}>Belleza</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setCategoriaNegocio('FRUTERIA')}
+                                style={{
+                                    flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center',
+                                    backgroundColor: categoriaNegocio === 'FRUTERIA' ? 'rgba(16, 185, 129, 0.1)' : colors.card,
+                                    borderWidth: 2,
+                                    borderColor: categoriaNegocio === 'FRUTERIA' ? '#10b981' : colors.border
+                                }}
+                            >
+                                <Ionicons name="leaf-outline" size={24} color={categoriaNegocio === 'FRUTERIA' ? '#10b981' : colors.textMuted} />
+                                <Text style={{ color: categoriaNegocio === 'FRUTERIA' ? '#10b981' : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 11 }}>Frutería</Text>
                             </TouchableOpacity>
                         </View>
 

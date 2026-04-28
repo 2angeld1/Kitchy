@@ -33,6 +33,8 @@ export default function InventarioScreen() {
     const styles = useMemo(() => createStyles(colors, width), [colors, width]);
 
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user), [user]);
+    const isBelleza = categoriaNegocio === 'BELLEZA';
+    const isFruteria = categoriaNegocio === 'FRUTERIA';
 
     const {
         loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
@@ -306,7 +308,9 @@ export default function InventarioScreen() {
                     <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
                     <Animated.View entering={FadeIn} style={styles.iaCard}>
                         <Image
-                            source={require('../../assets/caitlyn_avatar.png')}
+                            source={isFruteria 
+                                ? require('../../assets/caitlyn_frutera.png')
+                                : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'))}
                             style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 10 }}
                         />
                         <Text style={styles.iaTitle}>Caitlyn está analizando...</Text>

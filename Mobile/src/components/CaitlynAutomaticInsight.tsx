@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Dimensions, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { 
     FadeInDown, 
@@ -22,6 +23,7 @@ export const CaitlynAutomaticInsight = () => {
     const navigation = useNavigation<any>();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+    const { user } = useAuth();
     const { getDailyInsight, advice, loading, setAdvice } = useCaitlyn();
     const [expanded, setExpanded] = useState(false);
     const [dismissed, setDismissed] = useState(false);
@@ -118,7 +120,9 @@ export const CaitlynAutomaticInsight = () => {
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
                             <Image 
-                                source={require('../../assets/caitlyn_avatar.png')} 
+                                source={user?.negocioActivo && (user.negocioActivo as any).categoria === 'FRUTERIA' 
+                                    ? require('../../assets/caitlyn_frutera.png')
+                                    : (user?.negocioActivo && (user.negocioActivo as any).categoria === 'BELLEZA' ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'))}
                                 style={{ width: 56, height: 56, borderRadius: 28 }} 
                                 resizeMode="cover"
                             />

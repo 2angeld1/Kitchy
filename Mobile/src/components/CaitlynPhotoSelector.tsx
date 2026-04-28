@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, Modal, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown } from 'react-native-reanimated';
+import { useAuth } from '../context/AuthContext';
 
 interface CaitlynPhotoSelectorProps {
     visible: boolean;
@@ -18,6 +19,15 @@ export const CaitlynPhotoSelector: React.FC<CaitlynPhotoSelectorProps> = ({
     onPickImage,
     colors
 }) => {
+    const { user } = useAuth();
+    const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
+    const isFruteria = negocioActual?.categoria === 'FRUTERIA';
+    const isBelleza = negocioActual?.categoria === 'BELLEZA';
+
+    const avatarSource = isFruteria 
+        ? require('../../assets/caitlyn_frutera.png')
+        : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'));
+
     return (
         <Modal
             visible={visible}
@@ -43,7 +53,7 @@ export const CaitlynPhotoSelector: React.FC<CaitlynPhotoSelectorProps> = ({
                     <View style={{ alignItems: 'center', marginBottom: 20 }}>
                         <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2, marginBottom: 20 }} />
                         <Image 
-                            source={require('../../assets/caitlyn_avatar.png')} 
+                            source={avatarSource} 
                             style={{ width: 60, height: 60, borderRadius: 30, marginBottom: 12 }} 
                         />
                         <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary }}>¿Cómo quieres añadir tu lista?</Text>
