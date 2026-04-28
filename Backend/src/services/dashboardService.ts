@@ -6,7 +6,7 @@ import User from '../models/User';
 import Gasto from '../models/Gasto';
 import Negocio from '../models/Negocio';
 import Especialista from '../models/Especialista';
-import { getLatestContext } from '../services/marketContextService';
+import { getRecuerdoCaitlyn } from '../services/marketContextService';
 import { calcularPrecioSugerido, calcularMargenActual } from '../utils/pricing';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns';
 import { getPeriodRanges } from '../utils/date-ranges';
@@ -121,7 +121,12 @@ export const obtenerDashboardDataService = async (
     // --- CAITLYN: VIGILANCIA DE MÁRGENES Y MERCADO ---
     const negocio = await Negocio.findById(negocioId);
     const margenObjetivo = negocio?.config?.margenObjetivo || 65;
-    const marketContext = await getLatestContext();
+    
+    // Recuperamos los recuerdos de mercado (Merca y ACODECO) para las alertas
+    const mercaContext = await getRecuerdoCaitlyn('MERCA');
+    const acodecoContext = await getRecuerdoCaitlyn('ACODECO');
+    const marketContext = { MERCA: mercaContext, ACODECO: acodecoContext };
+
     const alertasRentabilidad: any[] = [];
 
     for (const prod of (productos as any[])) {

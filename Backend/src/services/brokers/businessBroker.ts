@@ -4,7 +4,7 @@ import Producto from '../../models/Producto';
 import Venta from '../../models/Venta';
 import Inventario from '../../models/Inventario';
 import MovimientoInventario from '../../models/MovimientoInventario';
-import { getLatestContext } from '../../services/marketContextService';
+import { getRecuerdoCaitlyn } from '../../services/marketContextService';
 
 const CAITLYN_URL = process.env.CAITLYN_URL || 'http://localhost:8000';
 
@@ -14,7 +14,9 @@ export const obtenerConsejoNegocioService = async (productName: string, currentD
 
     let marketContext: any = {};
     try {
-        marketContext = await getLatestContext();
+        const fuelContext = await getRecuerdoCaitlyn('FUEL');
+        const acodecoContext = await getRecuerdoCaitlyn('ACODECO');
+        marketContext = { FUEL: fuelContext, ACODECO: acodecoContext };
     } catch (ctxErr: any) {
         console.warn(`⚠️ [NODE] No se pudo obtener contexto: ${ctxErr.message}`);
     }

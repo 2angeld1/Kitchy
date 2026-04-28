@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { updateWeatherContext, updateFuelContext, updateMarketPrices } from '../services/marketContextService';
+import { updateWeatherContext, updateFuelContext, updateMarketPrices, updateAcodecoContext } from '../services/marketContextService';
 
 export const initScheduler = () => {
     console.log('--- 🚀 Inicializando Cron Jobs del Radar Kitchy ---');
@@ -12,8 +12,9 @@ export const initScheduler = () => {
 
     // Merca / ACODECO: Todos los lunes a las 6:30 AM
     cron.schedule('30 6 * * 1', async () => {
-        console.log('[Scheduler] Revisando precios de mercado semanal...');
+        console.log('[Scheduler] Revisando precios de mercado semanal (Merca y ACODECO)...');
         await updateMarketPrices();
+        await updateAcodecoContext();
     });
 
     // Gasolina: Los días 1 y 15 de cada mes (Quincena panameña) a las 7:00 AM
@@ -32,6 +33,7 @@ const runInitialSync = async () => {
         await Promise.allSettled([
             updateWeatherContext(),
             updateMarketPrices(),
+            updateAcodecoContext(),
             updateFuelContext()
         ]);
         console.log('✅ Sincronización inicial completada con éxito.');

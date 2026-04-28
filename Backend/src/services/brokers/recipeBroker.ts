@@ -4,7 +4,7 @@ import Negocio from '../../models/Negocio';
 import Producto from '../../models/Producto';
 import Inventario from '../../models/Inventario';
 import { RecetaSugerida } from '../../models/RecetaSugerida';
-import { getLatestContext } from '../../services/marketContextService';
+import { getRecuerdoCaitlyn } from '../../services/marketContextService';
 
 const CAITLYN_URL = process.env.CAITLYN_URL || 'http://localhost:8000';
 
@@ -57,7 +57,8 @@ export const sugerirRecetaService = async (nombrePlato: string, servingSize: str
     const margenObjetivo = negocio?.config?.margenObjetivo || 65;
 
     const inventario = await Inventario.find({ negocioId }).select('nombre unidad cantidad costoUnitario _id');
-    const marketContext = await getLatestContext();
+    const mercaContext = await getRecuerdoCaitlyn('MERCA');
+    const marketContext = { MERCA: mercaContext };
 
     const recetaCache: any = await (RecetaSugerida as any).findOne({ nombrePlato: new RegExp(`^${nombrePlato}$`, 'i') });
 
