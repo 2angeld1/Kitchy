@@ -190,12 +190,12 @@ export const useVentas = () => {
                     // 🔄 Auto-cierre: procesar pedidos del día anterior como ventas exitosas
                     parsed = await autoCerrarPedidosDelDiaAnterior(parsed);
 
-                    // Auto-limpieza: eliminar pedidos completados hace más de 24h
-                    const ahora = Date.now();
+                    // Auto-limpieza: eliminar pedidos completados que no sean de HOY (Panamá)
+                    const hoyPanama = getFechaPanama();
                     const vigentes = parsed.filter(o => {
                         if (!o.completada || !o.completadoEn) return true;
-                        const horasDesdeCompletado = (ahora - new Date(o.completadoEn).getTime()) / (1000 * 60 * 60);
-                        return horasDesdeCompletado < 24;
+                        const diaCompletado = getFechaPanama(new Date(o.completadoEn));
+                        return diaCompletado === hoyPanama;
                     });
                     if (vigentes.length > 0) {
                         const activas = vigentes.filter(o => !o.completada);

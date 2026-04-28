@@ -515,19 +515,79 @@ export const createStyles = (colors: any, width: number, height: number) => {
     },
     fab: {
         position: 'absolute',
-        bottom: 30,
-        right: 30,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: colors.primary,
+        right: 20,
+        width: 56, // Tamaño estándar nativo para FAB
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        // Sombra Premium (iOS)
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        // Sombra Nativa (Android)
+        elevation: 12,
+        // Borde sutil para profundidad
+        borderWidth: 1,
+        borderColor: colors.border + '30',
+    },
+    floatingCartBar: {
+        position: 'absolute',
+        bottom: 24, // Un poco más abajo
+        left: 16,
+        right: 16,
+        zIndex: 1000,
+    },
+    floatingCartButton: {
+        backgroundColor: colors.primary,
+        height: 68,
+        borderRadius: 24,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        // Sombra de botón principal
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+        elevation: 15,
+    },
+    floatingCartInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    floatingCartBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+    },
+    floatingCartBadgeText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '900',
+    },
+    floatingCartText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '900',
+        letterSpacing: 0.5,
+    },
+    floatingCartRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    floatingCartTotal: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '900',
     },
     // Analysis Overlay Styles
     analysisOverlay: {

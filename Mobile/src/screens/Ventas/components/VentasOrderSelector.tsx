@@ -381,7 +381,7 @@ export const VentasOrderSelector: React.FC<Props> = ({
                                         fontSize: 10, color: colors.textMuted, marginTop: 6,
                                         fontStyle: 'italic', textAlign: 'center',
                                     }}>
-                                        Se eliminan automáticamente después de 24 horas
+                                        Se limpian automáticamente al inicio de cada día
                                     </Text>
                                 </View>
                             )}

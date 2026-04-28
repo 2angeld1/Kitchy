@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, RefreshControl, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn, SlideOutDown } from 'react-native-reanimated';
 import { useVentas, Producto } from '../hooks/useVentas';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/VentasScreen.styles';
@@ -218,6 +218,16 @@ export default function VentasScreen() {
                         <Text style={[styles.historyText, { color: colors.primary }]}>Escanear Cuaderno</Text>
                     </TouchableOpacity>
 
+                    {carrito.length > 0 && (
+                        <TouchableOpacity 
+                            onPress={() => setShowModal(true)}
+                            style={[styles.historyBtn, { backgroundColor: colors.primary, marginTop: 10, borderColor: colors.primary }]}
+                        >
+                            <Ionicons name="arrow-forward" size={18} color="#fff" />
+                            <Text style={[styles.historyText, { color: '#fff' }]}>VER PEDIDO</Text>
+                        </TouchableOpacity>
+                    )}
+
                     <TouchableOpacity 
                         onPress={abrirHistorial}
                         style={styles.historyBtn}
@@ -241,23 +251,6 @@ export default function VentasScreen() {
                     notifications={ventas}
                     onIconPress={abrirHistorial}
                     notificationIcon="journal-outline" // Cambiado de campana a Libro de Ventas
-                    extraButtons={
-                        !isTablet && (
-                            <TouchableOpacity
-                                style={[styles.cartButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                                onPress={() => setShowModal(true)}
-                            >
-                                <Ionicons name="cart-outline" size={22} color={colors.textPrimary} />
-                                {carrito.length > 0 && (
-                                    <View style={styles.cartBadge}>
-                                        <Text style={styles.cartBadgeText}>
-                                            {carrito.reduce((sum, item) => sum + item.cantidad, 0)}
-                                        </Text>
-                                    </View>
-                                )}
-                            </TouchableOpacity>
-                        )
-                    }
                 />
 
                 {!isTablet && (
@@ -393,14 +386,44 @@ export default function VentasScreen() {
                 colors={colors}
             />
 
-            {/* FAB para Móvil: Escanear Cuaderno */}
+            {/* FAB para Móvil: Escanear Cuaderno y Siguiente */}
             {!isTablet && (
-                <TouchableOpacity 
-                    onPress={handleABrirMenuEscaneo}
-                    style={styles.fab}
-                >
-                    <Ionicons name="camera" size={24} color="#fff" />
-                </TouchableOpacity>
+                <>
+                    <TouchableOpacity 
+                        onPress={handleABrirMenuEscaneo}
+                        style={[styles.fab, { bottom: carrito.length > 0 ? 104 : 24 }]} // Alineado con el nuevo espaciado
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="camera-outline" size={26} color={colors.primary} />
+                    </TouchableOpacity>
+
+                    {carrito.length > 0 && !showModal && (
+                        <Animated.View 
+                            entering={SlideInDown.springify()} 
+                            exiting={SlideOutDown} 
+                            style={styles.floatingCartBar}
+                        >
+                            <TouchableOpacity 
+                                style={styles.floatingCartButton}
+                                onPress={() => setShowModal(true)}
+                                activeOpacity={0.9}
+                            >
+                                <View style={styles.floatingCartInfo}>
+                                    <View style={styles.floatingCartBadge}>
+                                        <Text style={styles.floatingCartBadgeText}>
+                                            {carrito.reduce((sum, item) => sum + item.cantidad, 0)}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.floatingCartText}>VER PEDIDO</Text>
+                                </View>
+                                <View style={styles.floatingCartRight}>
+                                    <Text style={styles.floatingCartTotal}>${calcularTotal().toFixed(2)}</Text>
+                                    <Ionicons name="chevron-forward" size={24} color="#fff" />
+                                </View>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    )}
+                </>
             )}
 
             {/* Animación de Éxito (Toast) */}
