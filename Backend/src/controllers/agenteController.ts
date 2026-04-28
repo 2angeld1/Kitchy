@@ -33,12 +33,16 @@ export const procesarFactura = async (req: AuthRequest, res: Response) => {
 export const obtenerConsejoNegocio = async (req: AuthRequest, res: Response) => {
     try {
         const { productName, currentData } = req.body;
+        const Negocio = require('../models/Negocio').default;
+        const negocio = await Negocio.findById(req.negocioId).select('categoria');
+        const businessType = negocio?.categoria || 'GASTRONOMIA';
+
         const result = await obtenerConsejoNegocioService(
             productName, 
             currentData, 
             req.negocioId as string, 
             req.userId as string, 
-            (req as any).userRole || 'GASTRONOMIA'
+            businessType
         );
         res.json(result);
     } catch (error: any) {

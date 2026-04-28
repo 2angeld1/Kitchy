@@ -27,6 +27,7 @@ export default function VentasScreen() {
         productosFiltrados, carrito, loading, refreshing, onRefresh,
         showModal, setShowModal, busqueda, setBusqueda,
         categoriaFiltro, setCategoriaFiltro, agregarAlCarrito,
+        actualizarCantidad,
         quitarDelCarrito, calcularTotal, procesarVenta,
         cliente, setCliente, metodoPago, setMetodoPago,
         telefono, setTelefono,
@@ -61,7 +62,9 @@ export default function VentasScreen() {
         return <BellezaVentasScreen />;
     }
 
-    const categorias = ['comida', 'bebida', 'postre'];
+    const categorias = negocioActual?.categoria === 'FRUTERIA' 
+        ? ['fruta', 'vegetal', 'otro']
+        : ['comida', 'bebida', 'postre'];
 
     const handleProcesarVenta = async () => {
         await procesarVenta();
@@ -303,7 +306,9 @@ export default function VentasScreen() {
                             onPress={() => setCategoriaFiltro(cat)}
                         >
                             <Text style={[styles.categoryText, { color: colors.textSecondary }, categoriaFiltro === cat && { color: colors.white }]}>
-                                {cat === 'comida' ? 'Platos' : cat === 'bebida' ? 'Bebidas' : 'Postres'}
+                                {negocioActual?.categoria === 'FRUTERIA' 
+                                    ? (cat === 'fruta' ? 'Frutas' : cat === 'vegetal' ? 'Vegetales' : 'Otros')
+                                    : (cat === 'comida' ? 'Platos' : cat === 'bebida' ? 'Bebidas' : 'Postres')}
                             </Text>
                         </TouchableOpacity>
                     ))}
@@ -348,6 +353,7 @@ export default function VentasScreen() {
                 colors={colors}
                 styles={styles}
                 agregarAlCarrito={agregarAlCarrito}
+                actualizarCantidad={actualizarCantidad}
                 quitarDelCarrito={quitarDelCarrito}
                 calcularTotal={calcularTotal}
                 cliente={cliente}
@@ -363,6 +369,7 @@ export default function VentasScreen() {
                 cambio={cambio}
                 procesarVenta={handleProcesarVenta}
                 loading={loading}
+                categoriaNegocio={negocioActual?.categoria}
             />
 
             <VentasHistorialModal 

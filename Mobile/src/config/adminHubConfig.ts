@@ -98,14 +98,6 @@ const FRUTERIA_CONFIG: AdminHubConfig = {
     subtitle: 'Gestión de tu frutería y mercadito',
     menuItems: [
         {
-            id: 'productos',
-            title: 'Catálogo',
-            desc: 'Frutas y Vegetales',
-            icon: 'leaf-outline',
-            color: '#10b981',
-            navigation: 'Productos'
-        },
-        {
             id: 'inventario',
             title: 'Inventario',
             desc: 'Stock y Suministros',

@@ -15,6 +15,7 @@ interface Props {
     colors: any;
     styles: any;
     agregarAlCarrito: (producto: Producto) => void;
+    actualizarCantidad: (id: string, qty: number) => void;
     quitarDelCarrito: (id: string) => void;
     calcularTotal: () => number;
     cliente: string;
@@ -30,6 +31,7 @@ interface Props {
     cambio: number;
     procesarVenta: () => void;
     loading: boolean;
+    categoriaNegocio?: string;
 }
 
 export const VentasCartModal: React.FC<Props> = ({
@@ -40,6 +42,7 @@ export const VentasCartModal: React.FC<Props> = ({
     colors,
     styles,
     agregarAlCarrito,
+    actualizarCantidad,
     quitarDelCarrito,
     calcularTotal,
     cliente,
@@ -54,7 +57,8 @@ export const VentasCartModal: React.FC<Props> = ({
     setMontoRecibido,
     cambio,
     procesarVenta,
-    loading
+    loading,
+    categoriaNegocio
 }) => {
     const { width, height } = useAppDimensions();
     const isLandscape = width > height;
@@ -62,9 +66,10 @@ export const VentasCartModal: React.FC<Props> = ({
 
     const handleBeeper = () => {
         if (!telefono) return;
+        const emoji = categoriaNegocio === 'FRUTERIA' ? '🍎' : '🍔';
         const msg = cliente 
-            ? `¡Hola ${cliente}! 👋🍔 Tu pedido está listo para retirar en mostrador.`
-            : `¡Hola! 👋🍔 Tu pedido está listo para retirar en mostrador.`;
+            ? `¡Hola ${cliente}! ${emoji} Tu pedido está listo para retirar.`
+            : `¡Hola! ${emoji} Tu pedido está listo para retirar.`;
         const url = `https://wa.me/507${telefono}?text=${encodeURIComponent(msg)}`;
         Linking.openURL(url).catch(() => {});
     };
@@ -147,7 +152,17 @@ export const VentasCartModal: React.FC<Props> = ({
                                         >
                                             <Ionicons name="remove" size={14} color={colors.textSecondary} />
                                         </TouchableOpacity>
-                                        <Text style={[styles.qtyText, isLandscape && { fontSize: 14 }]}>{item.cantidad}</Text>
+                                        <TextInput
+                                            style={[styles.qtyText, isLandscape && { fontSize: 14 }, { minWidth: 30, textAlign: 'center' }]}
+                                            value={String(item.cantidad)}
+                                            onChangeText={(text) => {
+                                                const val = parseFloat(text.replace(',', '.'));
+                                                if (!isNaN(val)) actualizarCantidad(item.producto._id, val);
+                                                else if (text === '') actualizarCantidad(item.producto._id, 0);
+                                            }}
+                                            keyboardType="decimal-pad"
+                                            selectTextOnFocus
+                                        />
                                         <TouchableOpacity
                                             style={styles.qtyBtn}
                                             onPress={() => agregarAlCarrito(item.producto)}

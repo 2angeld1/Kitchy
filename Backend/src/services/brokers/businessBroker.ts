@@ -129,10 +129,18 @@ export const analizarAlertasDashboardService = async (alerts: any[], negocioId: 
     const user = await User.findById(userId).select('nombre');
     const userName = user?.nombre || 'Socio/a';
 
+    // Obtener contexto del negocio para que Caitlyn sepa si hablarle a un Chef, un Barbero o un Frutero
+    const Negocio = require('../../models/Negocio').default;
+    const negocio = await Negocio.findById(negocioId).select('categoria');
+    const tipoNegocio = negocio?.categoria || 'GASTRONOMIA';
+
     const response = await axios.post(`${CAITLYN_URL}/agent/business/dashboard-alerts`, { 
         alerts,
         negocio_id: negocioId,
-        user_name: userName
+        user_name: userName,
+        config: {
+            tipo_negocio: tipoNegocio
+        }
     });
 
     if (response.data.success) {

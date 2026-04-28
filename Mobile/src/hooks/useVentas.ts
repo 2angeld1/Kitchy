@@ -83,6 +83,11 @@ export const useVentas = () => {
     const [busqueda, setBusqueda] = useState('');
     const [categoriaFiltro, setCategoriaFiltro] = useState('');
 
+    const negocioId = useMemo(() => {
+        if (!user?.negocioActivo) return null;
+        return typeof user.negocioActivo === 'object' ? user.negocioActivo._id : user.negocioActivo;
+    }, [user?.negocioActivo]);
+
     // Helper: obtener la fecha actual en zona horaria de Panamá (America/Panama = EST, UTC-5)
     const getFechaPanama = (date: Date = new Date()): string => {
         return date.toLocaleDateString('en-CA', { timeZone: 'America/Panama' }); // formato YYYY-MM-DD
@@ -175,9 +180,12 @@ export const useVentas = () => {
     // Persistencia de Ordenes
     useEffect(() => {
         const cargarOrdenesPersistidas = async () => {
+            if (!negocioId) return;
+            
             try {
-                const storedValue = await AsyncStorage.getItem('kitchy_ordenes_pendientes');
-                const storedActiveId = await AsyncStorage.getItem('kitchy_active_order_id');
+                const storedValue = await AsyncStorage.getItem(`kitchy_ordenes_${negocioId}`);
+                const storedActiveId = await AsyncStorage.getItem(`kitchy_active_order_id_${negocioId}`);
+                
                 if (storedValue) {
                     let parsed: Orden[] = JSON.parse(storedValue);
 
@@ -197,16 +205,15 @@ export const useVentas = () => {
                         const diaCompletado = getFechaPanama(new Date(o.completadoEn));
                         return diaCompletado === hoyPanama;
                     });
+
                     if (vigentes.length > 0) {
                         const activas = vigentes.filter(o => !o.completada);
 
                         if (activas.length === 0) {
-                            // Si todas se auto-completaron (o por alguna razón todas son completadas)
-                            // Generamos un pedido fresco en blanco para iniciar el día.
                             const nuevoId = Date.now().toString();
                             vigentes.push({
                                 id: nuevoId,
-                                nombre: 'Pedido 1', // O el conteo que corresponda
+                                nombre: 'Pedido 1',
                                 items: [],
                                 cliente: '',
                                 metodoPago: 'efectivo',
@@ -219,35 +226,41 @@ export const useVentas = () => {
                             if (storedActiveId && activas.some(o => o.id === storedActiveId)) {
                                 setActiveOrderId(storedActiveId);
                             } else {
-                                // Seleccionar la primera orden activa confirmada
                                 setActiveOrderId(activas[0].id);
                             }
                         }
+                    } else {
+                        // Si no hay vigentes, resetear a una orden limpia
+                        const nuevoId = Date.now().toString();
+                        setOrdenes([{ id: nuevoId, nombre: 'Pedido 1', items: [], cliente: '', metodoPago: 'efectivo', creadoEn: new Date().toISOString() }]);
+                        setActiveOrderId(nuevoId);
                     }
+                } else {
+                    // Si no hay nada guardado para este negocio, inicializar
+                    const nuevoId = Date.now().toString();
+                    setOrdenes([{ id: nuevoId, nombre: 'Pedido 1', items: [], cliente: '', metodoPago: 'efectivo', creadoEn: new Date().toISOString() }]);
+                    setActiveOrderId(nuevoId);
                 }
             } catch (err) {
                 console.error('Error al cargar ordenes persistidas', err);
             }
         };
         cargarOrdenesPersistidas();
-    }, []);
+    }, [negocioId]);
 
     useEffect(() => {
         const guardarOrdenes = async () => {
+            if (!negocioId) return;
             try {
-                await AsyncStorage.setItem('kitchy_ordenes_pendientes', JSON.stringify(ordenes));
-                await AsyncStorage.setItem('kitchy_active_order_id', activeOrderId);
+                await AsyncStorage.setItem(`kitchy_ordenes_${negocioId}`, JSON.stringify(ordenes));
+                await AsyncStorage.setItem(`kitchy_active_order_id_${negocioId}`, activeOrderId);
             } catch (err) {
                 console.error('Error al guardar ordenes', err);
             }
         };
         guardarOrdenes();
-    }, [ordenes, activeOrderId]);
+    }, [ordenes, activeOrderId, negocioId]);
 
-    const negocioId = useMemo(() => {
-        if (!user?.negocioActivo) return null;
-        return typeof user.negocioActivo === 'object' ? user.negocioActivo._id : user.negocioActivo;
-    }, [user?.negocioActivo]);
 
     useEffect(() => {
         cargarProductos();
@@ -443,6 +456,20 @@ export const useVentas = () => {
             position: 'bottom',
             visibilityTime: 1500
         });
+    };
+
+    const actualizarCantidad = (productoId: string, nuevaCantidad: number) => {
+        setOrdenes(ordenes.map(o => {
+            if (o.id !== activeOrderId) return o;
+            return {
+                ...o,
+                items: o.items.map(item =>
+                    String(item.producto._id) === String(productoId)
+                        ? { ...item, cantidad: nuevaCantidad }
+                        : item
+                )
+            };
+        }));
     };
 
     const quitarDelCarrito = (productoId: string) => {
@@ -732,6 +759,7 @@ export const useVentas = () => {
         busqueda, setBusqueda,
         categoriaFiltro, setCategoriaFiltro,
         agregarAlCarrito,
+        actualizarCantidad,
         quitarDelCarrito,
         eliminarDelCarrito,
         calcularTotal,

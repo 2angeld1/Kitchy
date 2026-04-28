@@ -17,6 +17,7 @@ import Toast from 'react-native-toast-message';
 import { InventarioItemCard } from './Inventario/components/InventarioItemCard';
 import { InventarioBellezaView } from './Inventario/components/InventarioBellezaView';
 import { InventarioComidaView } from './Inventario/components/InventarioComidaView';
+import { InventarioFruteriaView } from './Inventario/components/InventarioFruteriaView';
 import { InventarioFormModal } from './Inventario/components/InventarioFormModal';
 import { InventarioMovimientoModal } from './Inventario/components/InventarioMovimientoModal';
 import { InventarioScannerModal } from './Inventario/components/InventarioScannerModal';
@@ -157,7 +158,7 @@ export default function InventarioScreen() {
             {/* FILTROS RÁPIDOS - FLEX LAYOUT */}
             <View style={styles.filterContainer}>
                 <View style={styles.filterOptions}>
-                    {(categoriaNegocio === 'BELLEZA'
+                    {(categoriaNegocio === 'BELLEZA' || categoriaNegocio === 'FRUTERIA'
                         ? ['todos', 'stockBajo', 'reventa', 'insumo', 'limpieza']
                         : ['todos', 'stockBajo', 'ingrediente', 'limpieza']
                     ).map(opcion => {
@@ -197,6 +198,17 @@ export default function InventarioScreen() {
                 ) : (
                     categoriaNegocio === 'BELLEZA' ? (
                         <InventarioBellezaView 
+                            items={itemsFiltrados}
+                            categoriaNegocio={categoriaNegocio}
+                            filtro={filtro}
+                            colors={colors}
+                            styles={styles}
+                            onEdit={openEditModal}
+                            onDelete={handleDelete}
+                            onMovimiento={openMovModal}
+                        />
+                    ) : categoriaNegocio === 'FRUTERIA' ? (
+                        <InventarioFruteriaView 
                             items={itemsFiltrados}
                             categoriaNegocio={categoriaNegocio}
                             filtro={filtro}

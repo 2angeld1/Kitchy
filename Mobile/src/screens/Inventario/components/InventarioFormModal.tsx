@@ -104,12 +104,17 @@ export const InventarioFormModal: React.FC<Props> = ({
                                     { label: 'Producto Reventa', value: 'reventa' },
                                     { label: 'Limpieza', value: 'limpieza' },
                                     { label: 'Otro', value: 'otro' },
+                                ] : (categoriaNegocio === 'FRUTERIA' ? [
+                                    { label: 'Producto Reventa (Venta)', value: 'reventa' },
+                                    { label: 'Insumo (Bolsas, Empaques)', value: 'insumo' },
+                                    { label: 'Limpieza', value: 'limpieza' },
+                                    { label: 'Otro', value: 'otro' },
                                 ] : [
                                     { label: 'Ingrediente', value: 'ingrediente' },
                                     { label: 'Bebida', value: 'bebida' },
                                     { label: 'Limpieza', value: 'limpieza' },
                                     { label: 'Otro', value: 'otro' },
-                                ]}
+                                ])}
                             />
                             {categoria === 'reventa' && (
                                 <Animated.View entering={FadeInDown}>
@@ -132,7 +137,11 @@ export const InventarioFormModal: React.FC<Props> = ({
                                                 }}
                                             >
                                                 <Image
-                                                    source={require('../../../../assets/caitlyn_avatar.png')}
+                                                    source={categoriaNegocio === 'FRUTERIA' 
+                                                        ? require('../../../../assets/caitlyn_frutera.png')
+                                                        : (categoriaNegocio === 'BELLEZA' 
+                                                            ? require('../../../../assets/caitlyn_beauty_avatar.png') 
+                                                            : require('../../../../assets/caitlyn_avatar.png'))}
                                                     style={{ width: 14, height: 14, borderRadius: 7 }}
                                                 />
                                                 <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800' }}>
@@ -141,23 +150,25 @@ export const InventarioFormModal: React.FC<Props> = ({
                                             </TouchableOpacity>
                                         )}
                                     </View>
-                                    <View style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                                            <Ionicons name="cash-outline" size={16} color={colors.primary} />
-                                            <Text style={{ fontSize: 12, fontWeight: '800', color: colors.textPrimary }}>Comisión del Especialista</Text>
+                                    {categoriaNegocio !== 'FRUTERIA' && (
+                                        <View style={{ backgroundColor: colors.surface, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                                <Ionicons name="cash-outline" size={16} color={colors.primary} />
+                                                <Text style={{ fontSize: 12, fontWeight: '800', color: colors.textPrimary }}>Comisión del Especialista</Text>
+                                            </View>
+                                            <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 8 }}>
+                                                Deja vacío para usar el % global del negocio.
+                                            </Text>
+                                            <KitchyInput
+                                                label=""
+                                                value={comisionEspecialista || ''}
+                                                onChangeText={(t) => setComisionEspecialista?.(t)}
+                                                keyboardType="numeric"
+                                                placeholder="Ej: 15 (% override)"
+                                                containerStyle={{ marginBottom: 0 }}
+                                            />
                                         </View>
-                                        <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 8 }}>
-                                            Deja vacío para usar el % global del negocio.
-                                        </Text>
-                                        <KitchyInput
-                                            label=""
-                                            value={comisionEspecialista || ''}
-                                            onChangeText={(t) => setComisionEspecialista?.(t)}
-                                            keyboardType="numeric"
-                                            placeholder="Ej: 15 (% override)"
-                                            containerStyle={{ marginBottom: 0 }}
-                                        />
-                                    </View>
+                                    )}
                                 </Animated.View>
                             )}
 
