@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, ScrollView, Platform, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, ScrollView, Platform, Image, ActivityIndicator, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInRight, FadeOutLeft, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -232,6 +232,19 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                                 />
                             </View>
                         </View>
+                        
+                        {/* Aviso Legal */}
+                        <TouchableOpacity 
+                            style={{ marginTop: 20, alignItems: 'center' }}
+                            onPress={() => Linking.openURL(`${process.env.EXPO_PUBLIC_FRONTEND_URL}/legal/terms`)}
+                        >
+                            <Text style={{ color: colors.textMuted, fontSize: 11, textAlign: 'center' }}>
+                                Al completar el registro, confirmas que aceptas nuestros{' '}
+                                <Text style={{ color: colors.primary, fontWeight: 'bold', textDecorationLine: 'underline' }}>
+                                    Términos y Condiciones
+                                </Text>
+                            </Text>
+                        </TouchableOpacity>
                     </Animated.View>
                 );
             default:

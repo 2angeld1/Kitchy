@@ -36,8 +36,9 @@ export const Footer = () => (
         <div>
           <h5 className="text-white font-black text-xs uppercase mb-8 tracking-[4px]">Legal</h5>
           <div className="flex flex-col gap-5 text-zinc-500 text-sm font-bold tracking-widest uppercase">
-            <a href="#" className="hover:text-rose-500">Términos</a>
-            <a href="#" className="hover:text-rose-500">Privacidad</a>
+            <a href="/legal/terms" className="hover:text-rose-500">Términos</a>
+            <a href="/legal/privacy" className="hover:text-rose-500">Privacidad</a>
+            <a href="/legal/eula" className="hover:text-rose-500">Licencia EULA</a>
           </div>
         </div>
         <div className="col-span-2 lg:col-span-1">

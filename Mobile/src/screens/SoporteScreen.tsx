@@ -62,6 +62,20 @@ export default function SoporteScreen() {
                         </View>
                         <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.optionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        onPress={() => Linking.openURL(`${process.env.EXPO_PUBLIC_FRONTEND_URL}/legal/terms`)}
+                    >
+                        <View style={[styles.optionIcon, { backgroundColor: colors.textSecondary + '15' }]}>
+                            <Ionicons name="document-text-outline" size={24} color={colors.textSecondary} />
+                        </View>
+                        <View style={styles.optionInfo}>
+                            <Text style={[styles.optionTitle, { color: colors.textPrimary }]}>Términos y Privacidad</Text>
+                            <Text style={[styles.optionDesc, { color: colors.textMuted }]}>Documentación legal de Kitchy</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+                    </TouchableOpacity>
                 </Animated.View>
 
                 <View style={styles.footer}>

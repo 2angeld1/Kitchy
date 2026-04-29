@@ -1,41 +1,47 @@
-# Kitchy - Punto de Venta Premium 🍔
+# Kitchy — Ecosistema POS de Próxima Generación 🚀
 
-Kitchy es un sistema de Punto de Venta (POS) moderno y elegante diseñado para negocios de comida. Cuenta con una interfaz intuitiva, gestión de productos con imágenes (Cloudinary), control de inventario y un dashboard con estadísticas en tiempo real.
+![Kitchy Hero](https://img.shields.io/badge/Kitchy-Enterprise_POS-rose?style=for-the-badge)
 
-## 🚀 Estructura del Proyecto
+**Kitchy** es una plataforma integral de Punto de Venta (POS) potenciada por Inteligencia Artificial, diseñada específicamente para transformar la gestión de negocios en Panamá. Desde el control de inventario hasta estrategias de mercado generadas por IA, Kitchy es la herramienta definitiva para dueños de negocios modernos.
 
-El proyecto está dividido en dos partes principales:
+## 🏗️ Arquitectura del Ecosistema
 
-- **Backend**: Servidor Node.js con Express y MongoDB.
-- **Frontend**: Aplicación móvil/web construida con Ionic y React.
+El proyecto se basa en una arquitectura de microservicios y clientes especializados:
 
-## 🛠️ Tecnologías
+1.  **[Mobile](./Mobile)**: Aplicación nativa construida con **Expo/React Native**. El corazón operativo del negocio.
+2.  **[Backend](./Backend)**: Servidor robusto en **Node.js/Express** con MongoDB. Gestiona la lógica de negocio, seguridad y persistencia.
+3.  **[Frontend (Landing)](./Frontend)**: Portal web en **Next.js**. Gestión de documentación legal dinámica y captación de clientes.
+4.  **[AI Microservice (Caitlyn)](../IonicNotif/ionic-maps-backend)**: Motor de IA en **Python/FastAPI** que procesa datos de mercado (ACODECO, SNE, Merca Panamá) para ofrecer insights estratégicos.
 
-- **Frontend**: Ionic Framework, React, TypeScript, Sass.
-- **Backend**: Node.js, Express, MongoDB, Cloudinary (para imágenes).
-- **Base de datos**: MongoDB.
+## 🛠️ Stack Tecnológico Global
 
-## 📦 Instalación
+-   **Mobile:** React Native, Expo, TypeScript, Reanimated.
+-   **Web:** Next.js 16, Tailwind CSS, React Markdown.
+-   **Backend:** Node.js, Express, MongoDB Atlas, Socket.io.
+-   **IA:** Python, FastAPI, Google Gemini API, Cohere.
+-   **Infraestructura:** Cloudinary (Imágenes), SendGrid (Correos), OpenWeather (Clima).
 
-### Backend
-1. Entra a la carpeta `backend`: `cd Backend`
-2. Instala las dependencias: `npm install`
-3. Configura el archivo `.env` con tus credenciales de MongoDB y Cloudinary.
-4. Inicia el servidor: `npm run dev`
+## 🚀 Inicio Rápido
 
-### Frontend
-1. Entra a la carpeta `frontend`: `cd Frontend`
-2. Instala las dependencias: `npm install`
-3. Inicia la aplicación: `ionic serve`
+Para poner en marcha todo el ecosistema localmente:
 
-## ✨ Características
+1.  **Backend:** `cd Backend && npm install && npm run dev` (Puerto 5000)
+2.  **AI:** `cd ../IonicNotif/ionic-maps-backend && pip install -r requirements.txt && python run.py` (Puerto 8000)
+3.  **Frontend:** `cd Frontend && npm install && npm run dev` (Puerto 3000)
+4.  **Mobile:** `cd Mobile && npm install && npx expo start`
 
-- ✅ Punto de Venta rápido y fácil de usar.
-- ✅ Gestión de productos con carga de imágenes a la nube.
-- ✅ Dashboard dinámico con actualizaciones automáticas.
-- ✅ Control de inventario y stock bajo.
-- ✅ Historial de ventas.
-- ✅ Diseño responsive y modo oscuro.
+## ⚖️ Marco Legal y Seguridad
+
+Kitchy incluye un sistema de gestión legal automatizado:
+-   **Términos y Condiciones / Privacidad:** Renderizados dinámicamente desde Markdown en el Frontend.
+-   **Seguridad:** Encriptación bcrypt, tokens JWT y auditoría de datos.
 
 ---
-Desarrollado con ❤️ para Kitchy.
+
+### 📩 Contacto y Soporte
+Desarrollado por **Gosen Tech**  
+📍 Panamá Oeste, República de Panamá  
+📧 [adfp21900@gmail.com](mailto:adfp21900@gmail.com)  
+📞 +507 6801-4613
+
+© 2026 Kitchy Technologies. Todos los derechos reservados.
