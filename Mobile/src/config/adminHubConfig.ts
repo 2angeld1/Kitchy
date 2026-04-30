@@ -89,6 +89,14 @@ const COMIDA_CONFIG: AdminHubConfig = {
             icon: 'calendar-outline',
             color: '#8b5cf6',
             navigation: 'Reservas'
+        },
+        {
+            id: 'soporte',
+            title: 'Soporte',
+            desc: 'Ayuda y Contacto',
+            icon: 'help-buoy-outline',
+            color: '#06b6d4',
+            navigation: 'Soporte'
         }
     ]
 };
@@ -136,6 +144,14 @@ const FRUTERIA_CONFIG: AdminHubConfig = {
             icon: 'cloud-download-outline',
             color: '#475569',
             navigation: 'Reportes'
+        },
+        {
+            id: 'soporte',
+            title: 'Soporte',
+            desc: 'Ayuda y Contacto',
+            icon: 'help-buoy-outline',
+            color: '#06b6d4',
+            navigation: 'Soporte'
         }
     ]
 };
@@ -215,6 +231,14 @@ const BELLEZA_CONFIG: AdminHubConfig = {
             icon: 'calendar-outline',
             color: '#8b5cf6',
             navigation: 'Reservas'
+        },
+        {
+            id: 'soporte',
+            title: 'Soporte',
+            desc: 'Ayuda y Contacto',
+            icon: 'help-buoy-outline',
+            color: '#06b6d4',
+            navigation: 'Soporte'
         }
     ]
 };

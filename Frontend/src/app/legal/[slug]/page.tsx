@@ -27,8 +27,8 @@ const getThemeColor = (slug: string) => {
   }
 };
 
-export default async function LegalDynamicPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function LegalDynamicPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const contentPath = path.join(process.cwd(), 'content/legal', `${slug}.md`);
 
   // Verificar si el archivo existe
