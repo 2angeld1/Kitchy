@@ -47,6 +47,7 @@ export const BellezaCobroModal: React.FC<Props> = ({
     const [email, setEmail] = useState('');
     const [esFrecuente, setEsFrecuente] = useState(false);
     const [espFrecuenteSeleccionado, setEspFrecuenteSeleccionado] = useState<string | null>(null);
+    const [enviarComprobante, setEnviarComprobante] = useState(true);
 
     // Búsqueda de clientes
     const [searching, setSearching] = useState(false);
@@ -120,9 +121,10 @@ export const BellezaCobroModal: React.FC<Props> = ({
             telefono,
             email,
             esFrecuente,
-            especialistaFrecuente: esFrecuente ? espFrecuenteSeleccionado : null
+            especialistaFrecuente: esFrecuente ? espFrecuenteSeleccionado : null,
+            enviarComprobante
         });
-        setNombre(''); setTelefono(''); setEmail(''); setEsFrecuente(false); setEspFrecuenteSeleccionado(null);
+        setNombre(''); setTelefono(''); setEmail(''); setEsFrecuente(false); setEspFrecuenteSeleccionado(null); setEnviarComprobante(true);
     };
 
     const confirmCombined = () => {
@@ -215,8 +217,8 @@ export const BellezaCobroModal: React.FC<Props> = ({
                 <TouchableOpacity
                     style={{ flex: 1, backgroundColor: colors.surface, paddingVertical: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
                     onPress={() => {
-                        onConfirm({ nombre: 'Anónimo', telefono: '', email: '', esFrecuente: false });
-                        setNombre(''); setTelefono(''); setEmail(''); setEsFrecuente(false);
+                        onConfirm({ nombre: 'Anónimo', telefono: '', email: '', esFrecuente: false, enviarComprobante: false });
+                        setNombre(''); setTelefono(''); setEmail(''); setEsFrecuente(false); setEnviarComprobante(true);
                     }}
                 >
                     <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '800' }}>COBRAR YA</Text>
@@ -357,9 +359,22 @@ export const BellezaCobroModal: React.FC<Props> = ({
                     <Ionicons name="mail-outline" size={20} color={colors.textMuted} />
                     <TextInput
                         style={{ flex: 1, height: 50, color: colors.textPrimary, paddingHorizontal: 12 }}
-                        placeholder="Email (Encuestas)" keyboardType="email-address" autoCapitalize="none" placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail}
+                        placeholder="Email (Encuestas / Recibos)" keyboardType="email-address" autoCapitalize="none" placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail}
                     />
                 </View>
+
+                {email.length > 0 && (
+                    <Animated.View entering={FadeInDown} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, padding: 12, borderRadius: 16, borderWidth: 1, borderColor: colors.border }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Ionicons name="receipt-outline" size={20} color={colors.primary} />
+                            <View>
+                                <Text style={{ color: colors.textPrimary, fontSize: 14, fontWeight: '700' }}>Enviar Comprobante</Text>
+                                <Text style={{ color: colors.textMuted, fontSize: 10 }}>Por correo al cliente</Text>
+                            </View>
+                        </View>
+                        <Switch value={enviarComprobante} onValueChange={setEnviarComprobante} trackColor={{ false: colors.border, true: colors.primary }} />
+                    </Animated.View>
+                )}
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, padding: 12, borderRadius: 16, borderWidth: 1, borderColor: colors.border, marginBottom: 16 }}>

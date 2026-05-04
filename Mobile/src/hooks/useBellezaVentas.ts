@@ -12,6 +12,11 @@ export interface Producto {
     isInventory?: boolean;
 }
 
+export interface CartItem extends Producto {
+    cantidad: number;
+    especialistaId: string | null;
+}
+
 export interface Especialista {
     _id: string;
     nombre: string;
@@ -28,7 +33,7 @@ export const useBellezaVentas = () => {
     const [loading, setLoading] = useState(false);
 
     // Estado del "ticket" de belleza (Multiselección)
-    const [itemsSeleccionados, setItemsSeleccionados] = useState<Producto[]>([]);
+    const [itemsSeleccionados, setItemsSeleccionados] = useState<CartItem[]>([]);
     const [especialistaSeleccionado, setEspecialistaSeleccionado] = useState<string | null>(null);
     const [metodoPago, setMetodoPago] = useState<'efectivo' | 'yappy' | 'tarjeta' | 'combinado'>('efectivo');
     const [pagoCombinado, setPagoCombinado] = useState<{ metodo: string; monto: number }[]>([]);
@@ -118,18 +123,30 @@ export const useBellezaVentas = () => {
         };
     }, [negocioId]);
 
-    const toggleItem = useCallback((item: Producto) => {
+    const updateCartItem = useCallback((item: Producto, especialistaId: string | null, delta: number) => {
         setItemsSeleccionados(prev => {
-            const index = prev.findIndex(s => s._id === item._id);
+            const index = prev.findIndex(s => s._id === item._id && s.especialistaId === especialistaId);
+            
             if (index >= 0) {
-                return prev.filter(s => s._id !== item._id);
-            } else {
-                return [...prev, item];
+                // El item ya existe para este especialista
+                const newItems = [...prev];
+                const newQty = newItems[index].cantidad + delta;
+                
+                if (newQty <= 0) {
+                    return newItems.filter((_, i) => i !== index); // Eliminar si llega a 0
+                } else {
+                    newItems[index].cantidad = newQty;
+                    return newItems;
+                }
+            } else if (delta > 0) {
+                // Es nuevo y se está agregando
+                return [...prev, { ...item, cantidad: delta, especialistaId }];
             }
+            return prev;
         });
     }, []);
     
-    const total = useMemo(() => itemsSeleccionados.reduce((acc, s) => acc + s.precio, 0), [itemsSeleccionados]);
+    const total = useMemo(() => itemsSeleccionados.reduce((acc, s) => acc + (s.precio * s.cantidad), 0), [itemsSeleccionados]);
     const cambio = useMemo(() => {
         const recibido = parseFloat(montoRecibido);
         return recibido > total ? recibido - total : 0;
@@ -144,7 +161,11 @@ export const useBellezaVentas = () => {
         setLoading(true);
         try {
             const payload = {
-                items: itemsSeleccionados.map(s => ({ productoId: s._id, cantidad: 1 })),
+                items: itemsSeleccionados.map(s => ({ 
+                    productoId: (s as any).originalId || s._id, 
+                    cantidad: s.cantidad,
+                    especialista: s.especialistaId 
+                })),
                 metodoPago,
                 pagoCombinado: metodoPago === 'combinado' ? pagoCombinado : undefined,
                 especialista: especialistaSeleccionado,
@@ -208,7 +229,7 @@ export const useBellezaVentas = () => {
         loading,
         showHistorial,
         setShowHistorial,
-        itemsSeleccionados, toggleItem,
+        itemsSeleccionados, updateCartItem,
         especialistaSeleccionado, setEspecialistaSeleccionado,
         metodoPago, setMetodoPago,
         pagoCombinado, setPagoCombinado,

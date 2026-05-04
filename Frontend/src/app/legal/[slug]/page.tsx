@@ -68,13 +68,15 @@ export default async function LegalDynamicPage({ params }: { params: Promise<{ s
         </div>
         
         {/* Contenido Markdown Renderizado */}
-        <div className="p-10 lg:p-16">
-          <div className="prose prose-slate prose-amber max-w-none 
-            prose-headings:font-bold prose-headings:tracking-tight 
-            prose-h2:text-2xl prose-h2:mt-10 prose-h2:border-b prose-h2:pb-2
+        <div className="p-10 lg:p-16 text-gray-900">
+          <div className="prose prose-slate max-w-none 
+            prose-headings:text-gray-900 prose-headings:font-bold prose-headings:tracking-tight 
+            prose-h2:text-2xl prose-h2:mt-10 prose-h2:border-b prose-h2:pb-2 prose-h2:border-gray-100
             prose-p:text-gray-600 prose-p:leading-relaxed
             prose-strong:text-gray-900 prose-strong:font-bold
-            prose-hr:my-10">
+            prose-hr:my-10 prose-hr:border-gray-100
+            prose-li:text-gray-600
+            prose-ul:list-disc prose-ol:list-decimal">
             <ReactMarkdown>{content}</ReactMarkdown>
           </div>
 

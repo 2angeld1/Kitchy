@@ -42,7 +42,8 @@
     },
     "plugins": [
       "expo-speech-recognition",
-      "expo-camera"
+      "expo-camera",
+      "expo-mail-composer"
     ]
   }
 }

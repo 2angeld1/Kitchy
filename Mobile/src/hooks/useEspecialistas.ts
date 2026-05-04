@@ -13,11 +13,15 @@ export const useEspecialistas = () => {
     
     const [form, setForm] = useState<{
         nombre: string;
+        email: string;
+        rol: string;
         comision: string;
         tipoComision: 'fijo' | 'escalonado' | null;
         turnoActual: 'mañana' | 'tarde' | 'ambos';
     }>({
         nombre: '',
+        email: '',
+        rol: 'Barbero',
         comision: '50',
         tipoComision: null, // null = hereda del local
         turnoActual: 'ambos'
@@ -36,7 +40,7 @@ export const useEspecialistas = () => {
     }, []);
 
     const resetForm = () => {
-        setForm({ nombre: '', comision: '50', tipoComision: null, turnoActual: 'ambos' });
+        setForm({ nombre: '', email: '', rol: 'Barbero', comision: '50', tipoComision: null, turnoActual: 'ambos' });
         setSelectedId(null);
         setIsEditing(false);
     };
@@ -50,6 +54,8 @@ export const useEspecialistas = () => {
     const handleAbrirEditar = (esp: any) => {
         setForm({
             nombre: esp.nombre,
+            email: esp.email || '',
+            rol: esp.rol || 'Barbero',
             comision: (esp.comision || 50).toString(),
             tipoComision: esp.tipoComision || null,
             turnoActual: esp.turnoActual || 'ambos'
@@ -69,6 +75,7 @@ export const useEspecialistas = () => {
         try {
             const payload = {
                 nombre: form.nombre,
+                email: form.email.trim() || undefined,
                 comision: parseInt(form.comision),
                 tipoComision: form.tipoComision || undefined,
                 turnoActual: form.turnoActual

@@ -6,6 +6,7 @@ export interface IItemVenta {
     cantidad: number;
     precioUnitario: number;
     subtotal: number;
+    especialista?: mongoose.Types.ObjectId; // El barbero que hizo este item
 }
 
 export interface IVenta extends Document {
@@ -48,6 +49,10 @@ const ItemVentaSchema: Schema = new Schema({
         type: Number,
         required: true,
         min: 0
+    },
+    especialista: {
+        type: Schema.Types.ObjectId,
+        ref: 'Especialista'
     }
 }, { _id: false });
 

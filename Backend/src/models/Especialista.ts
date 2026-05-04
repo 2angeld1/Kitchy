@@ -2,6 +2,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IEspecialista extends Document {
     nombre: string;
+    rol?: string;
+    email?: string;
     negocioId: mongoose.Types.ObjectId;
     comision?: number; // % personalizado opcional, sino hereda el global del negocio
     tipoComision?: 'fijo' | 'escalonado'; // tipo individual, si no se define hereda del negocio
@@ -20,10 +22,20 @@ const EspecialistaSchema: Schema = new Schema({
         required: true,
         trim: true
     },
+    rol: {
+        type: String,
+        trim: true,
+        default: 'Barbero'
+    },
     negocioId: {
         type: Schema.Types.ObjectId,
         ref: 'Negocio',
         required: true
+    },
+    email: {
+        type: String,
+        trim: true,
+        default: null
     },
     comision: {
         type: Number,

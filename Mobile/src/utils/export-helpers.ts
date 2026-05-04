@@ -1,6 +1,7 @@
 import * as Sharing from 'expo-sharing';
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
+import * as MailComposer from 'expo-mail-composer';
 import { Platform } from 'react-native';
 import { formatMoney } from './beauty-helpers';
 
@@ -200,6 +201,149 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
         }
     } catch (err) {
         console.error('Error exportando PDF:', err);
+        throw err;
+    }
+};
+
+export const exportReporteEspecialistaPdf = async (espData: any, periodo: string, businessName: string = 'Kitchy Beauty') => {
+    try {
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; color: #333; }
+                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #8b5cf6; padding-bottom: 20px; }
+                .header h1 { margin: 0; color: #8b5cf6; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+                .header p { margin: 5px 0; color: #666; font-size: 14px; }
+                .summary { display: flex; justify-content: space-between; margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 12px; }
+                .summary-item { text-align: center; flex: 1; }
+                .summary-item .label { font-size: 10px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+                .summary-item .value { font-size: 20px; font-weight: bold; color: #1e293b; }
+                
+                .section-title { font-size: 14px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 10px; margin-top: 20px; }
+                
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+                th { background-color: #8b5cf6; color: white; text-align: left; padding: 10px; font-size: 11px; text-transform: uppercase; }
+                td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
+                tr:nth-child(even) { background-color: #f8fafc; }
+                .footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 10px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+                .bold { font-weight: bold; }
+                .amount { text-align: right; }
+                .primary-text { color: #8b5cf6; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Reporte de Pago</h1>
+                <p style="font-size: 18px; font-weight: bold; color: #1e293b; margin-top: 10px;">${espData.nombre}</p>
+                <p>${businessName}</p>
+                <p>Periodo: ${periodo.toUpperCase()} | Fecha de emisión: ${new Date().toLocaleDateString()}</p>
+            </div>
+
+            <div class="summary">
+                <div class="summary-item">
+                    <div class="label">Total Recaudado</div>
+                    <div class="value">${formatMoney(espData.totalRecaudado)}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">Tu Comisión</div>
+                    <div class="value" style="color: #8b5cf6;">${formatMoney(espData.totalComision)}</div>
+                </div>
+            </div>
+
+            ${espData.serviciosItems?.length > 0 ? `
+            <div class="section-title">Servicios Realizados (${espData.serviciosItems.length})</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Servicio</th>
+                        <th class="amount">Precio</th>
+                        <th class="amount">Comisión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${espData.serviciosItems.map((item: any) => `
+                        <tr>
+                            <td>${new Date(item.fecha).toLocaleString()}</td>
+                            <td>${item.nombre}</td>
+                            <td class="amount">${formatMoney(item.precio)}</td>
+                            <td class="amount bold primary-text">${formatMoney(item.comision)} (${item.porcentaje}%)</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ` : ''}
+
+            ${espData.productosItems?.length > 0 ? `
+            <div class="section-title">Venta de Productos (${espData.productosItems.length})</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Producto</th>
+                        <th class="amount">Precio</th>
+                        <th class="amount">Comisión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${espData.productosItems.map((item: any) => `
+                        <tr>
+                            <td>${new Date(item.fecha).toLocaleString()}</td>
+                            <td>${item.nombre}</td>
+                            <td class="amount">${formatMoney(item.precio)}</td>
+                            <td class="amount bold primary-text">${formatMoney(item.comision)} (${item.porcentaje}%)</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            ` : ''}
+
+            <div class="footer">
+                Este es un comprobante de pago generado por <strong>Kitchy POS</strong>.
+            </div>
+        </body>
+        </html>
+        `;
+
+        if (Platform.OS === 'web') {
+            const printWindow = window.open('', '_blank');
+            if (printWindow) {
+                printWindow.document.write(html);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            }
+            return null;
+        } else {
+            const { uri } = await Print.printToFileAsync({ html });
+            return uri;
+        }
+    } catch (err) {
+        console.error('Error exportando PDF especialista:', err);
+        throw err;
+    }
+};
+
+export const enviarReporteEspecialistaEmail = async (uri: string, espData: any, emailTo: string, periodo: string) => {
+    try {
+        const isAvailable = await MailComposer.isAvailableAsync();
+        if (!isAvailable) {
+            throw new Error('El servicio de correo no está disponible en este dispositivo');
+        }
+
+        await MailComposer.composeAsync({
+            recipients: [emailTo],
+            subject: `Reporte de Pago - ${espData.nombre} - ${periodo}`,
+            body: `Hola ${espData.nombre},\n\nAdjunto encontrarás tu reporte de pago detallado para el periodo: ${periodo}.\n\nTotal Recaudado: ${formatMoney(espData.totalRecaudado)}\nTu Comisión: ${formatMoney(espData.totalComision)}\n\nSaludos,\nEl equipo.`,
+            attachments: [uri],
+        });
+    } catch (err) {
+        console.error('Error enviando email:', err);
         throw err;
     }
 };

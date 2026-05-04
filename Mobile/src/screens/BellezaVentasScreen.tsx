@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn, useSharedValue, useAnimatedStyle, withSpring, withSequence, withDelay } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, FadeInDown, SlideInDown, ZoomIn, useSharedValue, useAnimatedStyle, withSpring, withSequence, withDelay } from 'react-native-reanimated';
 import { useBellezaVentas } from '../hooks/useBellezaVentas';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
@@ -35,7 +35,7 @@ export default function BellezaVentasScreen() {
         loading,
         montoRecibido, setMontoRecibido,
         lastVentaId, anularUltimaVenta,
-        toggleItem,
+        updateCartItem,
         setEspecialistaSeleccionado,
         setMetodoPago,
         setPagoCombinado,
@@ -60,6 +60,39 @@ export default function BellezaVentasScreen() {
     const [showCobroModal, setShowCobroModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'servicios' | 'productos'>('servicios');
     const successScale = useSharedValue(0);
+
+    // Estado para Precios Variables
+    const [showPrecioModal, setShowPrecioModal] = useState(false);
+    const [precioManual, setPrecioManual] = useState('');
+    const [itemPendiente, setItemPendiente] = useState<any>(null);
+
+    const handleTapService = (ser: any) => {
+        if (ser.precio === 0) {
+            setItemPendiente(ser);
+            setPrecioManual('');
+            setShowPrecioModal(true);
+        } else {
+            updateCartItem(ser, especialistaSeleccionado, 1);
+        }
+    };
+
+    const confirmarPrecioVariable = () => {
+        if (itemPendiente && precioManual) {
+            const precioFinal = parseFloat(precioManual);
+            if (!isNaN(precioFinal) && precioFinal >= 0) {
+                const itemUnico = { 
+                    ...itemPendiente, 
+                    _id: `${itemPendiente._id}-${Date.now()}`, 
+                    originalId: itemPendiente._id,
+                    precio: precioFinal 
+                };
+                updateCartItem(itemUnico, especialistaSeleccionado, 1);
+            }
+        }
+        setShowPrecioModal(false);
+        setItemPendiente(null);
+        setPrecioManual('');
+    };
 
     const requiereEspecialista = itemsSeleccionados.some(s => !s.isInventory);
     const canCheckout = itemsSeleccionados.length > 0 && (!requiereEspecialista || especialistaSeleccionado);
@@ -174,11 +207,14 @@ export default function BellezaVentasScreen() {
                             <Text style={styles.sectionTitle}>Servicios realizados</Text>
                             <View style={styles.grid}>
                                 {servicios.map((ser, idx) => {
-                                    const isSelected = itemsSeleccionados.some(s => s._id === ser._id);
+                                    const cartItem = itemsSeleccionados.find(s => s._id === ser._id && s.especialistaId === especialistaSeleccionado);
+                                    const cantidad = cartItem ? cartItem.cantidad : 0;
+                                    const isSelected = cantidad > 0;
+                                    
                                     return (
                                         <Animated.View key={ser._id} entering={FadeInDown.delay(idx * 40)}>
                                             <TouchableOpacity
-                                                onPress={() => toggleItem(ser)}
+                                                onPress={() => handleTapService(ser)}
                                                 style={[
                                                     styles.serviceCard,
                                                     {
@@ -191,7 +227,17 @@ export default function BellezaVentasScreen() {
                                                     <View style={[styles.iconContainer, { backgroundColor: isSelected ? colors.primary : colors.surface }]}>
                                                         <Ionicons name={getBeautyIcon(ser.nombre)} size={18} color={isSelected ? '#fff' : colors.primary} />
                                                     </View>
-                                                    {isSelected && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
+                                                    {isSelected && (
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border }}>
+                                                            <TouchableOpacity onPress={() => updateCartItem(ser, especialistaSeleccionado, -1)} style={{ padding: 6 }}>
+                                                                <Ionicons name="remove" size={16} color={colors.textPrimary} />
+                                                            </TouchableOpacity>
+                                                            <Text style={{ fontWeight: 'bold', color: colors.primary, paddingHorizontal: 4 }}>{cantidad}</Text>
+                                                            <TouchableOpacity onPress={() => updateCartItem(ser, especialistaSeleccionado, 1)} style={{ padding: 6 }}>
+                                                                <Ionicons name="add" size={16} color={colors.textPrimary} />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    )}
                                                 </View>
                                                 <View style={styles.serviceInfo}>
                                                     <Text style={[styles.serviceName, { color: colors.textPrimary }]} numberOfLines={1}>{ser.nombre}</Text>
@@ -216,11 +262,14 @@ export default function BellezaVentasScreen() {
                                         </Text>
                                         <View style={styles.grid}>
                                             {productosVenta.map((prod, idx) => {
-                                                const isSelected = itemsSeleccionados.some(s => s._id === prod._id);
+                                                const cartItem = itemsSeleccionados.find(s => s._id === prod._id && s.especialistaId === especialistaSeleccionado);
+                                                const cantidad = cartItem ? cartItem.cantidad : 0;
+                                                const isSelected = cantidad > 0;
+
                                                 return (
                                                     <Animated.View key={prod._id} entering={FadeInDown.delay(idx * 40)}>
                                                         <TouchableOpacity
-                                                            onPress={() => toggleItem(prod)}
+                                                            onPress={() => handleTapService(prod)}
                                                             style={[
                                                                 styles.serviceCard,
                                                                 {
@@ -233,7 +282,17 @@ export default function BellezaVentasScreen() {
                                                                 <View style={[styles.iconContainer, { backgroundColor: isSelected ? colors.primary : colors.surface }]}>
                                                                     <Ionicons name={getInventoryIcon('reventa', 'BELLEZA')} size={18} color={isSelected ? '#fff' : colors.primary} />
                                                                 </View>
-                                                                {isSelected && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
+                                                                {isSelected && (
+                                                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border }}>
+                                                                        <TouchableOpacity onPress={() => updateCartItem(prod, especialistaSeleccionado, -1)} style={{ padding: 6 }}>
+                                                                            <Ionicons name="remove" size={16} color={colors.textPrimary} />
+                                                                        </TouchableOpacity>
+                                                                        <Text style={{ fontWeight: 'bold', color: colors.primary, paddingHorizontal: 4 }}>{cantidad}</Text>
+                                                                        <TouchableOpacity onPress={() => updateCartItem(prod, especialistaSeleccionado, 1)} style={{ padding: 6 }}>
+                                                                            <Ionicons name="add" size={16} color={colors.textPrimary} />
+                                                                        </TouchableOpacity>
+                                                                    </View>
+                                                                )}
                                                             </View>
                                                             <View style={styles.serviceInfo}>
                                                                 <Text style={[styles.serviceName, { color: colors.textPrimary }]} numberOfLines={1}>{prod.nombre}</Text>
@@ -316,7 +375,7 @@ export default function BellezaVentasScreen() {
                                         {pagoCombinado.map(c => `$${c.monto.toFixed(2)} ${c.metodo.toUpperCase()}`).join(' + ')}
                                     </Text>
                                 ) : (
-                                    <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{itemsSeleccionados.length} items seleccionados</Text>
+                                    <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{itemsSeleccionados.reduce((acc, curr) => acc + curr.cantidad, 0)} items seleccionados</Text>
                                 )}
                                 <Text style={[styles.totalValue, { color: colors.textPrimary }]}>{formatMoney(total)}</Text>
                             </View>
@@ -346,6 +405,43 @@ export default function BellezaVentasScreen() {
                             <Ionicons name="checkmark" size={18} color="#fff" />
                         </View>
                         <Text style={{ fontSize: 16, fontWeight: '800', color: '#fff' }}>¡Venta exitosa!</Text>
+                    </Animated.View>
+                )}
+
+                {/* MODAL PARA PRECIO VARIABLE */}
+                {showPrecioModal && (
+                    <Animated.View entering={FadeIn} exiting={FadeOut} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', zIndex: 999 }}>
+                        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', alignItems: 'center' }}>
+                            <View style={{ width: '85%', backgroundColor: colors.card, borderRadius: 24, padding: 24, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 15 }}>
+                                <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: colors.primary + '20', justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
+                                    <Ionicons name="cash-outline" size={32} color={colors.primary} />
+                                </View>
+                                <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>Servicio Personalizado</Text>
+                                <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center', marginBottom: 24 }}>Ingresa el precio que vas a cobrar por <Text style={{ fontWeight: 'bold', color: colors.primary }}>{itemPendiente?.nombre}</Text></Text>
+                                
+                                <View style={{ flexDirection: 'row', alignItems: 'center', borderBottomWidth: 2, borderBottomColor: colors.primary, paddingBottom: 8, marginBottom: 24, width: '80%' }}>
+                                    <Text style={{ fontSize: 32, fontWeight: 'bold', color: colors.primary, marginRight: 8 }}>$</Text>
+                                    <TextInput 
+                                        style={{ fontSize: 36, fontWeight: '900', color: colors.textPrimary, flex: 1 }}
+                                        autoFocus
+                                        keyboardType="decimal-pad"
+                                        placeholder="0.00"
+                                        placeholderTextColor={colors.textMuted}
+                                        value={precioManual}
+                                        onChangeText={setPrecioManual}
+                                    />
+                                </View>
+
+                                <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+                                    <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: colors.surface, alignItems: 'center' }} onPress={() => { setShowPrecioModal(false); setItemPendiente(null); }}>
+                                        <Text style={{ color: colors.textSecondary, fontWeight: '700' }}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={{ flex: 1, paddingVertical: 14, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', opacity: precioManual ? 1 : 0.5 }} disabled={!precioManual} onPress={confirmarPrecioVariable}>
+                                        <Text style={{ color: '#fff', fontWeight: '800' }}>Confirmar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </KeyboardAvoidingView>
                     </Animated.View>
                 )}
 

@@ -3,6 +3,7 @@ import Producto from '../models/Producto';
 import Inventario from '../models/Inventario';
 import Negocio from '../models/Negocio';
 import Cliente from '../models/Cliente';
+import { sendReceiptEmail } from './emailService';
 
 export const crearVentaService = async (
     items: any[],
@@ -39,7 +40,8 @@ export const crearVentaService = async (
                 throw new Error(`Producto no disponible: ${itemData.nombre}`);
             }
             nombreProducto = itemData.nombre;
-            precioUnitario = itemData.precio;
+            // Si el precio en DB es 0, es un servicio variable: confiamos en el payload de la App
+            precioUnitario = itemData.precio > 0 ? itemData.precio : (item.precio || 0);
             finalId = itemData._id;
 
             // Si tiene receta, descontar ingredientes
@@ -76,7 +78,8 @@ export const crearVentaService = async (
             nombreProducto,
             cantidad: item.cantidad,
             precioUnitario,
-            subtotal
+            subtotal,
+            especialista: item.especialista || null
         });
         total += subtotal;
     }
@@ -197,6 +200,21 @@ export const crearVentaService = async (
 
     // Populate para devolver datos completos
     await venta.populate('usuario', 'nombre email');
+
+    // ----------------------------------------------------
+    // ENVIAR COMPROBANTE AL CLIENTE SI LO SOLICITÓ Y HAY CORREO
+    // ----------------------------------------------------
+    if (typeof cliente === 'object' && cliente.email && cliente.enviarComprobante && negocio) {
+        // Enviar en segundo plano para no bloquear la respuesta al frontend
+        sendReceiptEmail(
+            cliente.email,
+            nombreClienteDisplay,
+            negocio.nombre,
+            venta
+        ).catch(err => {
+            console.error('Error al enviar comprobante automático:', err.message);
+        });
+    }
 
     return { 
         venta, 

@@ -95,8 +95,11 @@ export default function EspecialistasScreen() {
                                     <View style={[styles.avatarPlaceholder, { width: 32, height: 32, borderRadius: 8 }]}>
                                         <Ionicons name="cut" size={18} color={colors.primary} />
                                     </View>
-                                    <View style={styles.infoContainer}>
+                                        <View style={styles.infoContainer}>
                                         <Text style={[styles.name, { fontSize: 12 }]}>{b.nombre}</Text>
+                                        {b.email ? (
+                                            <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 1 }}>{b.email}</Text>
+                                        ) : null}
                                         <View style={styles.badgeRow}>
                                             <View style={[
                                                 styles.badge, 
@@ -143,6 +146,42 @@ export default function EspecialistasScreen() {
                                 placeholder="Nombre completo"
                                 value={form.nombre}
                                 onChangeText={(t) => setForm({ ...form, nombre: t })}
+                            />
+
+                            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, marginTop: 10 }}>Rol / Profesión</Text>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
+                                {['Barbero', 'Estilista', 'Nails', 'Lashes', 'Masajista', 'Otro'].map((r) => (
+                                    <TouchableOpacity
+                                        key={r}
+                                        onPress={() => setForm({ ...form, rol: r })}
+                                        style={{
+                                            paddingHorizontal: 16,
+                                            paddingVertical: 8,
+                                            borderRadius: 20,
+                                            backgroundColor: form.rol === r ? colors.primary : colors.surface,
+                                            borderWidth: 1,
+                                            borderColor: form.rol === r ? colors.primary : colors.border,
+                                            marginRight: 8
+                                        }}
+                                    >
+                                        <Text style={{ 
+                                            color: form.rol === r ? '#fff' : colors.textPrimary,
+                                            fontWeight: '600',
+                                            fontSize: 13
+                                        }}>
+                                            {r}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+
+                            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, marginTop: 10 }}>Correo Electrónico</Text>
+                            <KitchyInput 
+                                placeholder="barbero@email.com (opcional)"
+                                value={form.email}
+                                onChangeText={(t) => setForm({ ...form, email: t })}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
                             />
 
                             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 12, marginTop: 10 }}>Regla de Comisión</Text>
