@@ -95,7 +95,10 @@ export default function BellezaResumenScreen() {
                                             </View>
                                             <View>
                                                 <Text style={[styles.espName, { color: colors.textPrimary }]}>{esp.nombre}</Text>
-                                                <Text style={styles.espMeta}>{esp.serviciosItems.length} servicios · {esp.productosItems.length} productos</Text>
+                                                <Text style={styles.espMeta}>
+                                                    {esp.serviciosItems.length > 0 ? `${esp.serviciosItems[esp.serviciosItems.length - 1].porcentaje}% | ` : ''} 
+                                                    {esp.serviciosItems.length} servicios · {esp.productosItems.length} productos
+                                                </Text>
                                             </View>
                                         </View>
                                         <View style={styles.espTotals}>

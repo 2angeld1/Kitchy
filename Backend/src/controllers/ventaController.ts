@@ -102,7 +102,8 @@ export const obtenerVentas = async (req: AuthRequest, res: Response) => {
             .limit(Number(limite))
             .populate('usuario', 'nombre email')
             .populate('especialista', 'nombre comision tipoComision')
-            .populate('items.producto', 'nombre precio categoria');
+            .populate('items.producto', 'nombre precio categoria')
+            .populate('items.especialista', 'nombre email');
 
         res.json(ventas);
     } catch (error: any) {
@@ -117,7 +118,8 @@ export const obtenerVentaPorId = async (req: AuthRequest, res: Response) => {
         const { id } = req.params;
         const venta = await Venta.findOne({ _id: id, negocioId: req.negocioId })
             .populate('usuario', 'nombre email')
-            .populate('items.producto', 'nombre precio categoria');
+            .populate('items.producto', 'nombre precio categoria')
+            .populate('items.especialista', 'nombre email');
 
         if (!venta) {
             return res.status(404).json({ message: 'Venta no encontrada' });
