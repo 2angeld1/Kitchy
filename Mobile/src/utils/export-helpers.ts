@@ -22,9 +22,9 @@ export const exportComisionesCsv = async (data: any, periodo: string) => {
         const csvContent = [
             `\uFEFFReporte de Comisiones - Periodo: ${periodo.toUpperCase()}`,
             `Resumen General:`,
-            `Total Generado:;${safeNum(data.resumen.totalGeneral).toFixed(2)}`,
-            `Total Especialistas:;${safeNum(data.resumen.totalEspecialistas).toFixed(2)}`,
-            `Total Dueño/Local:;${safeNum(data.resumen.totalDueno).toFixed(2)}`,
+            `Total Generado:;${safeNum(data?.resumen?.totalGeneral).toFixed(2)}`,
+            `Total Especialistas:;${safeNum(data?.resumen?.totalEspecialistas).toFixed(2)}`,
+            `Total Dueño/Local:;${safeNum(data?.resumen?.totalDueno).toFixed(2)}`,
             '',
             headers.join(';'),
             ...rows.map((row: any[]) => row.join(';'))
@@ -68,9 +68,10 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
         const dailyBreakdown: any = {};
         
         (data.especialistas || []).forEach((esp: any) => {
+            const espId = esp.id || esp._id;
             const espVentas = ventas.filter((v: any) => 
-                (v.especialista?._id || v.especialista) === esp.id || 
-                (v.especialista?._id || v.especialista) === esp._id
+                (v.especialista?._id || v.especialista) === espId ||
+                (v.items || []).some((item: any) => (item.especialista?._id || item.especialista) === espId)
             );
             
             const days: any = {};
@@ -79,11 +80,28 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
                 if (!days[date]) {
                     days[date] = { count: 0, total: 0 };
                 }
-                days[date].count += v.items?.length || 1;
-                days[date].total += v.total || 0;
+
+                // Si hay items, sumamos solo los que pertenecen a este especialista
+                if (v.items && v.items.length > 0) {
+                    v.items.forEach((item: any) => {
+                        const itemEspId = item.especialista?._id || item.especialista || v.especialista?._id || v.especialista;
+                        if (itemEspId === espId) {
+                            days[date].count += item.cantidad || 1;
+                            days[date].total += (item.subtotal || (item.precioUnitario * item.cantidad) || 0);
+                        }
+                    });
+                } else if ((v.especialista?._id || v.especialista) === espId) {
+                    // Venta global asignada a este especialista
+                    days[date].count += 1;
+                    days[date].total += v.total || 0;
+                }
             });
             
-            dailyBreakdown[esp.id || esp._id] = Object.keys(days).sort().map(d => ({
+            dailyBreakdown[espId] = Object.keys(days).sort((a, b) => {
+                const [da, ma, ya] = a.split('/');
+                const [db, mb, yb] = b.split('/');
+                return new Date(`${ya}-${ma}-${da}`).getTime() - new Date(`${yb}-${mb}-${db}`).getTime();
+            }).map(d => ({
                 fecha: d,
                 cantidad: days[d].count,
                 ingreso: days[d].total,
@@ -127,15 +145,15 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
             <div class="summary">
                 <div class="summary-item">
                     <div class="label">Total Generado</div>
-                    <div class="value">${formatMoney(data.resumen.totalGeneral)}</div>
+                    <div class="value">${formatMoney(data?.resumen?.totalGeneral || 0)}</div>
                 </div>
                 <div class="summary-item">
                     <div class="label">A Especialistas</div>
-                    <div class="value" style="color: #6366f1;">${formatMoney(data.resumen.totalEspecialistas)}</div>
+                    <div class="value" style="color: #6366f1;">${formatMoney(data?.resumen?.totalEspecialistas || 0)}</div>
                 </div>
                 <div class="summary-item">
                     <div class="label">Ganancia Local</div>
-                    <div class="value" style="color: #10b981;">${formatMoney(data.resumen.totalDueno)}</div>
+                    <div class="value" style="color: #10b981;">${formatMoney(data?.resumen?.totalDueno || 0)}</div>
                 </div>
             </div>
 

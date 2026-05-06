@@ -163,13 +163,37 @@ export const useBellezaResumen = () => {
         setIsExporting(true);
         try {
             const fechaTitulo = activeTab === 'diario' ? 'Diario' : 'Semanal';
-            await exportComisionesPdf(resumenEspecialistas, fechaTitulo, negocioInfo?.nombre);
+
+            // Adaptar datos al formato que espera exportComisionesPdf y exportComisionesCsv
+            const especialistasMapeados = resumenEspecialistas.map((esp: any) => ({
+                ...esp,
+                totalServicios: esp.serviciosItems.length + esp.productosItems.length,
+                totalIngreso: esp.totalRecaudado,
+                montoEspecialista: esp.totalComision,
+                montoDueno: esp.totalRecaudado - esp.totalComision,
+                // Usamos el porcentaje del primer servicio como referencia, o 0 si no hay
+                porcentajeActual: esp.serviciosItems.length > 0 ? esp.serviciosItems[0].porcentaje : 
+                                 (esp.productosItems.length > 0 ? esp.productosItems[0].porcentaje : 0)
+            }));
+
+            const exportData = {
+                especialistas: especialistasMapeados,
+                resumen: {
+                    totalGeneral: resumenEspecialistas.reduce((acc: number, esp: any) => acc + esp.totalRecaudado, 0),
+                    totalEspecialistas: resumenEspecialistas.reduce((acc: number, esp: any) => acc + esp.totalComision, 0),
+                    totalDueno: resumenEspecialistas.reduce((acc: number, esp: any) => acc + (esp.totalRecaudado - esp.totalComision), 0),
+                }
+            };
+
+            await exportComisionesPdf(exportData, fechaTitulo, negocioInfo?.nombre || 'Kitchy Beauty', ventas);
         } catch (err) {
+            console.error('Error en exportación:', err);
             Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al generar el reporte global.' });
         } finally {
             setIsExporting(false);
         }
     };
+
 
     const handleEnviarEspecialistas = async () => {
         // Filtrar especialistas que no sean la "Caja" y que tengan correo
