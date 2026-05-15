@@ -4,33 +4,33 @@ Este documento es tu guía estratégica para navegar el ecosistema de startups. 
 
 ---
 
-## 📅 Misión Mañana: Viernes de "Hustle" Presencial
+## 🧠 Aprendizajes de la Visita (15 de Mayo)
 
-Tu objetivo mañana no es "pedir dinero", sino **"ganar aliados y protección"**.
+Tras la gira por la UTP y Ciudad del Saber, estas son las reglas del juego en Panamá:
 
-### 1. Mañana (09:00 AM - 11:30 AM): UTP - DGTC (Tumba Muerto)
-**Foco:** Seguridad Jurídica y Propiedad Intelectual (IP).
-*   **Misión:** Reunión de Propiedad Intelectual.
-*   **Preguntas Clave:**
-    1.  *"¿Cuál es el proceso para registrar el derecho de autor de mi software (Kitchy y Muelle) ante el MICI?"*
-    2.  *"¿La UTP tiene algún programa de acompañamiento para aplicar a fondos de SENACYT?"*
-    3.  *"¿Cómo puedo documentar mis algoritmos de IA (Caitlyn) para proteger el secreto comercial?"*
-*   **Resultado esperado:** Una lista de documentos necesarios para proteger tu código.
+| Centro | Ventaja Principal | El "Costo" (Control) | Ideal Para... |
+| :--- | :--- | :--- | :--- |
+| **UTP (DGTC)** | **Apoyo Formativo:** Te ayudan con el prospecto y estrategia desde cero. | **Lentitud:** Procesos más académicos y sin capital directo. | Validar tecnología y armar el plan de negocio inicial. |
+| **Ciudad del Saber** | **Capital y Red:** Acceso a inversores y red global de aceleración. | **Hitos de Ventas:** Reglas estrictas. Si no hay clientes o crecimiento, te sacan. | Startups con facturación o pilotos pagados (Kitchy pronto). |
 
-### 2. Mediodía (12:30 PM - 02:00 PM): Almuerzo Estratégico (La Plaza CDS)
-*   **Lugar:** La Plaza Ciudad del Saber (Clayton).
-*   **Actividad:** Almuerza allí. Observa, escucha. Estás en el "hub" tecnológico del país. Respira el ambiente y baja los nervios.
+---
 
-### 3. Tarde (02:00 PM - 04:30 PM): Ciudad del Saber (El Triple Combo)
-*   **Edificio 109 (Innova):**
-    *   Pregunta por los programas de **Aceleración**.
-    *   Menciona que vienes de la UTP y que ya tienes **3 pilotos firmados** con Kitchy.
-    *   Pregunta por la **Red de Ángeles Inversionistas de Panamá**.
-*   **Edificio 205 (Senacyt):**
-    *   Busca la oficina de **Innovación Empresarial**.
-    *   Pregunta por el programa **"Padrino Empresario"** o fondos no reembolsables.
-*   **Edificio 156 (IDIAP) - Para AgroLink:**
-    *   Pregunta por **Transferencia de Tecnología**. Presenta AgroLink como una solución logística para el productor.
+## 🎯 Estrategia por Proyecto (Roadmap Q2-Q3 2026)
+
+### 1. Kitchy (Fase: Validación Comercial - UTP/CDS Bridge)
+*   **Estado:** 3 pilotos activos (Beta Testers). Sin facturación aún.
+*   **Próximo Paso:** Definir el **Modelo de Monetización** (SaaS, comisión por venta, etc.) y presentar el "Prospecto" en la UTP.
+*   **Objetivo de Oro:** Convertir a **1 tester en cliente pagado**. En cuanto haya una factura cobrada, aplicar a Innova CDS.
+
+### 2. Muelle (Fase: Tracción - UTP Focus)
+*   **Estado:** Desarrollo técnico (Scrapers/IA). 
+*   **Próximo Paso:** Usar la libertad de la **UTP** para pulir el producto sin presión de inversionistas.
+*   **Objetivo:** Registrar la IP (Propiedad Intelectual) y conseguir el primer piloto pagado antes de buscar escalamiento.
+
+### 3. AgroLink (Fase: Validación - UTP Focus)
+*   **Estado:** Idea/Concepto logístico.
+*   **Próximo Paso:** Vincularse con el **IDIAP** a través de la UTP para transferencia tecnológica.
+*   **Objetivo:** Definir el modelo de negocio con el productor real.
 
 ---
 
@@ -38,11 +38,11 @@ Tu objetivo mañana no es "pedir dinero", sino **"ganar aliados y protección"**
 
 | Entidad | Enfoque | URL Oficial |
 | :--- | :--- | :--- |
-| **Innova CDS (⭐ Etapa Temprana)** | Incubación y Coworking para fases de idea/MVP. | [ciudaddelsaber.org](https://ciudaddelsaber.org) |
-| **Founder Institute (⭐ Etapa Temprana)** | Aceleradora pre-semilla para nuevos fundadores. | [fi.co](https://fi.co) |
-| **JUMP Panamá (⭐ Etapa Temprana)** | Concurso de inversión para emprendedores locales. | [jumppanama.com](https://jumppanama.com) |
-| **Kaluwa Group** | Venture Builder para escalamiento y co-creación. | [kaluwagroup.com](https://kaluwagroup.com) |
-| **AMPYME** | Fondos de Capital Semilla del gobierno. | [ampyme.gob.pa](https://ampyme.gob.pa) |
+| **Innova CDS (⭐ Escalamiento)** | Aceleración e inversión para startups con tracción. | [ciudaddelsaber.org](https://ciudaddelsaber.org) |
+| **UTP - DGTC (⭐ Tracción)** | Protección de IP, libertad creativa y validación técnica. | [dgtc.utp.ac.pa](https://dgtc.utp.ac.pa) |
+| **Founder Institute** | Aceleradora pre-semilla para nuevos fundadores. | [fi.co](https://fi.co) |
+| **Kaluwa Group** | Venture Builder para co-creación de negocios. | [kaluwagroup.com](https://kaluwagroup.com) |
+| **SENACYT** | Fondos no reembolsables (dinero que no tienes que devolver). | [senacyt.gob.pa](https://senacyt.gob.pa) |
 
 ---
 
