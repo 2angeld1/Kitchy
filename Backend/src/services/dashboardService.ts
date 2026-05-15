@@ -313,6 +313,10 @@ export const obtenerDashboardDataService = async (
         notificaciones.push({ id: 'stock', titulo: 'Inventario Bajo', mensaje: `Tienes ${itemsStockBajo} productos agotándose.`, tipo: 'warning', icon: 'cube-outline' });
     }
     
+    if (itemsVenciendo > 0) {
+        notificaciones.push({ id: 'vencimiento', titulo: 'Riesgo de Vencimiento', mensaje: `Tienes ${itemsVenciendo} productos que vencerán en los próximos 7 días.`, tipo: 'danger', icon: 'alarm-outline' });
+    }
+    
     if (negocio?.categoria?.toUpperCase() === 'BELLEZA') {
         const config = (negocio.comisionConfig as any) || { escalonado: [] };
         const tramos = (config.escalonado || []).sort((a: any, b: any) => a.desde - b.desde);

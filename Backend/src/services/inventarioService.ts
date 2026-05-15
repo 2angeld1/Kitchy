@@ -4,6 +4,8 @@ import Inventario from '../models/Inventario';
 import MovimientoInventario from '../models/MovimientoInventario';
 import Gasto from '../models/Gasto';
 import { uploadImage } from '../utils/imageUpload';
+import Negocio from '../models/Negocio';
+import { sendEmailViaAPI } from './emailService';
 
 export const importarCsvService = async (filePath: string, negocioId: string, userId: string) => {
     const results: any[] = [];
@@ -430,4 +432,94 @@ export const obtenerComparativaService = async (negocioId: string, periodo: stri
     };
 
     return { resumen, comparativa };
+};
+
+export const notificarVencimientosProximos = async () => {
+    console.log('⏰ [Notificador] Iniciando revisión de vencimientos...');
+    const hoy = new Date();
+    const dentroDe7Dias = new Date();
+    dentroDe7Dias.setDate(hoy.getDate() + 7);
+
+    // Solo notificar si no se ha notificado en las últimas 48 horas para evitar spam
+    const hace48Horas = new Date();
+    hace48Horas.setHours(hace48Horas.getHours() - 48);
+
+    try {
+        const negocios = await Negocio.find({ pilotStatus: 'active' }).populate('propietario');
+        
+        for (const negocio of negocios) {
+            // Buscar items por vencer que no hayan sido notificados recientemente
+            const itemsVenciendo = await Inventario.find({
+                negocioId: negocio._id,
+                fechaVencimiento: { $gte: hoy, $lte: dentroDe7Dias },
+                cantidad: { $gt: 0 },
+                $or: [
+                    { ultimaAlertaVencimiento: { $exists: false } },
+                    { ultimaAlertaVencimiento: { $lte: hace48Horas } }
+                ]
+            });
+
+            if (itemsVenciendo.length > 0) {
+                const owner = negocio.propietario as any;
+                if (owner && owner.email) {
+                    console.log(`📧 Enviando alerta a ${negocio.nombre} (${owner.email}) - ${itemsVenciendo.length} items`);
+                    
+                    const itemsHtml = itemsVenciendo.map(item => `
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px;">${item.nombre}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #e11d48; font-weight: bold;">${item.fechaVencimiento ? new Date(item.fechaVencimiento).toLocaleDateString() : 'N/A'}</td>
+                            <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 14px; text-align: right;">${item.cantidad} ${item.unidad}</td>
+                        </tr>
+                    `).join('');
+
+                    const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+                        <div style="background-color: #e11d48; color: white; padding: 20px; text-align: center;">
+                            <h1 style="margin: 0; font-size: 22px;">⚠️ Alerta de Vencimiento</h1>
+                            <p style="margin: 5px 0 0 0; opacity: 0.9;">Radar de Caitlyn - ${negocio.nombre}</p>
+                        </div>
+                        
+                        <div style="padding: 20px;">
+                            <p style="font-size: 16px; color: #334155;">Hola <strong>${owner.nombre || 'propietario'}</strong>,</p>
+                            <p style="font-size: 15px; color: #475569;">He detectado que los siguientes productos vencerán pronto. Te recomendamos rotar el stock o realizar una promoción:</p>
+                            
+                            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                                <thead>
+                                    <tr style="background-color: #f8fafc;">
+                                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #cbd5e1; color: #475569;">Producto</th>
+                                        <th style="text-align: left; padding: 10px; border-bottom: 2px solid #cbd5e1; color: #475569;">Vence</th>
+                                        <th style="text-align: right; padding: 10px; border-bottom: 2px solid #cbd5e1; color: #475569;">Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsHtml}
+                                </tbody>
+                            </table>
+
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="https://kitchy-gosen.vercel.app/inventario" style="background-color: #e11d48; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Gestionar Inventario</a>
+                            </div>
+
+                            <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                                Este es un servicio automático del Radar de Caitlyn para Kitchy POS. Se envía cada 48h si el riesgo persiste.
+                            </p>
+                        </div>
+                    </div>
+                    `;
+
+                    await sendEmailViaAPI(owner.email, `⚠️ Alerta: Productos por vencer en ${negocio.nombre}`, html, 'Caitlyn de Kitchy');
+
+                    // Marcar como notificados
+                    const itemIds = itemsVenciendo.map(i => i._id);
+                    await Inventario.updateMany(
+                        { _id: { $in: itemIds } },
+                        { $set: { ultimaAlertaVencimiento: hoy } }
+                    );
+                }
+            }
+        }
+        console.log('✅ [Notificador] Revisión de vencimientos completada.');
+    } catch (error) {
+        console.error('❌ Error en notificarVencimientosProximos:', error);
+    }
 };

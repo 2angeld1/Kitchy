@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { updateWeatherContext, updateFuelContext, updateMarketPrices, updateAcodecoContext } from '../services/marketContextService';
+import { notificarVencimientosProximos } from '../services/inventarioService';
 
 export const initScheduler = () => {
     console.log('--- 🚀 Inicializando Cron Jobs del Radar Kitchy ---');
@@ -23,6 +24,12 @@ export const initScheduler = () => {
         await updateFuelContext();
     });
 
+    // Vencimientos: Todos los días a las 8:00 AM
+    cron.schedule('0 8 * * *', async () => {
+        console.log('[Scheduler] Ejecutando radar de vencimientos de inventario...');
+        await notificarVencimientosProximos();
+    });
+
     // EJECUCIÓN INICIAL: Corremos una vez al arrancar el servidor para poblar datos iniciales
     console.log('[Scheduler] Poblando datos iniciales del mercado de Panamá...');
     runInitialSync();
@@ -34,7 +41,8 @@ const runInitialSync = async () => {
             updateWeatherContext(),
             updateMarketPrices(),
             updateAcodecoContext(),
-            updateFuelContext()
+            updateFuelContext(),
+            notificarVencimientosProximos()
         ]);
         console.log('✅ Sincronización inicial completada con éxito.');
     } catch (error) {

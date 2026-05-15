@@ -1,5 +1,17 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+const VIDA_UTIL_DEFAULT: Record<string, number> = {
+    'vegetales': 5,
+    'frutas': 4,
+    'lacteos': 10,
+    'carnes': 3,
+    'panaderia': 4,
+    'legumbres': 7,
+    'belleza': 365,
+    'ingrediente': 30,
+    'otros': 30
+};
+
 export interface IInventario extends Document {
     nombre: string;
     descripcion?: string;
@@ -13,6 +25,7 @@ export interface IInventario extends Document {
     proveedor?: string;
     codigoBarras?: string;
     fechaVencimiento?: Date;
+    ultimaAlertaVencimiento?: Date;
     usuario: mongoose.Types.ObjectId;
     negocioId: mongoose.Types.ObjectId;
     createdAt?: Date;
@@ -75,6 +88,9 @@ const InventarioSchema: Schema = new Schema({
     fechaVencimiento: {
         type: Date
     },
+    ultimaAlertaVencimiento: {
+        type: Date
+    },
     usuario: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -87,6 +103,23 @@ const InventarioSchema: Schema = new Schema({
     }
 }, {
     timestamps: true
+});
+
+// Middleware Pre-save para automatizar fecha de vencimiento
+InventarioSchema.pre('save', function(next) {
+    const item = this as any;
+    
+    // Solo si es nuevo y no tiene fecha de vencimiento
+    if (item.isNew && !item.fechaVencimiento) {
+        const catKey = (item.categoria || 'ingrediente').toLowerCase();
+        const diasVida = VIDA_UTIL_DEFAULT[catKey] || VIDA_UTIL_DEFAULT['ingrediente'];
+        
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() + diasVida);
+        item.fechaVencimiento = fecha;
+        console.log(`✨ [Auto-Expiry] Asignada fecha: ${fecha.toLocaleDateString()} para "${item.nombre}" (Cat: ${catKey})`);
+    }
+    next();
 });
 
 // Índices
