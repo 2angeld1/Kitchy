@@ -65,6 +65,17 @@ export const enviarReportesMasivos = async (req: AuthRequest, res: Response) => 
         }
 
         const formatMoney = (amount: number) => `$${Number(amount).toFixed(2)}`;
+        const formatDateTime = (dateVal: any) => {
+            if (!dateVal) return '---';
+            const d = new Date(dateVal);
+            if (isNaN(d.getTime())) return '---';
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        };
         
         // Ejecutar proceso de generación de PDFs en segundo plano para no bloquear el request si son muchos
         res.json({ message: 'Procesando reportes. Los correos se enviarán en breve.' });
@@ -138,7 +149,7 @@ export const enviarReportesMasivos = async (req: AuthRequest, res: Response) => 
                             <tbody>
                                 ${esp.serviciosItems.map((item: any) => `
                                     <tr>
-                                        <td>${new Date(item.fecha).toLocaleString()}</td>
+                                        <td>${formatDateTime(item.fecha)}</td>
                                         <td>${item.nombre}</td>
                                         <td class="amount">${formatMoney(item.precio)}</td>
                                         <td class="amount bold primary-text">${formatMoney(item.comision)} (${item.porcentaje}%)</td>
@@ -162,7 +173,7 @@ export const enviarReportesMasivos = async (req: AuthRequest, res: Response) => 
                             <tbody>
                                 ${esp.productosItems.map((item: any) => `
                                     <tr>
-                                        <td>${new Date(item.fecha).toLocaleString()}</td>
+                                        <td>${formatDateTime(item.fecha)}</td>
                                         <td>${item.nombre}</td>
                                         <td class="amount">${formatMoney(item.precio)}</td>
                                         <td class="amount bold primary-text">${formatMoney(item.comision)} (${item.porcentaje}%)</td>

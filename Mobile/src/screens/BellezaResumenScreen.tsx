@@ -16,22 +16,29 @@ export default function BellezaResumenScreen() {
     const colors = isDark ? darkTheme : lightTheme;
     const { activeTab, setActiveTab, loading, refreshing, onRefresh, resumenEspecialistas, expandedEspecialista, toggleAccordion, isExporting, handleDescargarGlobal, handleEnviarEspecialistas } = useBellezaResumen();
 
-    const renderItemRow = (item: any, idx: number) => (
-        <View key={idx} style={styles.itemRow}>
-            <View style={{ flex: 2 }}>
-                <Text style={[styles.itemName, { color: colors.textPrimary }]}>{item.nombre}</Text>
-                <Text style={styles.itemDate}>{new Date(item.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+    const renderItemRow = (item: any, idx: number) => {
+        const dateObj = new Date(item.fecha);
+        const dateStr = activeTab === 'semanal'
+            ? `${dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })} - ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            : dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return (
+            <View key={idx} style={styles.itemRow}>
+                <View style={{ flex: 2 }}>
+                    <Text style={[styles.itemName, { color: colors.textPrimary }]}>{item.nombre}</Text>
+                    <Text style={styles.itemDate}>{dateStr}</Text>
+                </View>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                    <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Precio</Text>
+                    <Text style={[styles.itemValue, { color: colors.textPrimary }]}>${item.precio.toFixed(2)}</Text>
+                </View>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                    <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Com. ({item.porcentaje}%)</Text>
+                    <Text style={[styles.itemValue, { color: colors.primary, fontWeight: '800' }]}>${item.comision.toFixed(2)}</Text>
+                </View>
             </View>
-            <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Precio</Text>
-                <Text style={[styles.itemValue, { color: colors.textPrimary }]}>${item.precio.toFixed(2)}</Text>
-            </View>
-            <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Com. ({item.porcentaje}%)</Text>
-                <Text style={[styles.itemValue, { color: colors.primary, fontWeight: '800' }]}>${item.comision.toFixed(2)}</Text>
-            </View>
-        </View>
-    );
+        );
+    };
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>

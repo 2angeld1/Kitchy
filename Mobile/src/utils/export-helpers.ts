@@ -225,6 +225,18 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
 
 export const exportReporteEspecialistaPdf = async (espData: any, periodo: string, businessName: string = 'Kitchy Beauty') => {
     try {
+        const formatDateTime = (dateVal: any) => {
+            if (!dateVal) return '---';
+            const d = new Date(dateVal);
+            if (isNaN(d.getTime())) return '---';
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        };
+
         const html = `
         <!DOCTYPE html>
         <html>
@@ -258,7 +270,7 @@ export const exportReporteEspecialistaPdf = async (espData: any, periodo: string
                 <p>${businessName}</p>
                 <p>Periodo: ${periodo.toUpperCase()} | Fecha de emisión: ${new Date().toLocaleDateString()}</p>
             </div>
-
+ 
             <div class="summary">
                 <div class="summary-item">
                     <div class="label">Total Recaudado</div>
@@ -269,7 +281,7 @@ export const exportReporteEspecialistaPdf = async (espData: any, periodo: string
                     <div class="value" style="color: #8b5cf6;">${formatMoney(espData.totalComision)}</div>
                 </div>
             </div>
-
+ 
             ${espData.serviciosItems?.length > 0 ? `
             <div class="section-title">Servicios Realizados (${espData.serviciosItems.length})</div>
             <table>
@@ -284,7 +296,7 @@ export const exportReporteEspecialistaPdf = async (espData: any, periodo: string
                 <tbody>
                     ${espData.serviciosItems.map((item: any) => `
                         <tr>
-                            <td>${new Date(item.fecha).toLocaleString()}</td>
+                            <td>${formatDateTime(item.fecha)}</td>
                             <td>${item.nombre}</td>
                             <td class="amount">${formatMoney(item.precio)}</td>
                             <td class="amount bold primary-text">${formatMoney(item.comision)} (${item.porcentaje}%)</td>
@@ -293,7 +305,7 @@ export const exportReporteEspecialistaPdf = async (espData: any, periodo: string
                 </tbody>
             </table>
             ` : ''}
-
+ 
             ${espData.productosItems?.length > 0 ? `
             <div class="section-title">Venta de Productos (${espData.productosItems.length})</div>
             <table>
@@ -308,7 +320,7 @@ export const exportReporteEspecialistaPdf = async (espData: any, periodo: string
                 <tbody>
                     ${espData.productosItems.map((item: any) => `
                         <tr>
-                            <td>${new Date(item.fecha).toLocaleString()}</td>
+                            <td>${formatDateTime(item.fecha)}</td>
                             <td>${item.nombre}</td>
                             <td class="amount">${formatMoney(item.precio)}</td>
                             <td class="amount bold primary-text">${formatMoney(item.comision)} (${item.porcentaje}%)</td>

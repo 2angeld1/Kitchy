@@ -133,7 +133,7 @@ export const useBellezaResumen = () => {
                         subtotal,
                         porcentaje,
                         comision: comisionCalculada,
-                        fecha: venta.createdAt
+                        fecha: venta.createdAt || venta.fecha
                     });
                 } else {
                     espData.productosItems.push({
@@ -143,7 +143,7 @@ export const useBellezaResumen = () => {
                         subtotal,
                         porcentaje,
                         comision: comisionCalculada,
-                        fecha: venta.createdAt
+                        fecha: venta.createdAt || venta.fecha
                     });
                 }
 
