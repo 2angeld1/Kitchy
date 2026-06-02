@@ -4,17 +4,19 @@ import Inventario from '../../models/Inventario';
 import { uploadImage, deleteImage } from '../../utils/imageUpload';
 
 const CAITLYN_URL = process.env.CAITLYN_URL || 'http://localhost:8000';
+const CAITLYN_ROUTER_URL = process.env.CAITLYN_ROUTER_URL || 'http://localhost:8080';
 
 export const procesarFacturaService = async (imagen: string, negocioId: string) => {
     const negocio = await Negocio.findById(negocioId).select('categoria');
     const negocioTipo = negocio?.categoria || 'GASTRONOMIA';
 
-    console.log(`🤖 Enviando factura a Caitlyn ([${negocioTipo}]) para análisis...`);
+    console.log(`🤖 Enviando factura al Router Rust de Caitlyn ([${negocioTipo}]) para análisis de alta velocidad...`);
     const caitlynResponse = await axios.post(
-        `${CAITLYN_URL}/agent/invoice`,
+        `${CAITLYN_ROUTER_URL}/agent/invoice`,
         { imagen, negocio_tipo: negocioTipo },
         { timeout: 100000 } // Subido a 100s para soportar saltos de emergencia en la cascada de modelos
     );
+
 
     if (caitlynResponse.data.success) {
         const productosDetectados = caitlynResponse.data.productos || [];
