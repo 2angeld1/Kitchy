@@ -39,7 +39,7 @@ export const NegocioEditModal: React.FC<Props> = ({
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [direccion, setDireccion] = useState('');
-    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA'>('BELLEZA');
+    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA'>('BELLEZA');
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const [horarios, setHorarios] = useState<any>({});
     
@@ -146,7 +146,44 @@ export const NegocioEditModal: React.FC<Props> = ({
                             <KitchyInput label="Dirección Física" placeholder="Ej. Calle 50, local 4" value={direccion} onChangeText={setDireccion} />
                             <KitchyInput label="Link de Reseñas de Google" placeholder="https://g.page/r/..." value={googleMapsReviewUrl} onChangeText={setGoogleMapsReviewUrl} />
 
-                            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 16, marginBottom: 12 }}>
+                            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 16, marginBottom: 10, marginLeft: 4 }}>
+                                CATEGORÍA DEL NEGOCIO
+                            </Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                                {[
+                                    { value: 'BELLEZA', label: 'Belleza', icon: 'cut-outline' as const, color: '#8b5cf6' },
+                                    { value: 'COMIDA', label: 'Comida', icon: 'restaurant-outline' as const, color: '#059669' },
+                                    { value: 'FRUTERIA', label: 'Frutería', icon: 'leaf-outline' as const, color: '#10b981' },
+                                    { value: 'LAVAUTOS', label: 'Lavautos', icon: 'car-sport-outline' as const, color: '#38BDF8' },
+                                    { value: 'JARDINERIA', label: 'Jardinería', icon: 'flower-outline' as const, color: '#f59e0b' },
+                                ].map(cat => {
+                                    const isSelected = categoria === cat.value;
+                                    return (
+                                        <TouchableOpacity
+                                            key={cat.value}
+                                            onPress={() => setCategoria(cat.value as any)}
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                                paddingHorizontal: 14,
+                                                paddingVertical: 10,
+                                                borderRadius: 14,
+                                                backgroundColor: isSelected ? cat.color + '20' : colors.surface,
+                                                borderWidth: 1.5,
+                                                borderColor: isSelected ? cat.color : colors.border,
+                                            }}
+                                        >
+                                            <Ionicons name={cat.icon} size={18} color={isSelected ? cat.color : colors.textMuted} />
+                                            <Text style={{ fontSize: 12, fontWeight: '800', color: isSelected ? cat.color : colors.textSecondary }}>
+                                                {cat.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+
+                            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 8, marginBottom: 12 }}>
                                 HORARIOS DE ATENCIÓN
                             </Text>
                             

@@ -7,7 +7,7 @@ export interface Negocio {
     nombre: string;
     logo?: string;
     tipo: string;
-    categoria: 'BELLEZA';
+    categoria: 'BELLEZA' | 'COMIDA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA';
     config?: {
         moneda: string;
         denominaciones: number[];

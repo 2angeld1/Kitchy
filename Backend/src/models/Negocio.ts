@@ -5,7 +5,7 @@ export interface INegocio extends Document {
     ruc?: string;
     logo?: string;
     tipo?: 'comida' | 'bebida' | 'postre' | 'otro';
-    categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA';
+    categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA';
     config: {
         moneda: string;
         denominaciones: number[];
@@ -88,7 +88,7 @@ const negocioSchema = new Schema({
     },
     categoria: {
         type: String,
-        enum: ['COMIDA', 'BELLEZA', 'FRUTERIA'],
+        enum: ['COMIDA', 'BELLEZA', 'FRUTERIA', 'LAVAUTOS', 'JARDINERIA'],
         default: 'COMIDA'
     },
     config: {

@@ -112,7 +112,7 @@ export const useUsuarios = () => {
         }
     }, []);
 
-    const handleCreateNegocio = async (data: { nombre: string, categoria: 'BELLEZA' | 'COMIDA' | 'FRUTERIA', telefono?: string, googleMapsReviewUrl?: string }) => {
+    const handleCreateNegocio = async (data: { nombre: string, categoria: 'BELLEZA' | 'COMIDA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA', telefono?: string, googleMapsReviewUrl?: string }) => {
         setIsSubmittingNegocio(true);
         try {
             const { createNegocio } = await import('../services/api');

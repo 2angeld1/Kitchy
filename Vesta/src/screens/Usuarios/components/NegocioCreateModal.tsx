@@ -11,7 +11,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface Props {
     visible: boolean;
     onClose: () => void;
-    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA', telefono?: string, googleMapsReviewUrl?: string }) => Promise<any>;
+    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA', telefono?: string, googleMapsReviewUrl?: string }) => Promise<any>;
     onSwitch: (user: any, token: string) => Promise<void>;
     loading: boolean;
     colors: any;
@@ -23,7 +23,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
 }) => {
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
-    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA'>('BELLEZA');
+    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA'>('BELLEZA');
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const insets = useSafeAreaInsets();
     
@@ -98,7 +98,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                     Nuevo <Text style={{ color: colors.primary }}>Negocio</Text>
                                 </Text>
                                 <Text style={{ fontSize: 13, fontWeight: '500', color: colors.textMuted, marginTop: 2 }}>
-                                    Abre otra sucursal de belleza
+                                    Crea una nueva sucursal
                                 </Text>
                             </View>
                             <TouchableOpacity 
@@ -172,6 +172,45 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                     onChangeText={setGoogleMapsReviewUrl} 
                                     containerStyle={{ marginHorizontal: 0 }}
                                 />
+                            </View>
+
+                            <View style={{ marginBottom: 18 }}>
+                                <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginBottom: 10, marginLeft: 4 }}>
+                                    CATEGORÍA DEL NEGOCIO
+                                </Text>
+                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                                    {[
+                                        { value: 'BELLEZA', label: 'Belleza', icon: 'cut-outline' as const, color: '#8b5cf6' },
+                                        { value: 'COMIDA', label: 'Comida', icon: 'restaurant-outline' as const, color: '#059669' },
+                                        { value: 'FRUTERIA', label: 'Frutería', icon: 'leaf-outline' as const, color: '#10b981' },
+                                        { value: 'LAVAUTOS', label: 'Lavautos', icon: 'car-sport-outline' as const, color: '#38BDF8' },
+                                        { value: 'JARDINERIA', label: 'Jardinería', icon: 'flower-outline' as const, color: '#f59e0b' },
+                                    ].map(cat => {
+                                        const isSelected = categoria === cat.value;
+                                        return (
+                                            <TouchableOpacity
+                                                key={cat.value}
+                                                onPress={() => setCategoria(cat.value as any)}
+                                                style={{
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    gap: 6,
+                                                    paddingHorizontal: 14,
+                                                    paddingVertical: 10,
+                                                    borderRadius: 14,
+                                                    backgroundColor: isSelected ? cat.color + '20' : colors.surface,
+                                                    borderWidth: 1.5,
+                                                    borderColor: isSelected ? cat.color : colors.border,
+                                                }}
+                                            >
+                                                <Ionicons name={cat.icon} size={18} color={isSelected ? cat.color : colors.textMuted} />
+                                                <Text style={{ fontSize: 12, fontWeight: '800', color: isSelected ? cat.color : colors.textSecondary }}>
+                                                    {cat.label}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
                             </View>
 
                             <View style={{ 

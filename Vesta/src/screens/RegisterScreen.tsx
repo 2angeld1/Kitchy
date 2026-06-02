@@ -69,6 +69,41 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                             )}
                         </TouchableOpacity>
 
+                        <Text style={[styles.label, { color: colors.textSecondary, marginTop: 10 }]}>Tipo de Negocio</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
+                            {[
+                                { value: 'BELLEZA' as const, label: 'Belleza', icon: 'cut-outline' as const, color: '#8b5cf6' },
+                                { value: 'COMIDA' as const, label: 'Comida', icon: 'restaurant-outline' as const, color: '#059669' },
+                                { value: 'FRUTERIA' as const, label: 'Frutería', icon: 'leaf-outline' as const, color: '#10b981' },
+                                { value: 'LAVAUTOS' as const, label: 'Lavautos', icon: 'car-sport-outline' as const, color: '#38BDF8' },
+                                { value: 'JARDINERIA' as const, label: 'Jardinería', icon: 'flower-outline' as const, color: '#f59e0b' },
+                            ].map(cat => {
+                                const isSelected = categoriaNegocio === cat.value;
+                                return (
+                                    <TouchableOpacity
+                                        key={cat.value}
+                                        onPress={() => setCategoriaNegocio(cat.value)}
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            gap: 6,
+                                            paddingHorizontal: 14,
+                                            paddingVertical: 10,
+                                            borderRadius: 14,
+                                            backgroundColor: isSelected ? cat.color + '20' : colors.card,
+                                            borderWidth: 1.5,
+                                            borderColor: isSelected ? cat.color : colors.border,
+                                        }}
+                                    >
+                                        <Ionicons name={cat.icon} size={18} color={isSelected ? cat.color : colors.textMuted} />
+                                        <Text style={{ fontSize: 12, fontWeight: '800', color: isSelected ? cat.color : colors.textSecondary }}>
+                                            {cat.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+
                         <KitchyButton
                             title="Siguiente"
                             onPress={nextStep}
