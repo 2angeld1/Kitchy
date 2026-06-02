@@ -65,18 +65,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                                 <Ionicons name="restaurant-outline" size={24} color={categoriaNegocio === 'COMIDA' ? colors.primary : colors.textMuted} />
                                 <Text style={{ color: categoriaNegocio === 'COMIDA' ? colors.primary : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 11 }}>Comida</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => setCategoriaNegocio('BELLEZA')}
-                                style={{
-                                    flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center',
-                                    backgroundColor: categoriaNegocio === 'BELLEZA' ? 'rgba(139, 92, 246, 0.1)' : colors.card,
-                                    borderWidth: 2,
-                                    borderColor: categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.border
-                                }}
-                            >
-                                <Ionicons name="cut-outline" size={24} color={categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.textMuted} />
-                                <Text style={{ color: categoriaNegocio === 'BELLEZA' ? '#8b5cf6' : colors.textSecondary, fontWeight: '700', marginTop: 4, fontSize: 11 }}>Belleza</Text>
-                            </TouchableOpacity>
+
                             <TouchableOpacity
                                 onPress={() => setCategoriaNegocio('FRUTERIA')}
                                 style={{

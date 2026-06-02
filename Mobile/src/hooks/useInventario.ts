@@ -20,7 +20,6 @@ export interface InventarioItem {
     codigoBarras?: string;
     fechaVencimiento?: string;
     precioVenta?: number;
-    comisionEspecialista?: number;
 }
 
 export const useInventario = () => {
@@ -103,14 +102,12 @@ export const useInventario = () => {
     const [cantidadMinima, setCantidadMinima] = useState('');
     const [costoUnitario, setCostoUnitario] = useState('');
     const [precioVenta, setPrecioVenta] = useState('');
-    const [comisionEspecialista, setComisionEspecialista] = useState('');
 
-    const categoriaNegocio = useMemo(() => getCategoriaNegocio(user as any), [user]);
-    const [categoria, setCategoria] = useState(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
+    const [categoria, setCategoria] = useState('ingrediente');
 
     useEffect(() => {
-        if (!editItem) setCategoria(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
-    }, [categoriaNegocio, editItem]);
+        if (!editItem) setCategoria('ingrediente');
+    }, [editItem]);
 
     const suggestedPrice = useMemo(() => {
         const costo = parseFloat(costoUnitario);
@@ -119,22 +116,13 @@ export const useInventario = () => {
         const negocio = user?.negocioActivo as any;
         const margenObjetivo = negocio?.config?.margenObjetivo || 65;
         
-        // Si es BELLEZA, incluimos la comisión en el cálculo para no afectar el margen
-        let comision = 0;
-        if (categoriaNegocio === 'BELLEZA') {
-            // Prioridad: 1. Valor manual en el form, 2. Valor global del negocio
-            const manualCom = parseFloat(comisionEspecialista);
-            const globalCom = negocio?.comisionReventa?.porcentajeGlobal || 10;
-            comision = !isNaN(manualCom) ? manualCom : globalCom;
-        }
-
-        const divisor = 1 - (margenObjetivo / 100) - (comision / 100);
+        const divisor = 1 - (margenObjetivo / 100);
         
-        // Evitar división por cero o resultados negativos si el margen+comision > 100
+        // Evitar división por cero o resultados negativos si el margen > 100
         if (divisor <= 0) return (costo * 2).toFixed(2); // Fallback simple
 
         return (costo / divisor).toFixed(2);
-    }, [costoUnitario, user, categoriaNegocio, comisionEspecialista]);
+    }, [costoUnitario, user]);
 
     const [proveedor, setProveedor] = useState('');
     const [codigoBarras, setCodigoBarras] = useState('');
@@ -247,11 +235,10 @@ export const useInventario = () => {
         setCantidadMinima('');
         setCostoUnitario('');
         setPrecioVenta('');
-        setComisionEspecialista('');
         setProveedor('');
         setCodigoBarras('');
         setFechaVencimiento('');
-        setCategoria(categoriaNegocio === 'BELLEZA' ? 'insumo' : 'ingrediente');
+        setCategoria('ingrediente');
         setEditItem(null);
     };
 
@@ -264,7 +251,6 @@ export const useInventario = () => {
         setCantidadMinima(item.cantidadMinima.toString());
         setCostoUnitario(item.costoUnitario.toString());
         setPrecioVenta(item.precioVenta?.toString() || '');
-        setComisionEspecialista(item.comisionEspecialista?.toString() || '');
         setCategoria(item.categoria);
         setProveedor(item.proveedor || '');
         setCodigoBarras(item.codigoBarras || '');
@@ -354,7 +340,6 @@ export const useInventario = () => {
                 cantidadMinima: parseFloat(cantidadMinima) || 0,
                 costoUnitario: parseFloat(costoUnitario),
                 precioVenta: precioVenta ? parseFloat(precioVenta) : undefined,
-                comisionEspecialista: comisionEspecialista ? parseFloat(comisionEspecialista) : undefined,
                 categoria, proveedor, codigoBarras,
                 fechaVencimiento: fechaVencimiento ? formatToISO(fechaVencimiento) : undefined
             };
@@ -641,7 +626,6 @@ export const useInventario = () => {
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         precioVenta, setPrecioVenta, suggestedPrice,
-        comisionEspecialista, setComisionEspecialista,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening, searchingGlobal,

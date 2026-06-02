@@ -60,7 +60,7 @@ export default function EspecialistasScreen() {
                     borderRadius: 10
                 }}
             >
-                <Ionicons name="trash" size={18} color="#e11d48" />
+                <Ionicons name="trash" size={18} color={colors.error} />
             </TouchableOpacity>
         </View>
     );
@@ -103,11 +103,11 @@ export default function EspecialistasScreen() {
                                         <View style={styles.badgeRow}>
                                             <View style={[
                                                 styles.badge, 
-                                                { backgroundColor: b.tipoComision === 'fijo' ? '#8b5cf615' : colors.primary + '15', paddingVertical: 1, paddingHorizontal: 6 }
+                                                { backgroundColor: b.tipoComision === 'fijo' ? colors.primaryLight + '25' : colors.primary + '15', paddingVertical: 1, paddingHorizontal: 6 }
                                             ]}>
                                                 <Text style={[
                                                     styles.badgeText,
-                                                    { color: b.tipoComision === 'fijo' ? '#8b5cf6' : colors.primary, fontSize: 8 }
+                                                    { color: b.tipoComision === 'fijo' ? (isDark ? colors.primaryLight : '#0284c7') : colors.primary, fontSize: 8 }
                                                 ]}>
                                                     {b.tipoComision === 'fijo' ? `FIJA ${b.comision}%` : b.tipoComision === 'escalonado' ? 'VARIABLE' : 'HEREDA LOG LOCAL'}
                                                 </Text>

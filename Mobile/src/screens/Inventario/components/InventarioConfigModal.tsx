@@ -10,7 +10,7 @@ interface Props {
     setValue: (v: string) => void;
     saving: boolean;
     onSave: () => void;
-    categoriaNegocio: 'COMIDA' | 'BELLEZA';
+    categoriaNegocio: 'COMIDA' | 'FRUTERIA';
     colors: any;
     styles: any;
 }
@@ -18,12 +18,9 @@ interface Props {
 export const InventarioConfigModal: React.FC<Props> = ({
     visible, onClose, value, setValue, saving, onSave, categoriaNegocio, colors, styles
 }) => {
-    const isBelleza = categoriaNegocio === 'BELLEZA';
-    const title = isBelleza ? 'Comisión de Reventa' : 'Rentabilidad Deseada';
-    const description = isBelleza 
-        ? 'Establece el % global que ganarán los especialistas por la venta de productos de reventa.'
-        : 'Establece el Margen de Ganancia objetivo para tus insumos y productos.';
-    const icon = isBelleza ? 'cash-outline' : 'trending-up-outline';
+    const title = 'Rentabilidad Deseada';
+    const description = 'Establece el Margen de Ganancia objetivo para tus insumos y productos.';
+    const icon = 'trending-up-outline';
 
     return (
         <Modal visible={visible} animationType="fade" transparent={true} onRequestClose={onClose}>

@@ -1,0 +1,212 @@
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+
+export const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    paperSheet: {
+        flex: 1,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        overflow: 'hidden',
+        marginTop: 16,
+        paddingHorizontal: 20,
+    },
+    menuHeader: {
+        marginVertical: 24,
+        alignItems: 'center',
+    },
+    brandTitle: {
+        fontSize: 32,
+        fontFamily: 'serif',
+        fontWeight: '900',
+        textAlign: 'center',
+        marginBottom: 8,
+    },
+    brandSubtitle: {
+        fontSize: 14,
+        fontFamily: 'serif',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        marginBottom: 24,
+        letterSpacing: 2,
+    },
+    mainDishCircle: {
+        width: width * 0.75,
+        height: width * 0.75,
+        borderRadius: (width * 0.75) / 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.15,
+        shadowRadius: 24,
+        elevation: 10,
+    },
+    heroImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: (width * 0.75) / 2,
+        resizeMode: 'cover',
+    },
+    scrollTabs: {
+        flexGrow: 0,
+        marginBottom: 24,
+    },
+    tabItem: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 24,
+        marginRight: 10,
+        borderWidth: 1,
+    },
+    tabText: {
+        fontSize: 14,
+        fontWeight: '800',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    menuList: {
+        paddingBottom: 60,
+    },
+    menuItemCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 16,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    itemInfo: {
+        flex: 1,
+        paddingRight: 16,
+    },
+    itemHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 8,
+    },
+    itemName: {
+        fontSize: 18,
+        fontWeight: '800',
+        fontFamily: 'serif',
+        flex: 1,
+    },
+    itemPrice: {
+        fontSize: 18,
+        fontWeight: '900',
+        fontFamily: 'serif',
+        marginLeft: 8,
+    },
+    itemDesc: {
+        fontSize: 13,
+        fontWeight: '400',
+        lineHeight: 18,
+        opacity: 0.7,
+    },
+    itemImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 16,
+        resizeMode: 'cover',
+    },
+    emptyState: {
+        paddingVertical: 60,
+        alignItems: 'center',
+    },
+    emptyText: {
+        fontSize: 14,
+        fontStyle: 'italic',
+        opacity: 0.6,
+    },
+    footerContact: {
+        alignItems: 'center',
+        paddingVertical: 40,
+        borderTopWidth: 1,
+        marginTop: 20,
+        marginBottom: 40,
+        borderStyle: 'dashed',
+    },
+    footerLabel: {
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        fontWeight: '700',
+        marginBottom: 8,
+    },
+    footerPhone: {
+        fontSize: 24,
+        fontWeight: '900',
+        fontFamily: 'serif',
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        margin: 0,
+    },
+    modalContent: {
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingBottom: 40,
+        height: '85%',
+        overflow: 'hidden',
+    },
+    closeBtn: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 6,
+    },
+    modalImage: {
+        width: '100%',
+        height: height * 0.4,
+        resizeMode: 'cover',
+    },
+    modalBody: {
+        padding: 24,
+    },
+    modalName: {
+        fontSize: 28,
+        fontWeight: '900',
+        fontFamily: 'serif',
+        marginBottom: 8,
+    },
+    modalPrice: {
+        fontSize: 24,
+        fontWeight: '900',
+        fontFamily: 'serif',
+        marginBottom: 16,
+    },
+    modalDesc: {
+        fontSize: 16,
+        lineHeight: 24,
+        opacity: 0.8,
+        marginBottom: 32,
+    },
+    addToCartBtn: {
+        paddingVertical: 16,
+        borderRadius: 0, // Paper theme style
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+    },
+    addToCartText: {
+        fontSize: 16,
+        fontWeight: '900',
+        letterSpacing: 2,
+    }
+});

@@ -14,10 +14,6 @@ const ReservasScreen = () => {
     const { isDark } = useTheme();
     const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
-    
-    const categoriaNegocio = React.useMemo(() => getCategoriaNegocio(user as any), [user]);
-    const isBelleza = categoriaNegocio === 'BELLEZA';
-
     const {
         reservas, loading, refreshing, refreshReservas,
         fechaFiltro, setFechaFiltro,
@@ -30,7 +26,6 @@ const ReservasScreen = () => {
         nombreRecurso, setNombreRecurso,
         notas, setNotas,
         sugerencias, buscandoCliente, seleccionarCliente,
-        sugerenciasEspecialistas, seleccionarEspecialista,
         handleCrearReserva, handleCancelarReserva, resetForm
     } = useReservas();
 
@@ -79,11 +74,11 @@ const ReservasScreen = () => {
                             <View style={{ flex: 1 }}>
                                 <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textPrimary }}>{item.nombreCliente}</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                                    <Ionicons name={item.tipo === 'GASTRONOMIA' ? 'restaurant-outline' : 'cut-outline'} size={12} color={colors.textMuted} />
+                                    <Ionicons name="restaurant-outline" size={12} color={colors.textMuted} />
                                     <Text style={{ fontSize: 12, color: colors.textMuted, marginLeft: 4 }}>
-                                        {item.nombreRecurso || (item.tipo === 'GASTRONOMIA' ? 'Mesa' : 'Especialista')}
+                                        {item.nombreRecurso || 'Mesa'}
                                     </Text>
-                                    {item.numPersonas && item.tipo === 'GASTRONOMIA' && (
+                                    {item.numPersonas && (
                                         <Text style={{ fontSize: 12, color: colors.textMuted }}> • {item.numPersonas} pers.</Text>
                                     )}
                                 </View>
@@ -156,38 +151,22 @@ const ReservasScreen = () => {
 
                             <View style={{ flexDirection: 'row', gap: 15, marginTop: 20 }}>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>{isBelleza ? 'HORA CITA' : 'HORA'}</Text>
+                                    <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>HORA</Text>
                                     <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={hora} onChangeText={setHora} placeholder="12:00" />
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>{isBelleza ? 'SERVICIOS' : 'PERSONAS'}</Text>
-                                    <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={personas} onChangeText={setPersonas} keyboardType={isBelleza ? 'default' : 'numeric'} placeholder={isBelleza ? 'Corte, Barba...' : '1'} />
+                                    <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>PERSONAS</Text>
+                                    <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={personas} onChangeText={setPersonas} keyboardType="numeric" placeholder="1" />
                                 </View>
                             </View>
 
-                            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>{isBelleza ? 'ESPECIALISTA' : 'MESA'}</Text>
+                            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>MESA</Text>
                             <TextInput 
                                 style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} 
                                 value={nombreRecurso} 
                                 onChangeText={setNombreRecurso} 
-                                placeholder={isBelleza ? 'Ej: Juan Pérez' : 'Ej: Mesa 5'} 
+                                placeholder="Ej: Mesa 5" 
                             />
-
-                            {/* Sugerencias de Especialistas */}
-                            {isBelleza && sugerenciasEspecialistas.length > 0 && (
-                                <View style={{ backgroundColor: colors.surface, borderRadius: 15, marginTop: 5, padding: 5, borderWidth: 1, borderColor: colors.border }}>
-                                    {sugerenciasEspecialistas.map((esp) => (
-                                        <TouchableOpacity 
-                                            key={esp._id} 
-                                            onPress={() => seleccionarEspecialista(esp)}
-                                            style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }}
-                                        >
-                                            <Ionicons name="person-circle-outline" size={20} color={colors.primary} style={{ marginRight: 10 }} />
-                                            <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>{esp.nombre}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            )}
 
                             <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>NOTAS</Text>
                             <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary, height: 80 }} multiline value={notas} onChangeText={setNotas} />

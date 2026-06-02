@@ -65,7 +65,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                     <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
                     {user?.negocioActivo && title === 'Dashboard' && (
                         <Text numberOfLines={1} ellipsizeMode="tail" style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary, marginTop: -2, textTransform: 'uppercase' }}>
-                            {negocioActual?.nombre || (negocioActual?.categoria === 'BELLEZA' ? 'Mi Local' : 'Mi Sucursal')}
+                            {negocioActual?.nombre || 'Mi Sucursal'}
                         </Text>
                     )}
                 </View>
@@ -173,7 +173,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
                         <View style={{ width: '100%', backgroundColor: colors.card, borderRadius: 24, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 15 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                                 <Text style={{ fontSize: 20, fontWeight: '900', color: colors.textPrimary }}>
-                                    {negocioActual?.categoria === 'BELLEZA' ? 'Mis Locales' : 'Mis Negocios'}
+                                    Mis Negocios
                                 </Text>
                                 <TouchableOpacity onPress={() => setShowSwitchModal(false)}>
                                     <Ionicons name="close-circle" size={28} color={colors.textMuted} />

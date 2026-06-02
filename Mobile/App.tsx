@@ -11,14 +11,9 @@ import MenuAppScreen from './src/screens/MenuAppScreen';
 import ConfiguracionMenuScreen from './src/screens/ConfiguracionMenuScreen';
 import GastosScreen from './src/screens/GastosScreen';
 import FinanzasScreen from './src/screens/FinanzasScreen';
-import ComisionesScreen from './src/screens/ComisionesScreen';
-import EspecialistasScreen from './src/screens/EspecialistasScreen';
-import ServiciosScreen from './src/screens/ServiciosScreen';
 import SoporteScreen from './src/screens/SoporteScreen';
 import CaitlynStrategyScreen from './src/screens/CaitlynStrategyScreen';
 import PresupuestarioScreen from './src/screens/PresupuestarioScreen';
-import BellezaResumenScreen from './src/screens/BellezaResumenScreen';
-import CalendarioEspecialistasScreen from './src/screens/CalendarioEspecialistasScreen';
 import EncuestasScreen from './src/screens/EncuestasScreen';
 import FeedbacksScreen from './src/screens/FeedbacksScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
@@ -66,14 +61,9 @@ export type RootStackParamList = {
   ConfiguracionMenu: undefined;
   Gastos: undefined;
   Finanzas: undefined;
-  Comisiones: undefined;
-  Especialistas: undefined;
-  Servicios: undefined;
   Soporte: undefined;
   CaitlynStrategy: { alerta: any };
   Presupuestario: undefined;
-  BellezaResumen: undefined;
-  CalendarioEspecialistas: undefined;
   Encuestas: undefined;
   Feedbacks: undefined;
   ForgotPassword: undefined;
@@ -124,14 +114,9 @@ function RootNavigator() {
             <Stack.Screen name="ConfiguracionMenu" component={ConfiguracionMenuScreen} />
             <Stack.Screen name="Gastos" component={GastosScreen} />
             <Stack.Screen name="Finanzas" component={FinanzasScreen} />
-            <Stack.Screen name="Comisiones" component={ComisionesScreen} />
-            <Stack.Screen name="Especialistas" component={EspecialistasScreen} />
-            <Stack.Screen name="Servicios" component={ServiciosScreen} />
             <Stack.Screen name="Soporte" component={SoporteScreen} />
             <Stack.Screen name="CaitlynStrategy" component={CaitlynStrategyScreen} />
             <Stack.Screen name="Presupuestario" component={PresupuestarioScreen} />
-            <Stack.Screen name="BellezaResumen" component={BellezaResumenScreen} />
-            <Stack.Screen name="CalendarioEspecialistas" component={CalendarioEspecialistasScreen} />
             <Stack.Screen name="Encuestas" component={EncuestasScreen} />
             <Stack.Screen name="Feedbacks" component={FeedbacksScreen} />
             <Stack.Screen name="Reservas" component={ReservasScreen} />

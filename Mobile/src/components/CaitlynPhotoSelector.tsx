@@ -22,11 +22,10 @@ export const CaitlynPhotoSelector: React.FC<CaitlynPhotoSelectorProps> = ({
     const { user } = useAuth();
     const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
     const isFruteria = negocioActual?.categoria === 'FRUTERIA';
-    const isBelleza = negocioActual?.categoria === 'BELLEZA';
 
     const avatarSource = isFruteria 
         ? require('../../assets/caitlyn_frutera.png')
-        : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'));
+        : require('../../assets/caitlyn_avatar.png');
 
     return (
         <Modal

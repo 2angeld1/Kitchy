@@ -2,7 +2,6 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/DashboardScreen';
-import BellezaDashboardScreen from '../screens/BellezaDashboardScreen';
 import AdminHubScreen from '../screens/AdminHubScreen';
 import VentasScreen from '../screens/VentasScreen';
 import InventarioScreen from '../screens/InventarioScreen';
@@ -10,13 +9,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme, typography } from '../theme';
 import { useAuth, Negocio } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import CalendarioEspecialistasScreen from '../screens/CalendarioEspecialistasScreen';
 
 export type MainTabParamList = {
     Dashboard: undefined;
     Ventas: undefined;
     Inventario: undefined;
-    Calendario: undefined;
     Panel: undefined; // Pestaña que agrupa todas las opciones de admin
 };
 
@@ -42,22 +39,12 @@ export default function MainAppNavigator() {
                 animation: 'shift', // Transición de deslizamiento suave (React Navigation 7+)
                 tabBarIcon: ({ focused, color }) => {
                     let iconName: keyof typeof Ionicons.glyphMap = 'home';
-                    const isBelleza = categoria === 'BELLEZA';
-
                     if (route.name === 'Dashboard') {
-                        iconName = isBelleza 
-                            ? (focused ? 'sparkles' : 'sparkles-outline')
-                            : (focused ? 'home' : 'home-outline');
+                        iconName = focused ? 'home' : 'home-outline';
                     } else if (route.name === 'Ventas') {
-                        iconName = isBelleza 
-                            ? (focused ? 'cut' : 'cut-outline')
-                            : (focused ? 'cart' : 'cart-outline');
+                        iconName = focused ? 'cart' : 'cart-outline';
                     } else if (route.name === 'Inventario') {
-                        iconName = isBelleza 
-                            ? (focused ? 'brush' : 'brush-outline')
-                            : (focused ? 'cube' : 'cube-outline');
-                    } else if (route.name === 'Calendario') {
-                        iconName = focused ? 'calendar' : 'calendar-outline';
+                        iconName = focused ? 'cube' : 'cube-outline';
                     } else if (route.name === 'Panel') {
                         iconName = focused ? 'grid' : 'grid-outline';
                     }
@@ -85,7 +72,7 @@ export default function MainAppNavigator() {
         >
             <Tab.Screen
                 name="Dashboard"
-                component={categoria === 'BELLEZA' ? BellezaDashboardScreen : DashboardScreen}
+                component={DashboardScreen}
                 options={{ tabBarLabel: 'Inicio' }}
             />
             <Tab.Screen
@@ -98,14 +85,6 @@ export default function MainAppNavigator() {
                 component={InventarioScreen}
                 options={{ tabBarLabel: 'Inventario' }}
             />
-
-            {isAdmin && categoria === 'BELLEZA' && (
-                <Tab.Screen
-                    name="Calendario"
-                    component={CalendarioEspecialistasScreen}
-                    options={{ tabBarLabel: 'Turnos' }}
-                />
-            )}
 
             {/* Agrupación de todas las rutas "Pro/Admin" en una sola pestaña */}
             {isAdmin && (

@@ -2,24 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Negocio } from '../context/AuthContext';
 
 /**
- * Utilidades para el módulo de Belleza y Barbería
+ * Utilidades generales para Kitchy
  */
-
-/**
- * Retorna el nombre del icono de Ionicons basado en el nombre del servicio
- * @param nombre Nombre del servicio o producto
- */
-export const getBeautyIcon = (nombre: string): any => {
-    const n = nombre.toLowerCase();
-    if (n.includes('corte')) return 'cut';
-    if (n.includes('barba')) return 'brush';
-    if (n.includes('lavado')) return 'water';
-    if (n.includes('ceja')) return 'eye';
-    if (n.includes('tinte')) return 'color-palette';
-    if (n.includes('peinado')) return 'sparkles';
-    if (n.includes('facial')) return 'leaf';
-    return 'flash'; // Icono por defecto
-};
 
 /**
  * Formatea un número a moneda (USD por defecto)
@@ -37,16 +21,9 @@ export const formatMoney = (amount: number) => {
 export const getInventoryIcon = (categoria: string, categoriaNegocio: string): keyof typeof Ionicons.glyphMap => {
     const cat = categoria?.toLowerCase();
     
-    if (categoriaNegocio === 'BELLEZA') {
-        if (cat === 'insumo') return 'flask-outline';
-        if (cat === 'herramienta') return 'cut-outline';
-        if (cat === 'reventa') return 'sparkles-outline';
-        if (cat === 'limpieza') return 'brush-outline';
-    } else {
-        if (cat === 'ingrediente') return 'restaurant-outline';
-        if (cat === 'bebida') return 'cafe-outline';
-        if (cat === 'limpieza') return 'trash-outline';
-    }
+    if (cat === 'ingrediente') return 'restaurant-outline';
+    if (cat === 'bebida') return 'cafe-outline';
+    if (cat === 'limpieza') return 'trash-outline';
     
     return 'cube-outline';
 };

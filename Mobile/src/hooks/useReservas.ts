@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getReservas, crearReserva, cancelarReserva, buscarClientes, getEspecialistas } from '../services/api';
+import { getReservas, crearReserva, cancelarReserva, buscarClientes } from '../services/api';
 import Toast from 'react-native-toast-message';
-import { getCategoriaNegocio } from '../utils/beauty-helpers';
 
 export interface ReservaItem {
     _id: string;
@@ -42,10 +41,6 @@ export const useReservas = () => {
     const [sugerencias, setSugerencias] = useState<any[]>([]);
     const [buscandoCliente, setBuscandoCliente] = useState(false);
 
-    // Sugerencias de Especialistas (Solo Belleza)
-    const [listaEspecialistas, setListaEspecialistas] = useState<any[]>([]);
-    const [sugerenciasEspecialistas, setSugerenciasEspecialistas] = useState<any[]>([]);
-
     const refreshReservas = useCallback(async () => {
         setRefreshing(true);
         try {
@@ -62,12 +57,8 @@ export const useReservas = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [resResponse, espResponse] = await Promise.all([
-                    getReservas(fechaFiltro),
-                    getCategoriaNegocio(user as any) === 'BELLEZA' ? getEspecialistas() : Promise.resolve({ data: [] })
-                ]);
+                const resResponse = await getReservas(fechaFiltro);
                 setReservas(resResponse.data);
-                setListaEspecialistas(espResponse.data);
             } catch (err) {
                 console.error('Error al cargar datos:', err);
             } finally {
@@ -75,7 +66,7 @@ export const useReservas = () => {
             }
         };
         fetchData();
-    }, [fechaFiltro, user]);
+    }, [fechaFiltro]);
 
     // Lógica de búsqueda de clientes
     useEffect(() => {
@@ -97,17 +88,7 @@ export const useReservas = () => {
         }
     }, [nombre, clienteId]);
 
-    // Lógica de búsqueda de especialistas
-    useEffect(() => {
-        if (nombreRecurso.length > 1 && getCategoriaNegocio(user as any) === 'BELLEZA') {
-            const filtrados = listaEspecialistas.filter(e => 
-                e.nombre.toLowerCase().includes(nombreRecurso.toLowerCase())
-            );
-            setSugerenciasEspecialistas(filtrados);
-        } else {
-            setSugerenciasEspecialistas([]);
-        }
-    }, [nombreRecurso, listaEspecialistas, user]);
+
 
     const seleccionarCliente = (cliente: any) => {
         setClienteId(cliente._id);
@@ -117,11 +98,7 @@ export const useReservas = () => {
         setSugerencias([]);
     };
 
-    const seleccionarEspecialista = (esp: any) => {
-        setRecursoId(esp._id);
-        setNombreRecurso(esp.nombre);
-        setSugerenciasEspecialistas([]);
-    };
+
 
     const handleCrearReserva = async () => {
         if (!nombre || !hora) {
@@ -129,35 +106,9 @@ export const useReservas = () => {
             return;
         }
 
-        // Validación de disponibilidad (Solo Belleza)
-        if (getCategoriaNegocio(user as any) === 'BELLEZA' && nombreRecurso) {
-            const esp = listaEspecialistas.find(e => e.nombre.toLowerCase() === nombreRecurso.toLowerCase());
-            if (esp) {
-                const diasSemana = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-                const diaNombre = diasSemana[new Date(fechaFiltro).getUTCDay()];
-                const turnos = esp.horarioSemanal?.[diaNombre] || [];
-                
-                const horaInt = parseInt(hora.split(':')[0]);
-                const disponible = turnos.some((s: any) => {
-                    const sStart = parseInt(s.inicio.split(':')[0]);
-                    const sEnd = parseInt(s.fin.split(':')[0]);
-                    return horaInt >= sStart && horaInt < sEnd;
-                });
-
-                if (!disponible) {
-                    Toast.show({ 
-                        type: 'error', 
-                        text1: 'No disponible', 
-                        text2: `${esp.nombre} no está trabajando hoy a las ${hora}.` 
-                    });
-                    return;
-                }
-            }
-        }
-
         setLoading(true);
         try {
-            const tipoNegocio = (user?.negocioActivo as any)?.categoria === 'BELLEZA' ? 'BELLEZA' : 'GASTRONOMIA';
+            const tipoNegocio = 'GASTRONOMIA';
             await crearReserva({
                 nombreCliente: nombre,
                 emailCliente: email,
@@ -229,8 +180,6 @@ export const useReservas = () => {
         sugerencias,
         buscandoCliente,
         seleccionarCliente,
-        sugerenciasEspecialistas,
-        seleccionarEspecialista,
         // Actions
         handleCrearReserva,
         handleCancelarReserva,

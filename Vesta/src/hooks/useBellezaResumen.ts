@@ -100,7 +100,7 @@ export const useBellezaResumen = () => {
                 const subtotal = item.subtotal || (item.precioUnitario * item.cantidad);
                 const esProducto = item.producto?.categoria === 'PRODUCTO' || item.producto?.categoria === 'otro'; 
                 // Nota: categoria 'servicio' o 'belleza' son servicios
-                const esServicio = item.producto?.categoria === 'servicio' || item.producto?.categoria === 'belleza' || item.producto?.categoria === 'comida';
+                const esServicio = item.producto?.categoria === 'servicio' || item.producto?.categoria === 'belleza';
 
                 let porcentaje = 0;
                 let comisionCalculada = 0;

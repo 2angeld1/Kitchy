@@ -1,0 +1,267 @@
+import { StyleSheet, Dimensions, Platform } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const IS_TABLET = width > 600;
+const CARD_WIDTH = IS_TABLET ? (width - 40 - 48) / 5 : (width - 40 - 24) / 3;
+
+export const createStyles = (colors: any) => StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
+    scrollContent: {
+        paddingBottom: 380,
+    },
+    section: {
+        padding: 20,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '800',
+        color: colors.textPrimary,
+        marginBottom: 12,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    serviceCard: {
+        width: CARD_WIDTH,
+        borderRadius: 24,
+        padding: 14,
+        borderWidth: 1.5,
+        height: 125,
+        justifyContent: 'space-between',
+        backgroundColor: colors.card,
+        // Sombras para profundidad pro
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    iconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        // Efecto cristal suave al fondo
+        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    },
+    serviceInfo: {
+        marginTop: 10,
+    },
+    serviceName: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: colors.textPrimary,
+        opacity: 0.9,
+    },
+    servicePrice: {
+        fontSize: 16,
+        fontWeight: '900',
+        marginTop: 4,
+    },
+    especialistaSection: {
+        padding: 20,
+        marginBottom: 0,
+    },
+    especialistaTitle: {
+        fontSize: 18,
+        fontWeight: '800',
+        color: colors.textPrimary,
+        marginBottom: 16,
+    },
+    especialistaGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+    },
+    especialistaCard: {
+        width: CARD_WIDTH,
+        height: 100,
+        borderRadius: 24,
+        padding: 12,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        position: 'relative', // Para el badge absoluto
+    },
+    especialistaText: {
+        fontSize: 13,
+        fontWeight: '800',
+        textAlign: 'center',
+    },
+    especialistaRole: {
+        fontSize: 10,
+        fontWeight: '600',
+        opacity: 0.6,
+        textTransform: 'uppercase',
+    },
+    badgeContainer: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        backgroundColor: colors.primary,
+        borderRadius: 12,
+        minWidth: 22,
+        height: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: colors.card,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        zIndex: 10,
+    },
+    badgeText: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: '#fff',
+    },
+    clienteSection: {
+        padding: 20,
+    },
+    inputContainer: {
+        borderRadius: 20,
+        padding: 16,
+        borderWidth: 1,
+    },
+    textInput: {
+        borderRadius: 12,
+        padding: 12,
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    // Ticket Styles
+    ticketContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 20,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 25,
+    },
+    paymentMethods: {
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: 15,
+    },
+    paymentBtn: {
+        flex: 1,
+        height: 40,
+        borderRadius: 12,
+        borderWidth: 1.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    paymentText: {
+        fontSize: 11,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+    },
+    billetesContainer: {
+        flexDirection: 'row',
+        gap: 6,
+        marginBottom: 15,
+    },
+    billeteBtn: {
+        flex: 1,
+        paddingVertical: 8,
+        borderRadius: 8,
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    billeteText: {
+        fontWeight: 'bold',
+    },
+    totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        marginBottom: 15,
+    },
+    totalLabel: {
+        fontSize: 11,
+    },
+    totalValue: {
+        fontSize: 32,
+        fontWeight: '900',
+    },
+    cambioText: {
+        fontSize: 14,
+        color: '#10b981',
+        fontWeight: '900',
+        marginBottom: 5,
+    },
+    cobrarBtn: {
+        height: 60,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+    cobrarText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '900',
+    },
+    undoBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+        gap: 6,
+    },
+    undoText: {
+        color: '#ef4444',
+        fontWeight: 'bold',
+        fontSize: 12,
+    },
+    successOverlay: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 70 : 60,
+        alignSelf: 'center',
+        flexDirection: 'row',
+        backgroundColor: colors.primary,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10,
+        zIndex: 9999,
+        elevation: 10,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 15,
+        pointerEvents: 'none',
+    },
+    successCircle: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 16,
+        padding: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+    }
+});

@@ -122,7 +122,7 @@ export const CaitlynAutomaticInsight = () => {
                             <Image 
                                 source={user?.negocioActivo && (user.negocioActivo as any).categoria === 'FRUTERIA' 
                                     ? require('../../assets/caitlyn_frutera.png')
-                                    : (user?.negocioActivo && (user.negocioActivo as any).categoria === 'BELLEZA' ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'))}
+                                    : require('../../assets/caitlyn_avatar.png')}
                                 style={{ width: 56, height: 56, borderRadius: 28 }} 
                                 resizeMode="cover"
                             />

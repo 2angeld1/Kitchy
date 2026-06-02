@@ -50,7 +50,7 @@ export const InventarioMovimientoModal: React.FC<Props> = ({
                         label="Motivo / Nota" 
                         value={movMotivo} 
                         onChangeText={setMovMotivo} 
-                        placeholder={movTipo === 'merma' ? 'Ej. Producto vencido' : categoriaNegocio === 'BELLEZA' ? 'Ej. Uso en corte' : 'Ej. Uso en cocina'} 
+                        placeholder={movTipo === 'merma' ? 'Ej. Producto vencido' : (categoriaNegocio === 'FRUTERIA' ? 'Ej. Rotura de empaque' : 'Ej. Uso en cocina')} 
                     />
 
                     <KitchyButton

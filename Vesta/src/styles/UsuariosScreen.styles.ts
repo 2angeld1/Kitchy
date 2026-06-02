@@ -1,0 +1,223 @@
+import { StyleSheet, Dimensions, Platform } from 'react-native';
+
+const { width } = Dimensions.get('window');
+
+export const createStyles = (colors: any) => StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
+    listContainer: {
+        paddingHorizontal: 20,
+        paddingTop: 16,
+        paddingBottom: 100,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        marginHorizontal: 16,
+        marginTop: 20,
+        backgroundColor: colors.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
+        borderRadius: 24,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: colors.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+        width: width - 32,
+        alignSelf: 'center',
+        // Glassmorphism effect for Web
+        ...Platform.select({
+            web: {
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+            }
+        })
+    },
+    tabButton: {
+        flex: 1,
+        height: 44,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    activeTabButton: {
+        backgroundColor: colors.isDark ? 'rgba(255, 255, 255, 0.12)' : colors.card,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: colors.isDark ? 0.3 : 0.1,
+        shadowRadius: 12,
+        elevation: 4,
+        borderWidth: 1,
+        borderColor: colors.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.05)',
+    },
+    tabText: {
+        fontSize: 13,
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    userCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 24,
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 2,
+    },
+    avatarBox: {
+        width: 54,
+        height: 54,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    infoContainer: {
+        flex: 1,
+        marginLeft: 16,
+    },
+    nameText: {
+        fontSize: 16,
+        fontWeight: '900',
+    },
+    roleTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        marginTop: 4,
+        gap: 4,
+    },
+    roleText: {
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    emailText: {
+        fontSize: 12,
+        fontWeight: '500',
+        marginTop: 4,
+    },
+    emptyState: {
+        alignItems: 'center',
+        marginTop: 60,
+    },
+    emptyIconBox: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+        backgroundColor: colors.surface,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: '900',
+    },
+    emptySub: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 8,
+        lineHeight: 20,
+        paddingHorizontal: 40,
+    },
+    fabContainer: {
+        position: 'absolute',
+        bottom: 24,
+        right: 24,
+        gap: 12,
+    },
+    fab: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 6,
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+        paddingBottom: 40,
+        maxHeight: '85%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        paddingHorizontal: 28,
+        paddingTop: 32,
+        paddingBottom: 24,
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: '900',
+        letterSpacing: -1,
+    },
+    closeButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.surface,
+    },
+    roleOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        marginHorizontal: 28,
+        marginBottom: 12,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    roleIconBox: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    roleOptionText: {
+        fontSize: 16,
+        fontWeight: '900',
+    },
+    roleOptionSub: {
+        fontSize: 12,
+        marginTop: 2,
+    },
+    updateBtn: {
+        marginHorizontal: 28,
+        marginTop: 12,
+        paddingVertical: 18,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+    updateBtnText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '900',
+    },
+    inputHelper: {
+        fontSize: 11,
+        marginHorizontal: 28,
+        marginTop: 8,
+        lineHeight: 16,
+        fontStyle: 'italic',
+    }
+});

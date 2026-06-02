@@ -20,7 +20,7 @@ type DashboardScreenProps = {
     navigation: NativeStackNavigationProp<MainTabParamList, 'Dashboard'>;
 };
 
-export default function BellezaDashboardScreen({ navigation }: DashboardScreenProps) {
+export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { user } = useAuth();
     const [periodo, setPeriodo] = React.useState<'hoy' | 'semana' | 'quincena' | 'mes'>('mes');
     const {
@@ -142,8 +142,8 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(250)}>
                             <View style={[styles.glassCardBase, { backgroundColor: colors.card, borderColor: colors.border }]}>
                                 <View style={styles.cardHeaderRow}>
-                                    <View style={[styles.glassIconContainerPrimary, { backgroundColor: 'rgba(139, 92, 246, 0.15)' }]}>
-                                        <Ionicons name="cut-outline" size={28} color="#8b5cf6" />
+                                    <View style={[styles.glassIconContainerPrimary, { backgroundColor: colors.primary + '15' }]}>
+                                        <Ionicons name="cut-outline" size={28} color={colors.primary} />
                                     </View>
                                     <View style={[styles.datePill, { backgroundColor: colors.background, borderColor: colors.border }]}>
                                         <Text style={[styles.datePillText, { color: colors.textSecondary }]}>
@@ -196,12 +196,11 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(450)}>
                             <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
                                 <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
-                                    <View style={[styles.glassIconSmall, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}>
-                                        <Ionicons name="star-outline" size={18} color="#8b5cf6" />
+                                    <View style={[styles.glassIconSmall, { backgroundColor: colors.primaryLight + '20' }]}>
+                                        <Ionicons name="star-outline" size={18} color={colors.primaryLight} />
                                     </View>
                                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Top Especialistas</Text>
                                 </View>
-
                                 <View style={styles.listContainer}>
                                     {data.comisiones?.especialistas && data.comisiones.especialistas.length > 0 ? (
                                         data.comisiones.especialistas.sort((a, b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => {
@@ -224,9 +223,9 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                                         </Text>
                                                     </View>
                                                     <View
-                                                        style={[styles.listItemRightBadge, { backgroundColor: isTop3 ? rankColor + '15' : 'rgba(139, 92, 246, 0.1)' }]}
+                                                        style={[styles.listItemRightBadge, { backgroundColor: isTop3 ? rankColor + '15' : colors.primaryLight + '20' }]}
                                                     >
-                                                        <Text style={[styles.listItemRightBadgeText, { color: isTop3 ? rankColor : '#8b5cf6' }]}>${esp.pago.toFixed(0)}</Text>
+                                                        <Text style={[styles.listItemRightBadgeText, { color: isTop3 ? rankColor : (isDark ? colors.primaryLight : '#0284c7') }]}>${esp.pago.toFixed(0)}</Text>
                                                     </View>
                                                 </View>
                                             );
@@ -250,7 +249,6 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                         <Text style={{ fontSize: 11, color: colors.primary, fontWeight: '700' }}>Ver POS</Text>
                                     </TouchableOpacity>
                                 </View>
-
                                 <View style={styles.listContainer}>
                                     {data.ventas?.recientes && data.ventas.recientes.length > 0 ? (
                                         data.ventas.recientes.slice(0, 5).map((v: any, idx: number) => {
@@ -297,7 +295,6 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                     </View>
                                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Actividad Reciente</Text>
                                 </View>
-
                                 {data.ventasUltimos7Dias && data.ventasUltimos7Dias.length > 0 && (
                                     <View style={{ paddingVertical: 20, alignItems: 'center' }}>
                                         <LineChart
@@ -320,12 +317,12 @@ export default function BellezaDashboardScreen({ navigation }: DashboardScreenPr
                                                 backgroundGradientFrom: colors.card,
                                                 backgroundGradientTo: colors.card,
                                                 decimalPlaces: 0,
-                                                color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`,
+                                                color: (opacity = 1) => (colors.primary + 'cc').replace('cc', Math.round(opacity * 255).toString(16)),
                                                 labelColor: (opacity = 1) => colors.textMuted,
                                                 propsForDots: {
                                                     r: "4",
                                                     strokeWidth: "2",
-                                                    stroke: "#8b5cf6"
+                                                    stroke: colors.primary
                                                 }
                                             }}
                                             bezier

@@ -14,7 +14,7 @@ import { VentasHistorialModal } from './Ventas/components/VentasHistorialModal';
 import { BellezaCobroModal } from './Ventas/components/BellezaCobroModal';
 import { BellezaCaitlynFAB } from '../components/BellezaCaitlynFAB';
 
-export default function BellezaVentasScreen() {
+export default function VentasScreen() {
     const { isDark } = useTheme();
     const { user } = useAuth();
     const navigation = useNavigation();

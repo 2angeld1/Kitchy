@@ -9,7 +9,6 @@ import { KitchyToolbar } from '../components/KitchyToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useAppDimensions } from '../context/DimensionsContext';
 import { useAuth, Negocio } from '../context/AuthContext';
-import BellezaVentasScreen from './BellezaVentasScreen';
 
 // Componentes modulares
 import { VentasProductCard } from './Ventas/components/VentasProductCard';
@@ -56,11 +55,6 @@ export default function VentasScreen() {
     const negocioActual = typeof user?.negocioActivo === 'object'
         ? user.negocioActivo as Negocio
         : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
-
-    // Si es un negocio de belleza, derivamos a su pantalla especializada
-    if (negocioActual?.categoria === 'BELLEZA') {
-        return <BellezaVentasScreen />;
-    }
 
     const categorias = negocioActual?.categoria === 'FRUTERIA' 
         ? ['fruta', 'vegetal', 'otro']

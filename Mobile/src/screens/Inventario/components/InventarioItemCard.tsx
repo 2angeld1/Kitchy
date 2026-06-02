@@ -19,7 +19,6 @@ interface Props {
 }
 
 // Sub-Cards para cada negocio
-import { InventarioBellezaCard } from './InventarioBellezaCard';
 import { InventarioComidaCard } from './InventarioComidaCard';
 
 export const InventarioItemCard: React.FC<Props> = ({
@@ -56,23 +55,13 @@ export const InventarioItemCard: React.FC<Props> = ({
                     onPress={() => onEdit(item)}
                     activeOpacity={0.8}
                 >
-                    {categoriaNegocio === 'BELLEZA' ? (
-                        <InventarioBellezaCard 
-                            item={item} 
-                            colors={colors} 
-                            styles={styles} 
-                            estaPorVencer={estaPorVencer}
-                            isBajoStock={isBajoStock}
-                        />
-                    ) : (
-                        <InventarioComidaCard 
-                            item={item} 
-                            colors={colors} 
-                            styles={styles}
-                            estaPorVencer={estaPorVencer}
-                            isBajoStock={isBajoStock}
-                        />
-                    )}
+                    <InventarioComidaCard 
+                        item={item} 
+                        colors={colors} 
+                        styles={styles}
+                        estaPorVencer={estaPorVencer}
+                        isBajoStock={isBajoStock}
+                    />
                     <Ionicons name="chevron-back" size={18} color={colors.textMuted} style={{ opacity: 0.8 }} />
                 </GHTouchableOpacity>
             </Swipeable>

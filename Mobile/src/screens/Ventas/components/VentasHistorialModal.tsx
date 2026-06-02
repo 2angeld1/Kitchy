@@ -18,13 +18,6 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit,
     const { user } = useAuth();
     const [ventaSeleccionada, setVentaSeleccionada] = useState<any>(null);
 
-    const esBelleza = useMemo(() => {
-        const negocioActual = typeof user?.negocioActivo === 'object'
-            ? user.negocioActivo as Negocio
-            : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
-        return negocioActual?.categoria === 'BELLEZA';
-    }, [user]);
-
     // Efecto para abrir el detalle si hay un highlight
     React.useEffect(() => {
         if (visible && highlightVentaId) {
@@ -34,8 +27,6 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit,
     }, [visible, highlightVentaId, ventas]);
 
     const renderItem = ({ item }: { item: any }) => {
-        const nombreEspecialista = item.especialista?.nombre || 'General';
-        
         return (
             <TouchableOpacity 
                 activeOpacity={0.7}
@@ -64,11 +55,6 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit,
                             {item.cliente || 'Consumidor Final'}
                         </Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                            {esBelleza && (
-                                <View style={{ backgroundColor: colors.primary + '10', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                                    <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '700' }}>{nombreEspecialista.split(' ')[0]}</Text>
-                                </View>
-                            )}
                             <Text style={[styles.ventaFecha, { color: colors.textSecondary }]}>
                                 {new Date(item.createdAt).toLocaleDateString()}
                             </Text>
@@ -94,10 +80,10 @@ export const VentasHistorialModal = ({ visible, onClose, ventas, colors, onEdit,
                     <View style={styles.header}>
                         <View>
                             <Text style={[styles.title, { color: colors.textPrimary }]}>
-                                {esBelleza ? 'Servicios Recientes' : 'Ventas Recientes'}
+                                Ventas Recientes
                             </Text>
                             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                                {ventas.length} {esBelleza ? 'servicios registrados' : 'ventas registradas'}
+                                {ventas.length} ventas registradas
                             </Text>
                         </View>
                         <TouchableOpacity style={styles.closeButton} onPress={onClose}>

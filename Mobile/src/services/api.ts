@@ -116,24 +116,6 @@ export const getNegocioActual = () => api.get('/negocios/me');
 export const updateNegocio = (id: string, data: any) => api.put(`/negocios/${id}`, data);
 export const deleteNegocio = (id: string) => api.delete(`/negocios/${id}`);
 
-// Comisiones (Belleza)
-export const getComisiones = (params?: any) => api.get('/comisiones', { params });
-export const updateComisionConfig = (data: { 
-    tipo: string, 
-    fijo?: { porcentajeBarbero: number, porcentajeDueno: number }, 
-    escalonado?: any[], 
-    cortesPorCiclo: number,
-    tareas?: any[],
-    bonoPorTarea?: number
-}) => api.put('/negocios/config-comisiones', data);
-export const updateComisionReventaConfig = (data: { porcentajeGlobal: number }) => api.put('/negocios/config-comision-reventa', data);
-
-// Especialistas (Belleza)
-export const getEspecialistas = () => api.get('/especialistas');
-export const createEspecialista = (data: { nombre: string, email?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.post('/especialistas', data);
-export const updateEspecialista = (id: string, data: { nombre?: string, email?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.put(`/especialistas/${id}`, data);
-export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${id}`);
-export const enviarReportesMasivos = (data: { especialistasResumen: any[], periodo: string, businessName: string }) => api.post('/especialistas/enviar-reportes', data);
 
 // Clientes
 export const buscarClientes = (q: string) => api.get('/clientes/buscar', { params: { q } });

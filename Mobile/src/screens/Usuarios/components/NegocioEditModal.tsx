@@ -39,7 +39,7 @@ export const NegocioEditModal: React.FC<Props> = ({
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [direccion, setDireccion] = useState('');
-    const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA'>('COMIDA');
+    const [categoria, setCategoria] = useState<'COMIDA' | 'FRUTERIA'>('COMIDA');
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const [horarios, setHorarios] = useState<any>({});
     
@@ -126,7 +126,7 @@ export const NegocioEditModal: React.FC<Props> = ({
                         <View style={styles.modalHeader}>
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.modalTitle, { color: colors.textPrimary, fontSize: 20 }]}>
-                                    Editar <Text style={{ color: categoria === 'BELLEZA' ? '#8b5cf6' : (categoria === 'FRUTERIA' ? '#10b981' : colors.primary) }}>Negocio</Text>
+                                    Editar <Text style={{ color: categoria === 'FRUTERIA' ? '#10b981' : colors.primary }}>Negocio</Text>
                                 </Text>
                             </View>
                             <TouchableOpacity 

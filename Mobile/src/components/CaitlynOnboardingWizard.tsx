@@ -25,7 +25,6 @@ export const CaitlynOnboardingWizard = () => {
 
     const negocioActual = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
     const step = negocioActual?.onboardingStep;
-    const isBelleza = negocioActual?.categoria === 'BELLEZA';
     const isFruteria = negocioActual?.categoria === 'FRUTERIA';
 
     const validatedRef = React.useRef(false);
@@ -36,11 +35,6 @@ export const CaitlynOnboardingWizard = () => {
         const validateOnboarding = async () => {
             validatedRef.current = true;
             try {
-                if (isBelleza) {
-                    await updateOnboardingProgress(4);
-                    return;
-                }
-
                 const [prodRes, invRes, venRes] = await Promise.all([
                     api.get('/productos', { params: { limit: 1 } }),
                     api.get('/inventario', { params: { limit: 1 } }),
@@ -64,7 +58,7 @@ export const CaitlynOnboardingWizard = () => {
         
         validateOnboarding();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [step, isBelleza]);
+    }, [step]);
 
     if (step === undefined || step >= 4) {
         return null;
@@ -72,7 +66,7 @@ export const CaitlynOnboardingWizard = () => {
 
     const avatarSource = isFruteria 
         ? require('../../assets/caitlyn_frutera.png')
-        : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'));
+        : require('../../assets/caitlyn_avatar.png');
 
     const handleNextStep = async (nextStep: number) => {
         setLoading(true);
@@ -122,7 +116,7 @@ export const CaitlynOnboardingWizard = () => {
                         nombre: invItem.nombre,
                         costoUnitario: invItem.costo,
                         cantidad: invItem.cantidad,
-                        categoria: isBelleza ? 'herramienta' : 'insumo',
+                        categoria: 'insumo',
                         unidadMedida: 'unidad',
                         cantidadMinima: 1
                     });
@@ -259,7 +253,7 @@ export const CaitlynOnboardingWizard = () => {
                                     <>
                                         <TextInput 
                                             style={[styles.input, { color: colors.textPrimary, borderColor: colors.border, backgroundColor: colors.background, marginBottom: 16 }]} 
-                                            placeholder={isFruteria ? "Ej: Saco de Papas o Tomates" : (isBelleza ? "Ej: Tinturado Balayage" : "Ej: Hamburguesa Doble")} 
+                                            placeholder={isFruteria ? "Ej: Saco de Papas o Tomates" : "Ej: Hamburguesa Doble"} 
                                             placeholderTextColor={colors.textMuted}
                                             value={platoDeseado} onChangeText={setPlatoDeseado}
                                         />

@@ -15,7 +15,6 @@ import Toast from 'react-native-toast-message';
 
 // Subcomponentes extraídos
 import { InventarioItemCard } from './Inventario/components/InventarioItemCard';
-import { InventarioBellezaView } from './Inventario/components/InventarioBellezaView';
 import { InventarioComidaView } from './Inventario/components/InventarioComidaView';
 import { InventarioFruteriaView } from './Inventario/components/InventarioFruteriaView';
 import { InventarioFormModal } from './Inventario/components/InventarioFormModal';
@@ -24,7 +23,7 @@ import { InventarioScannerModal } from './Inventario/components/InventarioScanne
 import { InventarioInvoiceReviewModal } from './Inventario/components/InventarioInvoiceReviewModal';
 import { InventarioConfigModal } from './Inventario/components/InventarioConfigModal';
 import InventarioComparativaModal from './Inventario/components/InventarioComparativaModal';
-import { updateNegocioConfig, updateComisionReventaConfig } from '../services/api';
+import { updateNegocioConfig } from '../services/api';
 
 export default function InventarioScreen() {
     const { isDark } = useTheme();
@@ -34,7 +33,6 @@ export default function InventarioScreen() {
     const styles = useMemo(() => createStyles(colors, width), [colors, width]);
 
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user), [user]);
-    const isBelleza = categoriaNegocio === 'BELLEZA';
     const isFruteria = categoriaNegocio === 'FRUTERIA';
 
     const {
@@ -50,7 +48,6 @@ export default function InventarioScreen() {
         cantidad, setCantidad, unidad, setUnidad,
         cantidadMinima, setCantidadMinima, costoUnitario, setCostoUnitario,
         precioVenta, setPrecioVenta, suggestedPrice,
-        comisionEspecialista, setComisionEspecialista,
         categoria, setCategoria, proveedor, setProveedor,
         codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
         hasPermission, scanned, scannerZoom, tapCoords, scannerSettings, isListening, searchingGlobal,
@@ -71,25 +68,16 @@ export default function InventarioScreen() {
     useEffect(() => {
         if (user?.negocioActivo) {
             const negocio = user.negocioActivo as any;
-            if (categoriaNegocio === 'BELLEZA') {
-                setConfigInput(negocio.comisionReventa?.porcentajeGlobal?.toString() || '10');
-            } else {
-                setConfigInput(negocio.config?.margenObjetivo?.toString() || '65');
-            }
+            setConfigInput(negocio.config?.margenObjetivo?.toString() || '65');
         }
-    }, [user?.negocioActivo, categoriaNegocio]);
+    }, [user?.negocioActivo]);
 
     const handleSaveConfig = async () => {
         setSavingConfig(true);
         try {
             const value = parseInt(configInput);
-            if (categoriaNegocio === 'BELLEZA') {
-                await updateComisionReventaConfig({ porcentajeGlobal: value });
-                Toast.show({ type: 'success', text1: '¡Comisión Actualizada!', text2: 'Se aplicará a las nuevas ventas de reventa.' });
-            } else {
-                await updateNegocioConfig({ margenObjetivo: value });
-                Toast.show({ type: 'success', text1: '¡Margen Actualizado!', text2: 'Caitlyn usará esta meta para tus insumos.' });
-            }
+            await updateNegocioConfig({ margenObjetivo: value });
+            Toast.show({ type: 'success', text1: '¡Margen Actualizado!', text2: 'Caitlyn usará esta meta para tus insumos.' });
             setShowConfigModal(false);
             handleRefresh();
         } catch (err) {
@@ -151,14 +139,14 @@ export default function InventarioScreen() {
 
             <Text style={[styles.smartHint, { color: isListening ? colors.primary : colors.textMuted }]}>
                 {isListening
-                    ? '🎙️ Te escucho... Ej: "Gasté 1 litro de shampoo"'
-                    : `💡 Escribe o dicta: "${categoriaNegocio === 'BELLEZA' ? '5 tintes a 10 dólares' : '5 tomates a 10 dólares'}" o "${categoriaNegocio === 'BELLEZA' ? 'usé 1 pote de cera' : 'usé 2 libras de carne'}"`}
+                    ? '🎙️ Te escucho... Ej: "Gasté 2 libras de carne"'
+                    : '💡 Escribe o dicta: "5 tomates a 10 dólares" o "usé 2 libras de carne"'}
             </Text>
 
             {/* FILTROS RÁPIDOS - FLEX LAYOUT */}
             <View style={styles.filterContainer}>
                 <View style={styles.filterOptions}>
-                    {(categoriaNegocio === 'BELLEZA' || categoriaNegocio === 'FRUTERIA'
+                    {(categoriaNegocio === 'FRUTERIA'
                         ? ['todos', 'stockBajo', 'reventa', 'insumo', 'limpieza']
                         : ['todos', 'stockBajo', 'ingrediente', 'limpieza']
                     ).map(opcion => {
@@ -196,18 +184,7 @@ export default function InventarioScreen() {
                         <Text style={styles.emptyText}>Inventario vacío.</Text>
                     </View>
                 ) : (
-                    categoriaNegocio === 'BELLEZA' ? (
-                        <InventarioBellezaView 
-                            items={itemsFiltrados}
-                            categoriaNegocio={categoriaNegocio}
-                            filtro={filtro}
-                            colors={colors}
-                            styles={styles}
-                            onEdit={openEditModal}
-                            onDelete={handleDelete}
-                            onMovimiento={openMovModal}
-                        />
-                    ) : categoriaNegocio === 'FRUTERIA' ? (
+                    categoriaNegocio === 'FRUTERIA' ? (
                         <InventarioFruteriaView 
                             items={itemsFiltrados}
                             categoriaNegocio={categoriaNegocio}
@@ -280,7 +257,6 @@ export default function InventarioScreen() {
                 categoria={categoria} setCategoria={setCategoria}
                 codigoBarras={codigoBarras} setCodigoBarras={setCodigoBarras}
                 fechaVencimiento={fechaVencimiento} setFechaVencimiento={setFechaVencimiento}
-                comisionEspecialista={comisionEspecialista} setComisionEspecialista={setComisionEspecialista}
                 onSubmit={handleSubmit}
                 error={error}
             />
@@ -322,7 +298,7 @@ export default function InventarioScreen() {
                         <Image
                             source={isFruteria 
                                 ? require('../../assets/caitlyn_frutera.png')
-                                : (isBelleza ? require('../../assets/caitlyn_beauty_avatar.png') : require('../../assets/caitlyn_avatar.png'))}
+                                : require('../../assets/caitlyn_avatar.png')}
                             style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 10 }}
                         />
                         <Text style={styles.iaTitle}>Caitlyn está analizando...</Text>
