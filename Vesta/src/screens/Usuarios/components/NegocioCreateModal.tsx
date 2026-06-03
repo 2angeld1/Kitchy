@@ -11,7 +11,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface Props {
     visible: boolean;
     onClose: () => void;
-    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA', telefono?: string, googleMapsReviewUrl?: string }) => Promise<any>;
+    onConfirm: (data: { nombre: string, categoria: 'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA', telefono?: string, googleMapsReviewUrl?: string, esLavadero?: boolean }) => Promise<any>;
     onSwitch: (user: any, token: string) => Promise<void>;
     loading: boolean;
     colors: any;
@@ -24,6 +24,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA'>('BELLEZA');
+    const [esLavadero, setEsLavadero] = useState(false);
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const insets = useSafeAreaInsets();
     
@@ -37,7 +38,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
     }, [user?.negocioIds]);
 
     const handleSubmit = async () => {
-        const res = await onConfirm({ nombre, categoria, telefono, googleMapsReviewUrl });
+        const res = await onConfirm({ nombre, categoria, telefono, googleMapsReviewUrl, esLavadero: categoria === 'LAVAUTOS' ? esLavadero : undefined });
         if (res?.success) {
             setNombre('');
             setTelefono('');
@@ -211,6 +212,37 @@ export const NegocioCreateModal: React.FC<Props> = ({
                                         );
                                     })}
                                 </View>
+
+                                {categoria === 'LAVAUTOS' && (
+                                    <TouchableOpacity
+                                        onPress={() => setEsLavadero(!esLavadero)}
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            gap: 10,
+                                            backgroundColor: esLavadero ? '#38BDF820' : colors.surface,
+                                            padding: 12,
+                                            borderRadius: 14,
+                                            borderWidth: 1.5,
+                                            borderColor: esLavadero ? '#38BDF8' : colors.border,
+                                            marginTop: 10,
+                                        }}
+                                    >
+                                        <Ionicons
+                                            name={esLavadero ? 'checkbox' : 'square-outline'}
+                                            size={22}
+                                            color={esLavadero ? '#38BDF8' : colors.textMuted}
+                                        />
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontSize: 14, fontWeight: '800', color: esLavadero ? '#38BDF8' : colors.textPrimary }}>
+                                                Soy lavadero
+                                            </Text>
+                                            <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
+                                                Me registraré como lavadero de este nuevo local
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                )}
                             </View>
 
                             <View style={{ 

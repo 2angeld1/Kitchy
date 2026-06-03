@@ -66,6 +66,7 @@ export interface INegocio extends Document {
         }
     };
     googleMapsReviewUrl?: string;
+    esEstablecimiento?: boolean;
 }
 
 const negocioSchema = new Schema({
@@ -207,6 +208,10 @@ const negocioSchema = new Schema({
     googleMapsReviewUrl: {
         type: String,
         trim: true
+    },
+    esEstablecimiento: {
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: true

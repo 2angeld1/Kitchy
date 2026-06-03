@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import User from '../models/User';
 import Negocio from '../models/Negocio';
+import Especialista from '../models/Especialista';
 import Producto from '../models/Producto';
 import Venta from '../models/Venta';
 import { enviarEmailRecuperacion } from '../services/emailService';
@@ -68,8 +69,8 @@ export const login = async (req: Request, res: Response) => {
         );
 
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono esEstablecimiento' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono esEstablecimiento' }
         ]);
 
         await applyOnboardingBypass(user);
@@ -94,7 +95,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { email, password, nombre, negocioNombre, tipoNegocio, categoriaNegocio, direccion, telefono, logo } = req.body;
+        const { email, password, nombre, negocioNombre, tipoNegocio, categoriaNegocio, direccion, telefono, logo, esLavadero } = req.body;
 
         if (!email || !password || !nombre || !negocioNombre) {
             return res.status(400).json({ message: 'Nombre, email, contraseña y nombre del negocio son obligatorios' });
@@ -145,9 +146,24 @@ export const register = async (req: Request, res: Response) => {
             { expiresIn: '30d' } as SignOptions
         );
 
+        if (categoriaNegocio === 'LAVAUTOS' && esLavadero) {
+            savedNegocio.esEstablecimiento = false;
+            await savedNegocio.save();
+            await Especialista.create({
+                nombre,
+                rol: 'Lavadero',
+                email,
+                negocioId: savedNegocio._id,
+                comision: 50,
+                tipoComision: 'fijo',
+                turnoActual: 'ambos',
+                activo: true,
+            });
+        }
+
         await savedUser.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono esEstablecimiento' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono esEstablecimiento' }
         ]);
 
         res.status(201).json({

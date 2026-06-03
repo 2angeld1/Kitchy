@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KitchyInput } from '../../../components/KitchyInput';
+import { useAuth } from '../../../context/AuthContext';
+import { createEspecialista } from '../../../services/api';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -40,10 +42,12 @@ export const NegocioEditModal: React.FC<Props> = ({
     const [telefono, setTelefono] = useState('');
     const [direccion, setDireccion] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA'>('BELLEZA');
+    const [esLavadero, setEsLavadero] = useState(false);
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const [horarios, setHorarios] = useState<any>({});
     
     const insets = useSafeAreaInsets();
+    const { user } = useAuth();
 
     useEffect(() => {
         if (negocio) {
@@ -83,6 +87,21 @@ export const NegocioEditModal: React.FC<Props> = ({
             nombre, categoria, telefono, direccion, googleMapsReviewUrl, horarios 
         });
         if (success) {
+            if (esLavadero && categoria === 'LAVAUTOS') {
+                try {
+                    await createEspecialista({
+                        nombre: user?.nombre || 'Lavadero',
+                        email: user?.email,
+                        rol: 'Lavadero',
+                        comision: 50,
+                        tipoComision: 'fijo' as const,
+                        turnoActual: 'ambos',
+                        negocioId: negocio._id,
+                    });
+                } catch (err) {
+                    console.error('Error al crear lavadero:', err);
+                }
+            }
             onClose();
         }
     };
@@ -178,12 +197,43 @@ export const NegocioEditModal: React.FC<Props> = ({
                                             <Text style={{ fontSize: 12, fontWeight: '800', color: isSelected ? cat.color : colors.textSecondary }}>
                                                 {cat.label}
                                             </Text>
-                                        </TouchableOpacity>
-                                    );
-                                })}
+                                            </TouchableOpacity>
+                                        );
+                                    })}
                             </View>
 
-                            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 8, marginBottom: 12 }}>
+                            {categoria === 'LAVAUTOS' && (
+                                <TouchableOpacity
+                                    onPress={() => setEsLavadero(!esLavadero)}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        backgroundColor: esLavadero ? '#38BDF820' : colors.surface,
+                                        padding: 12,
+                                        borderRadius: 14,
+                                        borderWidth: 1.5,
+                                        borderColor: esLavadero ? '#38BDF8' : colors.border,
+                                        marginBottom: 8,
+                                    }}
+                                >
+                                    <Ionicons
+                                        name={esLavadero ? 'checkbox' : 'square-outline'}
+                                        size={22}
+                                        color={esLavadero ? '#38BDF8' : colors.textMuted}
+                                    />
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 14, fontWeight: '800', color: esLavadero ? '#38BDF8' : colors.textPrimary }}>
+                                            Soy lavadero
+                                        </Text>
+                                        <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
+                                            Crear mi perfil como lavadero de este local
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+
+                            <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 16, marginBottom: 12 }}>
                                 HORARIOS DE ATENCIÓN
                             </Text>
                             

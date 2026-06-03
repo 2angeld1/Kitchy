@@ -288,16 +288,56 @@ const JARDINERIA_CONFIG: AdminHubConfig = {
     ]
 };
 
+// Configuración para LAVAUTOS sin establecimiento fijo (lavadero individual)
+const LAVAUTOS_LAVADERO_CONFIG: AdminHubConfig = {
+    subtitle: 'Administración de tu car wash',
+    menuItems: [
+        {
+            id: 'gastos',
+            title: 'Facturas',
+            desc: 'Ver Gastos',
+            icon: 'receipt-outline',
+            color: '#10b981',
+            navigation: 'Gastos'
+        },
+        {
+            id: 'finanzas',
+            title: 'Salud Financiera',
+            desc: 'Ingresos vs Gastos',
+            icon: 'analytics-outline',
+            color: '#f59e0b',
+            navigation: 'Finanzas'
+        },
+        {
+            id: 'reportes',
+            title: 'Reportes CSV',
+            desc: 'Exportar para contador',
+            icon: 'cloud-download-outline',
+            color: '#6366f1',
+            navigation: 'Reportes'
+        },
+        {
+            id: 'soporte',
+            title: 'Soporte',
+            desc: 'Ayuda y Contacto',
+            icon: 'help-buoy-outline',
+            color: '#06b6d4',
+            navigation: 'Soporte'
+        }
+    ]
+};
+
 // El "Selector" o Traductor que mencionabas
 export const getAdminHubConfig = (user: any): AdminHubConfig => {
     const negocioActivo = typeof user?.negocioActivo === 'object'
         ? user.negocioActivo
         : null;
     const categoria = negocioActivo?.categoria;
+    const esEstablecimiento = negocioActivo?.esEstablecimiento;
 
     switch (categoria) {
         case 'LAVAUTOS':
-            return LAVAUTOS_CONFIG;
+            return esEstablecimiento === false ? LAVAUTOS_LAVADERO_CONFIG : LAVAUTOS_CONFIG;
         case 'JARDINERIA':
             return JARDINERIA_CONFIG;
         default:

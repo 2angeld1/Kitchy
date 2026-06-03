@@ -130,7 +130,7 @@ export const updateComisionReventaConfig = (data: { porcentajeGlobal: number }) 
 
 // Especialistas (Belleza)
 export const getEspecialistas = () => api.get('/especialistas');
-export const createEspecialista = (data: { nombre: string, email?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.post('/especialistas', data);
+export const createEspecialista = (data: { nombre: string, email?: string, rol?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any, negocioId?: string }) => api.post('/especialistas', data);
 export const updateEspecialista = (id: string, data: { nombre?: string, email?: string, comision?: number, tipoComision?: 'fijo' | 'escalonado', turnoActual?: string, horarioSemanal?: any }) => api.put(`/especialistas/${id}`, data);
 export const deleteEspecialista = (id: string) => api.delete(`/especialistas/${id}`);
 export const enviarReportesMasivos = (data: { especialistasResumen: any[], periodo: string, businessName: string }) => api.post('/especialistas/enviar-reportes', data);

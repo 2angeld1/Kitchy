@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import Negocio from '../models/Negocio';
+import Especialista from '../models/Especialista';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { uploadImage } from '../utils/imageUpload';
@@ -8,7 +9,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 // Conseguir los negocios del usuario actual
 export const getUserNegocios = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config comisionConfig pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart onboardingStep direccion telefono');
+        const user = await User.findById(req.userId).populate('negocioIds', 'nombre logo tipo categoria config comisionConfig pilotStatus pilotStartDate accumulatedSalesMonth billingCycleStart onboardingStep direccion telefono esEstablecimiento');
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
@@ -22,7 +23,7 @@ export const getUserNegocios = async (req: AuthRequest, res: Response) => {
 // Crear un nuevo negocio (solo admin)
 export const createNegocio = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, tipo, categoria, direccion, telefono, logo, googleMapsReviewUrl } = req.body;
+        const { nombre, tipo, categoria, direccion, telefono, logo, googleMapsReviewUrl, esLavadero } = req.body;
 
         if (!nombre) {
             return res.status(400).json({ message: 'El nombre del negocio es obligatorio' });
@@ -58,6 +59,21 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
         user.negocioActivo = savedNegocio._id as any;
         await user.save();
 
+        if (categoria === 'LAVAUTOS' && esLavadero) {
+            savedNegocio.esEstablecimiento = false;
+            await savedNegocio.save();
+            await Especialista.create({
+                nombre: user.nombre,
+                rol: 'Lavadero',
+                email: user.email,
+                negocioId: savedNegocio._id,
+                comision: 50,
+                tipoComision: 'fijo',
+                turnoActual: 'ambos',
+                activo: true,
+            });
+        }
+
         const jwtSecret = process.env.JWT_SECRET || 'fallback_secret_key';
         const token = jwt.sign(
             { userId: user._id },
@@ -67,8 +83,8 @@ export const createNegocio = async (req: AuthRequest, res: Response) => {
 
         // Populate para que el usuario tenga los objetos negocio completos
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion esEstablecimiento' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion esEstablecimiento' }
         ]);
 
         res.status(201).json({
@@ -119,8 +135,8 @@ export const switchNegocio = async (req: AuthRequest, res: Response) => {
         // Retornamos el user completo con los negocios parseados si es necesario, 
         // pero basta con actualizar token y context allá
         await user.populate([
-            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion' },
-            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion' }
+            { path: 'negocioIds', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion esEstablecimiento' },
+            { path: 'negocioActivo', select: 'nombre logo tipo categoria comisionConfig onboardingStep telefono direccion esEstablecimiento' }
         ]);
 
         res.json({

@@ -21,6 +21,10 @@ export interface IVenta extends Document {
     clienteId?: mongoose.Types.ObjectId;
     encuestaEnviada: boolean;
     notas?: string;
+    placa?: string;
+    marca?: string;
+    modelo?: string;
+    bahia?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -110,6 +114,23 @@ const VentaSchema: Schema = new Schema({
     especialista: {
         type: Schema.Types.ObjectId,
         ref: 'Especialista'
+    },
+    placa: {
+        type: String,
+        trim: true,
+        uppercase: true
+    },
+    marca: {
+        type: String,
+        trim: true
+    },
+    modelo: {
+        type: String,
+        trim: true
+    },
+    bahia: {
+        type: Number,
+        min: 1
     }
 }, {
     timestamps: true

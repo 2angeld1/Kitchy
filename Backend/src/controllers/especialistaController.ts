@@ -15,7 +15,7 @@ export const getEspecialistas = async (req: AuthRequest, res: Response) => {
 
 export const crearEspecialista = async (req: AuthRequest, res: Response) => {
     try {
-        const { nombre, email, rol, comision, tipoComision, turnoActual, horarioSemanal } = req.body;
+        const { nombre, email, rol, comision, tipoComision, turnoActual, horarioSemanal, negocioId } = req.body;
         const nuevo = new Especialista({
             nombre,
             email,
@@ -24,7 +24,7 @@ export const crearEspecialista = async (req: AuthRequest, res: Response) => {
             tipoComision,
             turnoActual: turnoActual || 'ambos',
             horarioSemanal,
-            negocioId: req.negocioId
+            negocioId: negocioId || req.negocioId
         });
         await nuevo.save();
         res.status(201).json(nuevo);

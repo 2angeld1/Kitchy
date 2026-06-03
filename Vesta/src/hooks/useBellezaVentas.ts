@@ -169,7 +169,13 @@ export const useBellezaVentas = () => {
                 metodoPago,
                 pagoCombinado: metodoPago === 'combinado' ? pagoCombinado : undefined,
                 especialista: especialistaSeleccionado,
-                cliente: clienteInfo // Cambiado a 'cliente' para matchear el backend
+                cliente: clienteInfo,
+                ...(clienteInfo?.placa !== undefined ? {
+                    placa: clienteInfo.placa,
+                    marca: clienteInfo.marca,
+                    modelo: clienteInfo.modelo,
+                    bahia: clienteInfo.bahia,
+                } : {}),
             };
 
             const res = await createVenta(payload);

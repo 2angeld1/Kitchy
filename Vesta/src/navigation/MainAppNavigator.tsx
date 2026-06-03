@@ -78,11 +78,17 @@ export default function MainAppNavigator() {
                 component={VentasScreen}
                 options={{ tabBarLabel: 'Ventas' }}
             />
-            <Tab.Screen
-                name="Inventario"
-                component={InventarioScreen}
-                options={{ tabBarLabel: 'Inventario' }}
-            />
+            {(() => {
+                const negocioActivo = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
+                const showInventario = !(negocioActivo?.categoria === 'LAVAUTOS' && negocioActivo?.esEstablecimiento === false);
+                return showInventario ? (
+                    <Tab.Screen
+                        name="Inventario"
+                        component={InventarioScreen}
+                        options={{ tabBarLabel: 'Inventario' }}
+                    />
+                ) : null;
+            })()}
 
             {isAdmin && (
                 <Tab.Screen

@@ -473,6 +473,7 @@ export default function VentasScreen() {
                     setMontoRecibido={setMontoRecibido}
                     cambio={cambio}
                     denominaciones={BILLETES}
+                    categoria={(typeof negocio === 'object' ? negocio?.categoria : undefined) as any}
                 />
         </KeyboardAvoidingView>
     );

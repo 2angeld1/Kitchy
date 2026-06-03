@@ -11,7 +11,7 @@ import { emitToBusiness } from '../config/socket';
 // Crear una nueva venta
 export const crearVenta = async (req: AuthRequest, res: Response) => {
     try {
-        const { items, metodoPago, cliente, notas, especialista, pagoCombinado } = req.body;
+        const { items, metodoPago, cliente, notas, especialista, pagoCombinado, placa, marca, modelo, bahia } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({ message: 'La venta debe tener al menos un producto' });
@@ -25,7 +25,11 @@ export const crearVenta = async (req: AuthRequest, res: Response) => {
             especialista,
             req.userId as string,
             req.negocioId as string,
-            pagoCombinado
+            pagoCombinado,
+            placa,
+            marca,
+            modelo,
+            bahia
         );
 
         emitToBusiness(req.negocioId as string, 'dashboard_update', { 

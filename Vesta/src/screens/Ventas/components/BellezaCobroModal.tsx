@@ -22,6 +22,7 @@ interface Props {
     setMontoRecibido: (m: string) => void;
     cambio: number;
     denominaciones: number[];
+    categoria?: string;
 }
 
 export const BellezaCobroModal: React.FC<Props> = ({
@@ -39,7 +40,8 @@ export const BellezaCobroModal: React.FC<Props> = ({
     montoRecibido,
     setMontoRecibido,
     cambio,
-    denominaciones
+    denominaciones,
+    categoria
 }) => {
     const [step, setStep] = useState<1 | 1.5 | 2>(1);
     const [nombre, setNombre] = useState('');
@@ -48,6 +50,10 @@ export const BellezaCobroModal: React.FC<Props> = ({
     const [esFrecuente, setEsFrecuente] = useState(false);
     const [espFrecuenteSeleccionado, setEspFrecuenteSeleccionado] = useState<string | null>(null);
     const [enviarComprobante, setEnviarComprobante] = useState(true);
+    const [placa, setPlaca] = useState('');
+    const [marca, setMarca] = useState('');
+    const [modelo, setModelo] = useState('');
+    const [bahia, setBahia] = useState('');
 
     // Búsqueda de clientes
     const [searching, setSearching] = useState(false);
@@ -116,15 +122,23 @@ export const BellezaCobroModal: React.FC<Props> = ({
     }, [visible, especialistaSeleccionadoId]);
 
     const handleConfirm = () => {
+        const vehiculo = categoria === 'LAVAUTOS' ? {
+            placa: placa.toUpperCase(),
+            marca,
+            modelo,
+            bahia: bahia ? parseInt(bahia) : undefined,
+        } : {};
         onConfirm({
             nombre: nombre || 'Anónimo',
             telefono,
             email,
             esFrecuente,
             especialistaFrecuente: esFrecuente ? espFrecuenteSeleccionado : null,
-            enviarComprobante
+            enviarComprobante,
+            ...vehiculo
         });
         setNombre(''); setTelefono(''); setEmail(''); setEsFrecuente(false); setEspFrecuenteSeleccionado(null); setEnviarComprobante(true);
+        setPlaca(''); setMarca(''); setModelo(''); setBahia('');
     };
 
     const confirmCombined = () => {
@@ -217,7 +231,7 @@ export const BellezaCobroModal: React.FC<Props> = ({
                 <TouchableOpacity
                     style={{ flex: 1, backgroundColor: colors.surface, paddingVertical: 16, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border }}
                     onPress={() => {
-                        onConfirm({ nombre: 'Anónimo', telefono: '', email: '', esFrecuente: false, enviarComprobante: false });
+                        onConfirm({ nombre: 'Anónimo', telefono: '', email: '', esFrecuente: false, enviarComprobante: false, ...(categoria === 'LAVAUTOS' ? { placa: '', marca: '', modelo: '', bahia: undefined } : {}) });
                         setNombre(''); setTelefono(''); setEmail(''); setEsFrecuente(false); setEnviarComprobante(true);
                     }}
                 >
@@ -374,6 +388,45 @@ export const BellezaCobroModal: React.FC<Props> = ({
                         </View>
                         <Switch value={enviarComprobante} onValueChange={setEnviarComprobante} trackColor={{ false: colors.border, true: colors.primary }} />
                     </Animated.View>
+                )}
+
+                {categoria === 'LAVAUTOS' && (
+                    <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 16, marginTop: 4 }}>
+                        <Text style={{ color: '#38BDF8', fontSize: 12, fontWeight: '800', marginBottom: 12, textTransform: 'uppercase' }}>
+                            <Ionicons name="car-sport-outline" size={14} color="#38BDF8" /> Vehículo
+                        </Text>
+                        <View style={{ gap: 10 }}>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <View style={{ flex: 2, backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center' }}>
+                                    <Ionicons name="car-outline" size={18} color={colors.textMuted} />
+                                    <TextInput
+                                        style={{ flex: 1, height: 46, color: colors.textPrimary, paddingHorizontal: 10, textTransform: 'uppercase' }}
+                                        placeholder="Placa" placeholderTextColor={colors.textMuted} value={placa} onChangeText={setPlaca}
+                                    />
+                                </View>
+                                <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextInput
+                                        style={{ flex: 1, height: 46, color: colors.textPrimary }}
+                                        placeholder="Bahía #" keyboardType="number-pad" placeholderTextColor={colors.textMuted} value={bahia} onChangeText={setBahia}
+                                    />
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: 'row', gap: 10 }}>
+                                <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextInput
+                                        style={{ flex: 1, height: 46, color: colors.textPrimary }}
+                                        placeholder="Marca" placeholderTextColor={colors.textMuted} value={marca} onChangeText={setMarca}
+                                    />
+                                </View>
+                                <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 16, paddingHorizontal: 14, borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextInput
+                                        style={{ flex: 1, height: 46, color: colors.textPrimary }}
+                                        placeholder="Modelo" placeholderTextColor={colors.textMuted} value={modelo} onChangeText={setModelo}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                    </View>
                 )}
             </View>
 

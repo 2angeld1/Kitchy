@@ -16,6 +16,7 @@ export const useRegister = () => {
     const [telefono, setTelefono] = useState('');
     const [logo, setLogo] = useState('');
     const [categoriaNegocio, setCategoriaNegocio] = useState<'BELLEZA' | 'COMIDA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA'>('BELLEZA');
+    const [esLavadero, setEsLavadero] = useState(false);
     const [loading, setLoading] = useState(false);
     const [gpsLoading, setGpsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -196,7 +197,8 @@ export const useRegister = () => {
                 direccion,
                 telefono,
                 logo,
-                categoriaNegocio
+                categoriaNegocio,
+                esLavadero: categoriaNegocio === 'LAVAUTOS' ? esLavadero : undefined,
             });
             Toast.show({
                 type: 'success',
@@ -241,6 +243,8 @@ export const useRegister = () => {
         gpsLoading,
         categoriaNegocio,
         setCategoriaNegocio,
+        esLavadero,
+        setEsLavadero,
         loading,
         error,
         setError,

@@ -27,6 +27,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
         logo, setLogo, seleccionarImagen,
         obtenerUbicacionGps, gpsLoading,
         categoriaNegocio, setCategoriaNegocio,
+        esLavadero, setEsLavadero,
         loading, error, handleRegister
     } = useRegister();
 
@@ -103,6 +104,37 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                                 );
                             })}
                         </View>
+
+                        {categoriaNegocio === 'LAVAUTOS' && (
+                            <TouchableOpacity
+                                onPress={() => setEsLavadero(!esLavadero)}
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                    backgroundColor: esLavadero ? '#38BDF820' : colors.card,
+                                    padding: 12,
+                                    borderRadius: 14,
+                                    borderWidth: 1.5,
+                                    borderColor: esLavadero ? '#38BDF8' : colors.border,
+                                    marginBottom: 4,
+                                }}
+                            >
+                                <Ionicons
+                                    name={esLavadero ? 'checkbox' : 'square-outline'}
+                                    size={22}
+                                    color={esLavadero ? '#38BDF8' : colors.textMuted}
+                                />
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ fontSize: 14, fontWeight: '800', color: esLavadero ? '#38BDF8' : colors.textPrimary }}>
+                                        Soy lavadero
+                                    </Text>
+                                    <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
+                                        Crearás un usuario de lavadero vinculado a tu negocio
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
 
                         <KitchyButton
                             title="Siguiente"

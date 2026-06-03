@@ -13,7 +13,11 @@ export const crearVentaService = async (
     especialista: any,
     userId: string,
     negocioId: string,
-    pagoCombinado?: any[]
+    pagoCombinado?: any[],
+    placa?: string,
+    marca?: string,
+    modelo?: string,
+    bahia?: number,
 ) => {
     // Procesar items y calcular totales
     const itemsProcesados = [];
@@ -146,7 +150,11 @@ export const crearVentaService = async (
         clienteId: clienteFinalId,
         notas,
         especialista,
-        pagoCombinado
+        pagoCombinado,
+        placa,
+        marca,
+        modelo,
+        bahia
     });
 
     await venta.save();
