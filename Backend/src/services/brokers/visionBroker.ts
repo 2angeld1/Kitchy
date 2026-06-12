@@ -10,11 +10,20 @@ export const procesarFacturaService = async (imagen: string, negocioId: string) 
     const negocio = await Negocio.findById(negocioId).select('categoria');
     const negocioTipo = negocio?.categoria || 'GASTRONOMIA';
 
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.KITCHY_GEMINI_API_KEY || '';
+    const headers: Record<string, string> = {};
+    if (geminiKey) {
+        headers['x-gemini-key'] = geminiKey;
+    }
+
     console.log(`🤖 Enviando factura al Router Rust de Caitlyn ([${negocioTipo}]) para análisis de alta velocidad...`);
     const caitlynResponse = await axios.post(
         `${CAITLYN_ROUTER_URL}/agent/invoice`,
         { imagen, negocio_tipo: negocioTipo },
-        { timeout: 100000 } // Subido a 100s para soportar saltos de emergencia en la cascada de modelos
+        { 
+            headers,
+            timeout: 100000 
+        } // Subido a 100s para soportar saltos de emergencia en la cascada de modelos
     );
 
 
