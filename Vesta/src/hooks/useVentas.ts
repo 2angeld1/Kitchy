@@ -183,8 +183,8 @@ export const useVentas = () => {
             if (!negocioId) return;
             
             try {
-                const storedValue = await AsyncStorage.getItem(`kitchy_ordenes_${negocioId}`);
-                const storedActiveId = await AsyncStorage.getItem(`kitchy_active_order_id_${negocioId}`);
+                const storedValue = await AsyncStorage.getItem(`vesta_ordenes_${negocioId}`);
+                const storedActiveId = await AsyncStorage.getItem(`vesta_active_order_id_${negocioId}`);
                 
                 if (storedValue) {
                     let parsed: Orden[] = JSON.parse(storedValue);
@@ -252,8 +252,8 @@ export const useVentas = () => {
         const guardarOrdenes = async () => {
             if (!negocioId) return;
             try {
-                await AsyncStorage.setItem(`kitchy_ordenes_${negocioId}`, JSON.stringify(ordenes));
-                await AsyncStorage.setItem(`kitchy_active_order_id_${negocioId}`, activeOrderId);
+                await AsyncStorage.setItem(`vesta_ordenes_${negocioId}`, JSON.stringify(ordenes));
+                await AsyncStorage.setItem(`vesta_active_order_id_${negocioId}`, activeOrderId);
             } catch (err) {
                 console.error('Error al guardar ordenes', err);
             }

@@ -6,7 +6,7 @@ import { BlurView } from 'expo-blur';
 import Animated, { FadeInDown, FadeInUp, Layout, SlideInDown } from 'react-native-reanimated';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { createStyles } from '../styles/PresupuestarioScreen.styles';
 import { ShoppingItem } from '../types/shopping.types';
 import { useShoppingList } from '../hooks/useShoppingList';
@@ -49,7 +49,7 @@ export default function PresupuestarioScreen() {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar
+            <VestaToolbar
                 title="Presupuestario"
                 onBack={() => navigation.goBack()}
             />

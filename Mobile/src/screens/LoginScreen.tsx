@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 're
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useLogin } from '../hooks/useLogin';
-import { KitchyInput } from '../components/KitchyInput';
-import { KitchyButton } from '../components/KitchyButton';
+import { VestaInput } from '../components/VestaInput';
+import { VestaButton } from '../components/VestaButton';
 import { styles } from '../styles/LoginScreen.styles';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
@@ -33,13 +33,13 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                     </View>
 
                     <Text style={[styles.title, { color: colors.textPrimary }]}>¡Bienvenido!</Text>
-                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Ingresa a tu cuenta para continuar en Kitchy.</Text>
+                    <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Ingresa a tu cuenta para continuar en Vesta Market.</Text>
                 </View>
 
                 {error ? <Text style={styles.globalError}>{error}</Text> : null}
 
                 <View style={styles.formContainer}>
-                    <KitchyInput
+                    <VestaInput
                         label="Correo Electrónico"
                         value={email}
                         onChangeText={setEmail}
@@ -48,7 +48,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                         placeholder="ejemplo@restaurante.com"
                     />
 
-                    <KitchyInput
+                    <VestaInput
                         label="Contraseña"
                         value={password}
                         onChangeText={setPassword}
@@ -64,7 +64,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                     </TouchableOpacity>
                 </View>
 
-                <KitchyButton
+                <VestaButton
                     title="Iniciar Sesión"
                     onPress={handleLogin}
                     loading={loading}

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/UsuariosScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useUsuarios, User } from '../hooks/useUsuarios';
@@ -77,7 +77,7 @@ export default function UsuariosScreen() {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar title="Usuarios" onBack={() => navigation.goBack()} />
+            <VestaToolbar title="Usuarios" onBack={() => navigation.goBack()} />
 
             {/* SEGMENTED TAB SELECTOR (GLASSMORPHISM) */}
             {currentUser?.rol === 'admin' && (

@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Negocio } from '../context/AuthContext';
 
 /**
- * Utilidades generales para Kitchy
+ * Utilidades generales para Vesta Market
  */
 
 /**

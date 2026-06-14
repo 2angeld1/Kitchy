@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles, cardWidth } from '../styles/DashboardScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import Toast from 'react-native-toast-message';
 import { LineChart } from 'react-native-chart-kit';
@@ -61,7 +61,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title="Dashboard" notifications={notifications} />
+            <VestaToolbar title="Dashboard" notifications={notifications} />
 
             <ScrollView
                 showsVerticalScrollIndicator={false}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Modal, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown } from 'react-native-reanimated';
-import { KitchyInput } from '../../../components/KitchyInput';
+import { VestaInput } from '../../../components/VestaInput';
 
 interface Props {
     visible: boolean;
@@ -46,9 +46,9 @@ export const UserCreateModal: React.FC<Props> = ({
                         </View>
 
                         <ScrollView showsVerticalScrollIndicator={false}>
-                            <KitchyInput label="Nombre Completo" placeholder="Ej. Juan P\u00e9rez" value={form.nombre} onChangeText={(t) => setForm({ ...form, nombre: t })} />
-                            <KitchyInput label="Correo Electróico" placeholder="juan@ejemplo.com" value={form.email} onChangeText={(t) => setForm({ ...form, email: t })} keyboardType="email-address" autoCapitalize="none" />
-                            <KitchyInput label="Contrase\u00f1a" placeholder="Minimo 6 caracteres" value={form.password} onChangeText={(t) => setForm({ ...form, password: t })} secureTextEntry />
+                            <VestaInput label="Nombre Completo" placeholder="Ej. Juan P\u00e9rez" value={form.nombre} onChangeText={(t) => setForm({ ...form, nombre: t })} />
+                            <VestaInput label="Correo Electróico" placeholder="juan@ejemplo.com" value={form.email} onChangeText={(t) => setForm({ ...form, email: t })} keyboardType="email-address" autoCapitalize="none" />
+                            <VestaInput label="Contrase\u00f1a" placeholder="Minimo 6 caracteres" value={form.password} onChangeText={(t) => setForm({ ...form, password: t })} secureTextEntry />
 
                             <Text style={[styles.inputHelper, { color: colors.textMuted }]}>
                                 * Los usuarios nuevos siempre se crean como Cajero/Mesero por seguridad.

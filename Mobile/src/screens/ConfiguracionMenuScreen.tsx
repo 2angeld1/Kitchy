@@ -151,7 +151,7 @@ export default function ConfiguracionMenuScreen() {
                             style={[styles.input, { backgroundColor: colors.surface, color: colors.textPrimary, borderColor: colors.border }]}
                             value={config.nombreRestaurante}
                             onChangeText={(val) => updateField('nombreRestaurante', val)}
-                            placeholder="Ej. Kitchy Burger"
+                            placeholder="Ej. Vesta Market Burger"
                             placeholderTextColor={colors.textMuted}
                         />
                     </View>

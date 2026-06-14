@@ -6,7 +6,7 @@ import Animated, { FadeIn, FadeOut, FadeInDown, SlideInDown, ZoomIn, useSharedVa
 import { useBellezaVentas } from '../hooks/useBellezaVentas';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useAuth, Negocio } from '../context/AuthContext';
 import { createStyles } from '../styles/BellezaVentasScreen.styles';
 import { getBeautyIcon, formatMoney, getInventoryIcon } from '../utils/beauty-helpers';
@@ -119,7 +119,7 @@ export default function VentasScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={styles.container}
         >
-            <KitchyToolbar
+            <VestaToolbar
                 title="Punto de Venta"
                 onNotificationPress={abrirHistorial}
                 extraButtons={

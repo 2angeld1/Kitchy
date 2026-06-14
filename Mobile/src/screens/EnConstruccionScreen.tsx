@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,7 +17,7 @@ export default function EnConstruccionScreen({ route }: any) {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title={title} />
+            <VestaToolbar title={title} />
 
             <View style={styles.content}>
                 <Animated.View entering={FadeInUp.delay(200)} style={styles.heroSection}>

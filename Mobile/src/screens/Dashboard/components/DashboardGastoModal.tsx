@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { KitchyInput } from '../../../components/KitchyInput';
-import { KitchyButton } from '../../../components/KitchyButton';
+import { VestaInput } from '../../../components/VestaInput';
+import { VestaButton } from '../../../components/VestaButton';
 
 interface Props {
     visible: boolean;
@@ -36,8 +36,8 @@ export const DashboardGastoModal: React.FC<Props> = ({ visible, onClose, onSave,
                         </TouchableOpacity>
                     </View>
 
-                    <KitchyInput label="Descripció" value={form.desc} onChangeText={(t) => setForm({ ...form, desc: t })} placeholder="Luz, Gas, Renta..." />
-                    <KitchyInput label="Monto ($)" value={form.monto} onChangeText={(t) => setForm({ ...form, monto: t })} keyboardType="decimal-pad" placeholder="0.00" />
+                    <VestaInput label="Descripció" value={form.desc} onChangeText={(t) => setForm({ ...form, desc: t })} placeholder="Luz, Gas, Renta..." />
+                    <VestaInput label="Monto ($)" value={form.monto} onChangeText={(t) => setForm({ ...form, monto: t })} keyboardType="decimal-pad" placeholder="0.00" />
 
                     <Text style={[styles.cardLabel, { color: colors.textMuted, marginTop: 10, marginBottom: 10 }]}>Categorí</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
@@ -56,7 +56,7 @@ export const DashboardGastoModal: React.FC<Props> = ({ visible, onClose, onSave,
                         ))}
                     </View>
 
-                    <KitchyButton
+                    <VestaButton
                         title="Guardar Gasto"
                         onPress={handleSave}
                         loading={loading}

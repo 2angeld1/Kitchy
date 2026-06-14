@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Modal, Image, Plat
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { Producto } from '../../../hooks/useVentas';
-import { KitchyInput } from '../../../components/KitchyInput';
+import { VestaInput } from '../../../components/VestaInput';
 import { getBeautyIcon } from '../../../utils/beauty-helpers';
 import { useAppDimensions } from '../../../context/DimensionsContext';
 import { PagoCombinadoModal } from './PagoCombinadoModal';
@@ -186,7 +186,7 @@ export const VentasCartModal: React.FC<Props> = ({
                             {/* FILA 1: DATOS Y PAGOS (Compacta en Landscape) */}
                             <View style={{ flexDirection: 'row', gap: 12, marginBottom: isLandscape ? 8 : 12, alignItems: 'flex-end' }}>
                                 <View style={{ flex: isLandscape ? 1.2 : 1 }}>
-                                    <KitchyInput
+                                    <VestaInput
                                         label="Cliente"
                                         placeholder="..."
                                         value={cliente}
@@ -196,7 +196,7 @@ export const VentasCartModal: React.FC<Props> = ({
                                     />
                                 </View>
                                 <View style={{ flex: isLandscape ? 1 : 1 }}>
-                                    <KitchyInput
+                                    <VestaInput
                                         label="Beeper"
                                         placeholder="6123..."
                                         keyboardType="phone-pad"

@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platfor
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
-import { KitchyInput } from '../components/KitchyInput';
-import { KitchyButton } from '../components/KitchyButton';
+import { VestaInput } from '../components/VestaInput';
+import { VestaButton } from '../components/VestaButton';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -95,7 +95,7 @@ export default function ForgotPasswordScreen() {
                 </Text>
 
                 <View style={styles.form}>
-                    <KitchyInput
+                    <VestaInput
                         label="Correo Electrónico"
                         value={email}
                         onChangeText={setEmail}
@@ -104,7 +104,7 @@ export default function ForgotPasswordScreen() {
                         placeholder="tu@correo.com"
                     />
 
-                    <KitchyButton
+                    <VestaButton
                         title="Enviar Enlace"
                         onPress={handleSendEmail}
                         loading={loading}

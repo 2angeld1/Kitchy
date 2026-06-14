@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { formatMoney } from '../../../utils/beauty-helpers';
-import { KitchyInput } from '../../../components/KitchyInput';
-import { KitchyButton } from '../../../components/KitchyButton';
+import { VestaInput } from '../../../components/VestaInput';
+import { VestaButton } from '../../../components/VestaButton';
 
 interface Props {
     data: any;
@@ -81,7 +81,7 @@ export const ComisionReventaTab: React.FC<Props> = ({
                         backgroundColor: colors.surface, borderRadius: 16, padding: 20, 
                         borderWidth: 1, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10
                     }}>
-                        <KitchyInput
+                        <VestaInput
                             value={reventaPct}
                             onChangeText={setReventaPct}
                             keyboardType="numeric"
@@ -91,7 +91,7 @@ export const ComisionReventaTab: React.FC<Props> = ({
                         />
                         <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textMuted }}>% de Comisión Global</Text>
                     </View>
-                    <KitchyButton
+                    <VestaButton
                         title="Guardar Cambios de Reventa"
                         onPress={handleSaveReventa}
                         loading={isSavingReventa}

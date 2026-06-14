@@ -22,7 +22,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
 import { lightTheme, darkTheme } from './src/theme';
-import KitchyToast from './src/components/KitchyToast';
+import VestaToast from './src/components/VestaToast';
 import { VersionChecker } from './src/components/VersionChecker';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { DimensionsProvider } from './src/context/DimensionsContext';
@@ -159,7 +159,7 @@ export default function App() {
             <SafeAreaProvider>
               <NavigationContainer>
                 <RootNavigator />
-                <KitchyToast />
+                <VestaToast />
                 <VersionChecker />
               </NavigationContainer>
             </SafeAreaProvider>

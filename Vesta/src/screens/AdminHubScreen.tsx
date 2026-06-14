@@ -8,7 +8,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/AdminHubScreen.styles';
 import Toast from 'react-native-toast-message';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -54,7 +54,7 @@ export default function AdminHubScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar
+            <VestaToolbar
                 title="Panel"
                 showNotifications={true}
                 extraButtons={

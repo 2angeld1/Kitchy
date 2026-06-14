@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { useReportes } from '../hooks/useReportes';
@@ -69,7 +69,7 @@ export default function FinanzasScreen() {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar title="Salud Financiera" onBack={() => navigation.goBack()} />
+            <VestaToolbar title="Salud Financiera" onBack={() => navigation.goBack()} />
             
             <ScrollView 
                 contentContainerStyle={{ padding: 20 }}

@@ -3,7 +3,7 @@ import { View, Text, Modal, ScrollView, TouchableOpacity, KeyboardAvoidingView, 
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KitchyInput } from '../../../components/KitchyInput';
+import { VestaInput } from '../../../components/VestaInput';
 import { useAuth } from '../../../context/AuthContext';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -114,7 +114,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
                             contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 10 }}
                         >
                             <View style={{ marginBottom: 18 }}>
-                                <KitchyInput 
+                                <VestaInput 
                                     label="Nombre del Negocio" 
                                     placeholder="Ej. Burguer Truck II" 
                                     value={nombre} 
@@ -124,7 +124,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
                             </View>
 
                             <View style={{ marginBottom: 18 }}>
-                                <KitchyInput 
+                                <VestaInput 
                                     label="WhatsApp del Negocio (Opcional)" 
                                     placeholder="Ej. 61234567" 
                                     keyboardType="phone-pad"
@@ -165,7 +165,7 @@ export const NegocioCreateModal: React.FC<Props> = ({
                             </View>
                             
                             <View style={{ marginBottom: 18 }}>
-                                <KitchyInput 
+                                <VestaInput 
                                     label="Link de Reseñas de Google" 
                                     placeholder="https://g.page/r/..." 
                                     value={googleMapsReviewUrl} 

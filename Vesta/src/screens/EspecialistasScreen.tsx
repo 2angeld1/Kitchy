@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { KitchyToolbar } from '../components/KitchyToolbar';
-import { KitchyButton } from '../components/KitchyButton';
-import { KitchyInput } from '../components/KitchyInput';
+import { VestaToolbar } from '../components/VestaToolbar';
+import { VestaButton } from '../components/VestaButton';
+import { VestaInput } from '../components/VestaInput';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { useNavigation } from '@react-navigation/native';
@@ -67,7 +67,7 @@ export default function EspecialistasScreen() {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar title="Tu Equipo" onBack={() => navigation.goBack()} />
+            <VestaToolbar title="Tu Equipo" onBack={() => navigation.goBack()} />
 
             <ScrollView 
                 contentContainerStyle={styles.scrollContent}
@@ -142,7 +142,7 @@ export default function EspecialistasScreen() {
                             </View>
 
                             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8 }}>Nombre del Especialista</Text>
-                            <KitchyInput 
+                            <VestaInput 
                                 placeholder="Nombre completo"
                                 value={form.nombre}
                                 onChangeText={(t) => setForm({ ...form, nombre: t })}
@@ -176,7 +176,7 @@ export default function EspecialistasScreen() {
                             </ScrollView>
 
                             <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 8, marginTop: 10 }}>Correo Electrónico</Text>
-                            <KitchyInput 
+                            <VestaInput 
                                 placeholder="barbero@email.com (opcional)"
                                 value={form.email}
                                 onChangeText={(t) => setForm({ ...form, email: t })}
@@ -237,7 +237,7 @@ export default function EspecialistasScreen() {
                             )}
                             
                             <View style={{ marginTop: 10 }}>
-                                <KitchyButton 
+                                <VestaButton 
                                     title={isEditing ? "Actualizar Especialista" : "Guardar Especialista"} 
                                     onPress={handleGuardar} 
                                     loading={loading} 

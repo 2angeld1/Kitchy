@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { KitchyInput } from '../../../components/KitchyInput';
-import { KitchyButton } from '../../../components/KitchyButton';
+import { VestaInput } from '../../../components/VestaInput';
+import { VestaButton } from '../../../components/VestaButton';
 
 interface Props {
     form: any;
@@ -97,7 +97,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                                     Especialista recibe
                                 </Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                    <KitchyInput
+                                    <VestaInput
                                         value={form.porcentajeBarbero}
                                         onChangeText={(t) => {
                                             const p = parseInt(t) || 0;
@@ -149,7 +149,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                         {form.escalonado.map((tier: any, index: number) => (
                             <View key={index} style={styles.tierItem}>
                                 <View style={{ flex: 0.8 }}>
-                                    <KitchyInput
+                                    <VestaInput
                                         style={{ height: 48, marginBottom: 0 }}
                                         containerStyle={{ marginBottom: 0 }}
                                         value={tier.desde.toString()}
@@ -162,7 +162,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                                     />
                                 </View>
                                 <View style={{ flex: 0.8 }}>
-                                    <KitchyInput
+                                    <VestaInput
                                         style={{ height: 48, marginBottom: 0 }}
                                         containerStyle={{ marginBottom: 0 }}
                                         value={tier.hasta.toString()}
@@ -175,7 +175,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                                     />
                                 </View>
                                 <View style={{ flex: 1.2 }}>
-                                    <KitchyInput
+                                    <VestaInput
                                         style={{ height: 48, marginBottom: 0 }}
                                         containerStyle={{ marginBottom: 0 }}
                                         value={tier.porcentajeBarbero.toString()}
@@ -228,7 +228,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                             <Text style={{ fontSize: 12, color: colors.textMuted }}>% que se suma a su comisión al completar una tarea.</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <KitchyInput
+                            <VestaInput
                                 value={form.bonoPorTarea?.toString() || '0'}
                                 onChangeText={(t) => setForm({ ...form, bonoPorTarea: t.replace(/[^0-9]/g, '') })}
                                 keyboardType="numeric"
@@ -242,7 +242,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                     {form.tareas && form.tareas.map((tarea: any, index: number) => (
                         <View key={index} style={{ flexDirection: 'row', gap: 8, marginBottom: 8, alignItems: 'center' }}>
                             <View style={{ flex: 1.5 }}>
-                                <KitchyInput
+                                <VestaInput
                                     placeholder="Nombre de la tarea (Ej: Barrer)"
                                     value={tarea.nombre}
                                     onChangeText={(t) => {
@@ -297,7 +297,7 @@ export const ComisionAjustesTab: React.FC<Props> = ({
                     </TouchableOpacity>
                 </View>
 
-                <KitchyButton
+                <VestaButton
                     title="Guardar Configuración"
                     onPress={handleSaveConfig}
                     loading={isSaving}

@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/ProductosScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useProductos } from '../hooks/useProductos';
 import { Producto } from '../types/producto.types';
@@ -173,7 +173,7 @@ export default function ProductosScreen({ route }: any) {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar title="Productos" onBack={() => navigation.goBack()} />
+            <VestaToolbar title="Productos" onBack={() => navigation.goBack()} />
 
             <View style={styles.headerRow}>
                 <View style={styles.searchInputWrapper}>

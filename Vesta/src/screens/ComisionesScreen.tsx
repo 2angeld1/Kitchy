@@ -3,9 +3,9 @@ import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpa
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, SlideInDown } from 'react-native-reanimated';
-import { KitchyToolbar } from '../components/KitchyToolbar';
-import { KitchyInput } from '../components/KitchyInput';
-import { KitchyButton } from '../components/KitchyButton';
+import { VestaToolbar } from '../components/VestaToolbar';
+import { VestaInput } from '../components/VestaInput';
+import { VestaButton } from '../components/VestaButton';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { useComisiones } from '../hooks/useComisiones';
@@ -115,7 +115,7 @@ export default function ComisionesScreen() {
             if (exportFormat === 'csv') {
                 await exportComisionesCsv(exportData, exportPeriodo);
             } else {
-                await exportComisionesPdf(exportData, exportPeriodo, 'Kitchy Beauty', ventasDetalle);
+                await exportComisionesPdf(exportData, exportPeriodo, 'Vesta Beauty', ventasDetalle);
             }
             
             setShowExportModal(false);
@@ -138,7 +138,7 @@ export default function ComisionesScreen() {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar
+            <VestaToolbar
                 title="Comisiones"
                 onBack={() => navigation.goBack()}
                 extraButtons={
@@ -245,7 +245,7 @@ export default function ComisionesScreen() {
                             ))}
                         </View>
 
-                        <KitchyButton 
+                        <VestaButton 
                             title={isExporting ? "Generando..." : `Generar ${exportFormat.toUpperCase()}`} 
                             loading={isExporting} 
                             onPress={handleGenerateExport} 

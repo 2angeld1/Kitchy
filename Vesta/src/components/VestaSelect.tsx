@@ -19,7 +19,7 @@ interface Option {
   value: string;
 }
 
-interface KitchySelectProps {
+interface VestaSelectProps {
   label: string;
   value: string;
   options: Option[];
@@ -29,7 +29,7 @@ interface KitchySelectProps {
   containerStyle?: any;
 }
 
-export function KitchySelect({ 
+export function VestaSelect({ 
   label, 
   value, 
   options, 
@@ -37,7 +37,7 @@ export function KitchySelect({
   placeholder = 'Seleccionar...', 
   error,
   containerStyle 
-}: KitchySelectProps) {
+}: VestaSelectProps) {
   const { isDark } = useTheme();
   const colors = isDark ? darkTheme : lightTheme;
   const [showModal, setShowModal] = useState(false);

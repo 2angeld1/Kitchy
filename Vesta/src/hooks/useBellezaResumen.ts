@@ -185,7 +185,7 @@ export const useBellezaResumen = () => {
                 }
             };
 
-            await exportComisionesPdf(exportData, fechaTitulo, negocioInfo?.nombre || 'Kitchy Beauty', ventas);
+            await exportComisionesPdf(exportData, fechaTitulo, negocioInfo?.nombre || 'Vesta Beauty', ventas);
         } catch (err) {
             console.error('Error en exportación:', err);
             Toast.show({ type: 'error', text1: 'Error', text2: 'Hubo un problema al generar el reporte global.' });
@@ -211,7 +211,7 @@ export const useBellezaResumen = () => {
             await enviarReportesMasivos({
                 especialistasResumen: especialistasConCorreo,
                 periodo,
-                businessName: negocioInfo?.nombre || 'Kitchy POS'
+                businessName: negocioInfo?.nombre || 'Vesta POS'
             });
 
             Toast.show({ type: 'success', text1: '¡Enviando!', text2: 'Los reportes se están enviando en segundo plano.' });

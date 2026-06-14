@@ -20,7 +20,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     useEffect(() => {
         const loadTheme = async () => {
             try {
-                const storedTheme = await AsyncStorage.getItem('@kitchy_theme');
+                const storedTheme = await AsyncStorage.getItem('@vesta_theme');
                 if (storedTheme === 'light' || storedTheme === 'dark') {
                     setTheme(storedTheme);
                 } else if (systemColorScheme) {
@@ -40,7 +40,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const newTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(newTheme);
         try {
-            await AsyncStorage.setItem('@kitchy_theme', newTheme);
+            await AsyncStorage.setItem('@vesta_theme', newTheme);
         } catch (error) {
             console.error("Error saving theme to storage", error);
         }

@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown } from 'react-native-reanimated';
-import { KitchyInput } from '../../../components/KitchyInput';
-import { KitchyButton } from '../../../components/KitchyButton';
+import { VestaInput } from '../../../components/VestaInput';
+import { VestaButton } from '../../../components/VestaButton';
 
 interface Props {
     visible: boolean;
@@ -43,17 +43,17 @@ export const InventarioMovimientoModal: React.FC<Props> = ({
                     </Text>
 
                     {movTipo === 'entrada' && (
-                        <KitchyInput label="Costo Total de la Compra" value={movCosto} onChangeText={setMovCosto} keyboardType="numeric" placeholder="$0.00" />
+                        <VestaInput label="Costo Total de la Compra" value={movCosto} onChangeText={setMovCosto} keyboardType="numeric" placeholder="$0.00" />
                     )}
-                    <KitchyInput label="Cantidad" value={movCantidad} onChangeText={setMovCantidad} keyboardType="numeric" placeholder="0" />
-                    <KitchyInput 
+                    <VestaInput label="Cantidad" value={movCantidad} onChangeText={setMovCantidad} keyboardType="numeric" placeholder="0" />
+                    <VestaInput 
                         label="Motivo / Nota" 
                         value={movMotivo} 
                         onChangeText={setMovMotivo} 
                         placeholder={movTipo === 'merma' ? 'Ej. Producto vencido' : (categoriaNegocio === 'FRUTERIA' ? 'Ej. Rotura de empaque' : 'Ej. Uso en cocina')} 
                     />
 
-                    <KitchyButton
+                    <VestaButton
                         title="Confirmar"
                         onPress={onConfirm}
                         loading={loading}

@@ -71,8 +71,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const loadUserFromStorage = async () => {
             try {
-                const storedToken = await AsyncStorage.getItem('kitchy_token');
-                const storedUser = await AsyncStorage.getItem('kitchy_user');
+                const storedToken = await AsyncStorage.getItem('vesta_token');
+                const storedUser = await AsyncStorage.getItem('vesta_user');
 
                 if (storedToken && storedUser) {
                     setToken(storedToken);
@@ -92,8 +92,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const response = await apiLogin(email, password);
         const { token: newToken, user: userData } = response.data;
 
-        await AsyncStorage.setItem('kitchy_token', newToken);
-        await AsyncStorage.setItem('kitchy_user', JSON.stringify(userData));
+        await AsyncStorage.setItem('vesta_token', newToken);
+        await AsyncStorage.setItem('vesta_user', JSON.stringify(userData));
 
         setToken(newToken);
         setUser(userData);
@@ -114,8 +114,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const response = await apiRegister(data);
         const { token: newToken, user: userData } = response.data;
 
-        await AsyncStorage.setItem('kitchy_token', newToken);
-        await AsyncStorage.setItem('kitchy_user', JSON.stringify(userData));
+        await AsyncStorage.setItem('vesta_token', newToken);
+        await AsyncStorage.setItem('vesta_user', JSON.stringify(userData));
 
         setToken(newToken);
         setUser(userData);
@@ -123,16 +123,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const logout = async () => {
-        await AsyncStorage.removeItem('kitchy_token');
-        await AsyncStorage.removeItem('kitchy_user');
+        await AsyncStorage.removeItem('vesta_token');
+        await AsyncStorage.removeItem('vesta_user');
         setToken(null);
         setUser(null);
         delete api.defaults.headers.common['Authorization'];
     };
 
     const switchNegocioContext = async (newUserContext: User, newToken: string) => {
-        await AsyncStorage.setItem('kitchy_token', newToken);
-        await AsyncStorage.setItem('kitchy_user', JSON.stringify(newUserContext));
+        await AsyncStorage.setItem('vesta_token', newToken);
+        await AsyncStorage.setItem('vesta_user', JSON.stringify(newUserContext));
         setToken(newToken);
         setUser(newUserContext);
         api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const updatedNegocioActivo = { ...user.negocioActivo, onboardingStep: step };
                 const updatedUser = { ...user, negocioActivo: updatedNegocioActivo };
                 setUser(updatedUser);
-                await AsyncStorage.setItem('kitchy_user', JSON.stringify(updatedUser));
+                await AsyncStorage.setItem('vesta_user', JSON.stringify(updatedUser));
             }
         } catch (err) {
             console.error('Error updating onboarding progress', err);

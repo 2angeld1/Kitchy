@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Modal } fr
 import { Ionicons } from '@expo/vector-icons';
 import { lightTheme, darkTheme } from '../theme';
 import { useTheme } from '../context/ThemeContext';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useCalendarioEspecialistas, DIAS } from '../hooks/useCalendarioEspecialistas';
 
 export default function CalendarioEspecialistasScreen() {
@@ -22,7 +22,7 @@ export default function CalendarioEspecialistasScreen() {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar title="Turnos de Equipo" />
+            <VestaToolbar title="Turnos de Equipo" />
 
             {/* Selector de Día */}
             <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border }}>

@@ -3,11 +3,11 @@ import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Modal, TextIn
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { getProductos, createProducto, deleteProducto, updateProducto } from '../services/api';
-import { KitchyButton } from '../components/KitchyButton';
+import { VestaButton } from '../components/VestaButton';
 import Toast from 'react-native-toast-message';
 
 export default function ServiciosScreen() {
@@ -91,7 +91,7 @@ export default function ServiciosScreen() {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar title="Servicios" onBack={() => navigation.goBack()} />
+            <VestaToolbar title="Servicios" onBack={() => navigation.goBack()} />
 
             <ScrollView 
                 contentContainerStyle={{ padding: 20 }}
@@ -198,7 +198,7 @@ export default function ServiciosScreen() {
                             }}
                         />
 
-                        <KitchyButton title={editingId ? 'Actualizar' : 'Crear'} onPress={handleSave} loading={loading} />
+                        <VestaButton title={editingId ? 'Actualizar' : 'Crear'} onPress={handleSave} loading={loading} />
                         
                         <TouchableOpacity onPress={( ) => setShowModal(false)} style={{ marginTop: 16, alignItems: 'center' }}>
                             <Text style={{ color: colors.textMuted }}>Cancelar</Text>

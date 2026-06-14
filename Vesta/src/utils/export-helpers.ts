@@ -62,7 +62,7 @@ export const exportComisionesCsv = async (data: any, periodo: string) => {
     }
 };
 
-export const exportComisionesPdf = async (data: any, periodo: string, businessName: string = 'Kitchy Beauty', ventas: any[] = []) => {
+export const exportComisionesPdf = async (data: any, periodo: string, businessName: string = 'Vesta Beauty', ventas: any[] = []) => {
     try {
         // Lógica de agrupación por especialista y por día
         const dailyBreakdown: any = {};
@@ -193,7 +193,7 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
             `).join('')}
 
             <div class="footer">
-                Reporte detallado generado por el sistema Kitchy POS.
+                Reporte detallado generado por el sistema Vesta POS.
             </div>
         </body>
         </html>
@@ -223,7 +223,7 @@ export const exportComisionesPdf = async (data: any, periodo: string, businessNa
     }
 };
 
-export const exportReporteEspecialistaPdf = async (espData: any, periodo: string, businessName: string = 'Kitchy Beauty') => {
+export const exportReporteEspecialistaPdf = async (espData: any, periodo: string, businessName: string = 'Vesta Beauty') => {
     try {
         const formatDateTime = (dateVal: any) => {
             if (!dateVal) return '---';
@@ -331,7 +331,7 @@ export const exportReporteEspecialistaPdf = async (espData: any, periodo: string
             ` : ''}
 
             <div class="footer">
-                Este es un comprobante de pago generado por <strong>Kitchy POS</strong>.
+                Este es un comprobante de pago generado por <strong>Vesta POS</strong>.
             </div>
         </body>
         </html>

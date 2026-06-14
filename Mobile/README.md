@@ -1,10 +1,10 @@
-# Kitchy Mobile 📱 — El POS del Futuro
+# Vesta Market Mobile 📱 — El POS del Futuro
 
-![Kitchy Banner](https://img.shields.io/badge/Kitchy-Mobile-rose?style=for-the-badge&logo=react)
+![Vesta Market Banner](https://img.shields.io/badge/Vesta Market-Mobile-rose?style=for-the-badge&logo=react)
 ![Expo](https://img.shields.io/badge/Expo-000?style=for-the-badge&logo=expo&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
-**Kitchy Mobile** es la pieza central del ecosistema Kitchy. Una aplicación híbrida construida con **Expo** y **React Native**, diseñada para ofrecer una experiencia de usuario fluida, rápida y estéticamente superior para dueños de negocios en Panamá.
+**Vesta Market Mobile** es la pieza central del ecosistema Vesta Market. Una aplicación híbrida construida con **Expo** y **React Native**, diseñada para ofrecer una experiencia de usuario fluida, rápida y estéticamente superior para dueños de negocios en Panamá.
 
 ## 🚀 Características Principales
 

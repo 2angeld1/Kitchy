@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { useTheme } from '../context/ThemeContext';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { getFeedbacks } from '../services/api';
 
 export default function FeedbacksScreen() {
@@ -57,7 +57,7 @@ export default function FeedbacksScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar 
+            <VestaToolbar 
                 title="Opiniones del Cliente" 
                 onBack={() => navigation.goBack()}
             />

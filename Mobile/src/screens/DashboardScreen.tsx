@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles, cardWidth } from '../styles/DashboardScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import Toast from 'react-native-toast-message';
 import { LineChart } from 'react-native-chart-kit';
@@ -99,7 +99,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar
+            <VestaToolbar
                 title="Dashboard"
                 notifications={notifications}
                 onNotificationPress={(n) => {
@@ -152,7 +152,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                                         style={{ width: 44, height: 44, borderRadius: 22 }}
                                     />
                                 </View>
-                                <Text style={styles.gridCardLabel}>Ahorro Kitchy</Text>
+                                <Text style={styles.gridCardLabel}>Ahorro Vesta Market</Text>
                                 <Text style={styles.gridCardValue}>{data.ahorro.tiempoHoras}h</Text>
                                 <Text style={styles.gridCardSubtitle}>{data.ahorro.hojasPapel} hojas 📝</Text>
                             </Animated.View>

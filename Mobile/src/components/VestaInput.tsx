@@ -3,13 +3,13 @@ import { View, Text, TextInput, TextInputProps, StyleSheet } from 'react-native'
 import { lightTheme, darkTheme, spacing, borderRadius, typography } from '../theme';
 import { useTheme } from '../context/ThemeContext';
 
-interface KitchyInputProps extends TextInputProps {
+interface VestaInputProps extends TextInputProps {
     label?: string;
     error?: string;
     containerStyle?: any;
 }
 
-export function KitchyInput({ label, error, style, containerStyle, ...rest }: KitchyInputProps) {
+export function VestaInput({ label, error, style, containerStyle, ...rest }: VestaInputProps) {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
 

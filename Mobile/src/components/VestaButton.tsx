@@ -2,13 +2,13 @@ import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, TouchableOpacityProps } from 'react-native';
 import { colors, borderRadius, spacing, typography } from '../theme';
 
-interface KitchyButtonProps extends TouchableOpacityProps {
+interface VestaButtonProps extends TouchableOpacityProps {
     title: string;
     loading?: boolean;
     variant?: 'primary' | 'dark' | 'outline';
 }
 
-export function KitchyButton({ title, loading, variant = 'primary', style, ...rest }: KitchyButtonProps) {
+export function VestaButton({ title, loading, variant = 'primary', style, ...rest }: VestaButtonProps) {
 
     const isPrimary = variant === 'primary';
     const isOutline = variant === 'outline';

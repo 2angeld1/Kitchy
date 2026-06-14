@@ -146,7 +146,7 @@ export const useUsuarios = () => {
 
     const handleDeleteNegocio = (id: string) => {
         if (negocios.length <= 1) {
-            setError('No puedes eliminar tu único local. Kitchy requiere al menos uno activo.');
+            setError('No puedes eliminar tu único local. Vesta requiere al menos uno activo.');
             return;
         }
 

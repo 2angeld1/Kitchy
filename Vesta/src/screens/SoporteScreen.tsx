@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 
 export default function SoporteScreen() {
@@ -12,16 +12,16 @@ export default function SoporteScreen() {
     const colors = isDark ? darkTheme : lightTheme;
 
     const abrirWhatsApp = () => {
-        Linking.openURL('https://wa.me/50768014613?text=Hola, estoy usando Kitchy y tengo una duda');
+        Linking.openURL('https://wa.me/50768014613?text=Hola, estoy usando Vesta y tengo una duda');
     };
 
     const abrirEmail = () => {
-        Linking.openURL('mailto:adp21900@gmail.com?subject=Soporte Kitchy');
+        Linking.openURL('mailto:adp21900@gmail.com?subject=Soporte Vesta');
     };
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title="Soporte Técnico" />
+            <VestaToolbar title="Soporte Técnico" />
 
             <View style={styles.content}>
                 <Animated.View entering={FadeInUp.delay(200)} style={styles.heroSection}>
@@ -30,7 +30,7 @@ export default function SoporteScreen() {
                     </View>
                     <Text style={[styles.title, { color: colors.textPrimary }]}>¿Cómo podemos ayudarte?</Text>
                     <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                        Nuestro equipo está listo para ayudarte con cualquier duda técnica sobre Kitchy.
+                        Nuestro equipo está listo para ayudarte con cualquier duda técnica sobre Vesta.
                     </Text>
                 </Animated.View>
 
@@ -72,14 +72,14 @@ export default function SoporteScreen() {
                         </View>
                         <View style={styles.optionInfo}>
                             <Text style={[styles.optionTitle, { color: colors.textPrimary }]}>Términos y Privacidad</Text>
-                            <Text style={[styles.optionDesc, { color: colors.textMuted }]}>Documentación legal de Kitchy</Text>
+                            <Text style={[styles.optionDesc, { color: colors.textMuted }]}>Documentación legal de Vesta</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
                     </TouchableOpacity>
                 </Animated.View>
 
                 <View style={styles.footer}>
-                    <Text style={[styles.footerText, { color: colors.textMuted }]}>Kitchy v1.0.4 - Premium Support</Text>
+                    <Text style={[styles.footerText, { color: colors.textMuted }]}>Vesta v1.0.4 - Premium Support</Text>
                 </View>
             </View>
         </View>

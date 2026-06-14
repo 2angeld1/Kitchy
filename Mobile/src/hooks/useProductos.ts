@@ -328,7 +328,7 @@ export const useProductos = () => {
 
         let finalSize = servingSize.trim();
 
-        // Inteligencia Kitchy: Si servingSize está vacío, intentar extraerlo del NOMBRE
+        // Inteligencia Vesta Market: Si servingSize está vacío, intentar extraerlo del NOMBRE
         if (!finalSize) {
             const sizeRegex = /(\d+\s*(ml|oz|g|kg|l|lb|unid|pza|orden|raciones|lt))/i;
             const match = nombre.match(sizeRegex);

@@ -203,7 +203,7 @@ export const useRegister = () => {
             Toast.show({
                 type: 'success',
                 text1: '¡Cuenta creada!',
-                text2: 'Bienvenido a Kitchy, ' + nombre
+                text2: 'Bienvenido a Vesta, ' + nombre
             });
         } catch (err: any) {
             const errorMsg = err.response?.data?.message || 'Error al registrar';

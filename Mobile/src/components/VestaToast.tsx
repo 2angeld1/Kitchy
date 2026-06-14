@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const KitchyToast = () => {
+const VestaToast = () => {
     return (
         <Toast
             config={toastConfig}
@@ -106,4 +106,4 @@ const KitchyToast = () => {
     );
 };
 
-export default KitchyToast;
+export default VestaToast;

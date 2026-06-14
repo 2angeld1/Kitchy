@@ -3,8 +3,8 @@ import { View, Text, Modal, ScrollView, TextInput, TouchableOpacity, SafeAreaVie
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { KitchyToolbar } from '../../../components/KitchyToolbar';
-import { KitchyButton } from '../../../components/KitchyButton';
+import { VestaToolbar } from '../../../components/VestaToolbar';
+import { VestaButton } from '../../../components/VestaButton';
 
 interface Props {
     visible: boolean;
@@ -40,7 +40,7 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
     return (
         <Modal visible={visible} animationType="slide">
             <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: insets.top }}>
-                <KitchyToolbar 
+                <VestaToolbar 
                     title="Revisión de Factura" 
                     showNotifications={false}
                     showUserMenuButton={false}
@@ -313,7 +313,7 @@ export const InventarioInvoiceReviewModal: React.FC<Props> = ({
                     borderTopColor: colors.border,
                     paddingBottom: insets.bottom + 16
                 }}>
-                    <KitchyButton title={`Importar (${invoiceItems.length})`} onPress={() => onConfirm(invoiceItems, invoiceMetadata)} loading={loading} />
+                    <VestaButton title={`Importar (${invoiceItems.length})`} onPress={() => onConfirm(invoiceItems, invoiceMetadata)} loading={loading} />
                     <TouchableOpacity onPress={onClose} style={{ marginTop: 12, alignItems: 'center' }}>
                         <Text style={{ color: colors.textMuted, fontWeight: '700' }}>Cancelar</Text>
                     </TouchableOpacity>

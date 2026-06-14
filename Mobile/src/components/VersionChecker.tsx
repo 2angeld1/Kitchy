@@ -95,7 +95,7 @@ export const VersionChecker = () => {
                 </View>
 
                 <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '900', color: '#fff', marginBottom: 2 }}>Nueva versión de Kitchy</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '900', color: '#fff', marginBottom: 2 }}>Nueva versión de Vesta Market</Text>
                     <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)' }}>Actualiza para la mejor experiencia.</Text>
                 </View>
 

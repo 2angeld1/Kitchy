@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { KitchyInput } from './KitchyInput';
+import { VestaInput } from './VestaInput';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme, spacing, borderRadius, typography } from '../theme';
 
-interface KitchyDatePickerProps {
+interface VestaDatePickerProps {
     label: string;
     value: string; // Esperamos formato YYYY-MM-DD
     onChange: (date: string) => void;
@@ -14,11 +14,11 @@ interface KitchyDatePickerProps {
 }
 
 /**
- * KitchyDatePicker - Un selector de fecha "plataforma-agnóstico"
+ * VestaDatePicker - Un selector de fecha "plataforma-agnóstico"
  * En Web/PWA: Usa un input nativo tipo 'date' para invocar el calendario del navegador.
  * En Native: Usa @react-native-community/datetimepicker con un trigger de TouchableOpacity.
  */
-export const KitchyDatePicker: React.FC<KitchyDatePickerProps> = ({ 
+export const VestaDatePicker: React.FC<VestaDatePickerProps> = ({ 
     label, 
     value, 
     onChange, 
@@ -32,7 +32,7 @@ export const KitchyDatePicker: React.FC<KitchyDatePickerProps> = ({
     // Para la Web (PWA) usamos el input nativo del navegador que es más confiable
     if (Platform.OS === 'web') {
         return (
-            <KitchyInput
+            <VestaInput
                 label={label}
                 value={value}
                 onChangeText={onChange}

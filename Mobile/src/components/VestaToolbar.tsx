@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from '../styles/KitchyToolbar.styles';
+import { styles } from '../styles/VestaToolbar.styles';
 import { NotificationModal } from './NotificationModal';
-import { useKitchyToolbar } from '../hooks/useKitchyToolbar';
+import { useVestaToolbar } from '../hooks/useVestaToolbar';
 
-interface KitchyToolbarProps {
+interface VestaToolbarProps {
     title: string;
     showNotifications?: boolean;
     notifications?: any[]; // Prop opcional para inyectar notificaciones
@@ -18,7 +18,7 @@ interface KitchyToolbarProps {
     onIconPress?: () => void; // Para sobreescribir el click del ícono directamente
 }
 
-export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
+export const VestaToolbar: React.FC<VestaToolbarProps> = ({
     title,
     showNotifications = true,
     notifications,
@@ -46,7 +46,7 @@ export const KitchyToolbar: React.FC<KitchyToolbarProps> = ({
         hasMultipleNegocios,
         handleLogout,
         handleSwitchNegocio
-    } = useKitchyToolbar();
+    } = useVestaToolbar();
 
     return (
         <View style={[

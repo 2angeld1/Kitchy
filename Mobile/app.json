@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Kitchy",
-    "slug": "Kitchy",
+    "name": "Vesta Market",
+    "slug": "VestaMarket",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo-realistic.png",
@@ -15,9 +15,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "Kitchy necesita acceso para que puedas dictarle los productos a registrar.",
-        "NSMicrophoneUsageDescription": "Kitchy necesita el micrófono para escuchar tu voz.",
-        "NSCameraUsageDescription": "Kitchy necesita acceso a la cámara para escanear códigos de barras."
+        "NSSpeechRecognitionUsageDescription": "Vesta Market necesita acceso para que puedas dictarle los productos a registrar.",
+        "NSMicrophoneUsageDescription": "Vesta Market necesita el micrófono para escuchar tu voz.",
+        "NSCameraUsageDescription": "Vesta Market necesita acceso a la cámara para escanear códigos de barras."
       }
     },
     "android": {
@@ -34,8 +34,8 @@
     },
     "web": {
       "favicon": "./assets/logo-realistic.png",
-      "name": "Kitchy",
-      "shortName": "Kitchy",
+      "name": "Vesta Market",
+      "shortName": "Vesta Market",
       "display": "standalone",
       "themeColor": "#000000",
       "backgroundColor": "#000000"

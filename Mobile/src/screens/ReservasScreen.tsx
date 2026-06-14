@@ -7,7 +7,7 @@ import { lightTheme, darkTheme } from '../theme';
 import { useReservas } from '../hooks/useReservas';
 import { useAuth } from '../context/AuthContext';
 import { getCategoriaNegocio } from '../utils/beauty-helpers';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 
 const ReservasScreen = () => {
     const navigation = useNavigation();
@@ -31,7 +31,7 @@ const ReservasScreen = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar 
+            <VestaToolbar 
                 title="Gestión de Reservas" 
                 onBack={() => navigation.goBack()} 
             />

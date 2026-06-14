@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import Toast from 'react-native-toast-message';
 import { getVentasElegibles, enviarEncuesta } from '../services/api';
 
@@ -79,7 +79,7 @@ export default function EncuestasScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar
+            <VestaToolbar
                 title="Encuestas de Satisfacción"
                 onBack={() => navigation.goBack()}
             />

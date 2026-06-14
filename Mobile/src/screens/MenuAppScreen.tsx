@@ -7,7 +7,7 @@ import { getProductos, getMenuConfig } from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/MenuAppScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 
 interface Producto {
     _id: string;
@@ -91,7 +91,7 @@ export default function MenuAppScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar title="Menú Público" onBack={() => navigation.goBack()} />
+            <VestaToolbar title="Menú Público" onBack={() => navigation.goBack()} />
 
             <View style={[styles.paperSheet, { backgroundColor: paperBg, shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 16 }]}>
                 <ScrollView

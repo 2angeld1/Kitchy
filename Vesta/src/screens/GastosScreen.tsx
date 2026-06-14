@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import Toast from 'react-native-toast-message';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useGastos } from '../hooks/useGastos';
 
@@ -130,7 +130,7 @@ export default function GastosScreen() {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <KitchyToolbar 
+            <VestaToolbar 
                 title="Facturas y Gastos" 
                 onBack={() => navigation.goBack()} 
                 extraButtons={

@@ -4,10 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from '../styles/BellezaResumenScreen.styles';
 import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
-import { KitchyInput } from '../components/KitchyInput';
+import { VestaInput } from '../components/VestaInput';
 import { useBellezaResumen } from '../hooks/useBellezaResumen';
 
 export default function BellezaResumenScreen() {
@@ -42,7 +42,7 @@ export default function BellezaResumenScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <KitchyToolbar
+            <VestaToolbar
                 title="Resumen de Belleza"
                 onBack={() => navigation.goBack()}
                 showNotifications={false}

@@ -3,7 +3,7 @@ import { View, Text, Modal, ScrollView, TouchableOpacity, KeyboardAvoidingView, 
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KitchyInput } from '../../../components/KitchyInput';
+import { VestaInput } from '../../../components/VestaInput';
 import { useAuth } from '../../../context/AuthContext';
 import { createEspecialista } from '../../../services/api';
 
@@ -160,10 +160,10 @@ export const NegocioEditModal: React.FC<Props> = ({
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}
                         >
-                            <KitchyInput label="Nombre del Negocio" value={nombre} onChangeText={setNombre} />
-                            <KitchyInput label="WhatsApp" placeholder="Ej. 61234567" keyboardType="phone-pad" value={telefono} onChangeText={setTelefono} />
-                            <KitchyInput label="Dirección Física" placeholder="Ej. Calle 50, local 4" value={direccion} onChangeText={setDireccion} />
-                            <KitchyInput label="Link de Reseñas de Google" placeholder="https://g.page/r/..." value={googleMapsReviewUrl} onChangeText={setGoogleMapsReviewUrl} />
+                            <VestaInput label="Nombre del Negocio" value={nombre} onChangeText={setNombre} />
+                            <VestaInput label="WhatsApp" placeholder="Ej. 61234567" keyboardType="phone-pad" value={telefono} onChangeText={setTelefono} />
+                            <VestaInput label="Dirección Física" placeholder="Ej. Calle 50, local 4" value={direccion} onChangeText={setDireccion} />
+                            <VestaInput label="Link de Reseñas de Google" placeholder="https://g.page/r/..." value={googleMapsReviewUrl} onChangeText={setGoogleMapsReviewUrl} />
 
                             <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 16, marginBottom: 10, marginLeft: 4 }}>
                                 CATEGORÍA DEL NEGOCIO

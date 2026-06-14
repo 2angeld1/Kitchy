@@ -5,7 +5,7 @@ import { BlurView } from 'expo-blur';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring, FadeOutDown, FadeOut } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/InventarioScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useAppDimensions } from '../context/DimensionsContext';
 import { useInventario } from '../hooks/useInventario';
@@ -111,7 +111,7 @@ export default function InventarioScreen() {
 
     return (
         <View style={styles.container}>
-            <KitchyToolbar title="Inventario" />
+            <VestaToolbar title="Inventario" />
 
             {/* BARRA DE BÚSQUEDA Y VOZ */}
             <View style={styles.headerRow}>

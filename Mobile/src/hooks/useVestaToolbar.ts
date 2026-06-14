@@ -7,7 +7,7 @@ import Toast from 'react-native-toast-message';
 import { lightTheme, darkTheme } from '../theme';
 import { switchNegocio } from '../services/api';
 
-export const useKitchyToolbar = () => {
+export const useVestaToolbar = () => {
     const { logout, user, switchNegocioContext } = useAuth();
     const { isDark } = useTheme();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();

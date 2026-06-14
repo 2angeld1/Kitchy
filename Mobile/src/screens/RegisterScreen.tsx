@@ -4,8 +4,8 @@ import Animated, { FadeInRight, FadeOutLeft, useAnimatedStyle, withSpring, withT
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import { useRegister } from '../hooks/useRegister';
-import { KitchyInput } from '../components/KitchyInput';
-import { KitchyButton } from '../components/KitchyButton';
+import { VestaInput } from '../components/VestaInput';
+import { VestaButton } from '../components/VestaButton';
 import { styles } from '../styles/RegisterScreen.styles';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
@@ -44,7 +44,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                         style={styles.formContainer}
                     >
                         <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>El Negocio</Text>
-                        <KitchyInput
+                        <VestaInput
                             label="Nombre del Negocio"
                             value={negocioNombre}
                             onChangeText={setNegocioNombre}
@@ -98,7 +98,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                             )}
                         </TouchableOpacity>
 
-                        <KitchyButton
+                        <VestaButton
                             title="Siguiente"
                             onPress={nextStep}
                             variant="primary"
@@ -133,7 +133,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                                     )}
                                 </TouchableOpacity>
                             </View>
-                            <KitchyInput
+                            <VestaInput
                                 value={direccion}
                                 onChangeText={setDireccion}
                                 placeholder="Ej. Calle 50, Plaza X"
@@ -141,7 +141,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                             />
                         </View>
 
-                        <KitchyInput
+                        <VestaInput
                             label="Teléfono de contacto"
                             value={telefono}
                             onChangeText={handleTelefonoChange}
@@ -151,14 +151,14 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                         />
                         <View style={{ flexDirection: 'row', gap: 10 }}>
                             <View style={{ flex: 1 }}>
-                                <KitchyButton
+                                <VestaButton
                                     title="Atrás"
                                     onPress={prevStep}
                                     variant="outline"
                                 />
                             </View>
                             <View style={{ flex: 2 }}>
-                                <KitchyButton
+                                <VestaButton
                                     title="Siguiente"
                                     onPress={nextStep}
                                     variant="primary"
@@ -176,13 +176,13 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                         style={styles.formContainer}
                     >
                         <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>Tus Datos</Text>
-                        <KitchyInput
+                        <VestaInput
                             label="Tu Nombre"
                             value={nombre}
                             onChangeText={handleNombreChange}
                             placeholder="Nombre completo"
                         />
-                        <KitchyInput
+                        <VestaInput
                             label="Correo Electrónico"
                             value={email}
                             onChangeText={setEmail}
@@ -190,14 +190,14 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                             autoCapitalize="none"
                             placeholder="ejemplo@correo.com"
                         />
-                        <KitchyInput
+                        <VestaInput
                             label="Contraseña"
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry
                             placeholder="••••••••"
                         />
-                        <KitchyInput
+                        <VestaInput
                             label="Confirmar Contraseña"
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
@@ -206,14 +206,14 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                         />
                         <View style={{ flexDirection: 'row', gap: 10 }}>
                             <View style={{ flex: 1 }}>
-                                <KitchyButton
+                                <VestaButton
                                     title="Atrás"
                                     onPress={prevStep}
                                     variant="outline"
                                 />
                             </View>
                             <View style={{ flex: 2 }}>
-                                <KitchyButton
+                                <VestaButton
                                     title="Completar Registro"
                                     onPress={handleRegister}
                                     loading={loading}
@@ -266,7 +266,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                         <View style={[styles.logoContainer, { backgroundColor: colors.textPrimary }]}>
                             <Text style={[styles.logoText, { color: colors.card }]}>K<Text style={styles.logoDot}>.</Text></Text>
                         </View>
-                        <Text style={[styles.title, { color: colors.textPrimary }]}>Empieza con Kitchy</Text>
+                        <Text style={[styles.title, { color: colors.textPrimary }]}>Empieza con Vesta Market</Text>
 
                         {/* Step Indicator */}
                         <View style={{ flexDirection: 'row', gap: 8, marginTop: 15, justifyContent: 'center' }}>

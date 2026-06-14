@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeInDown, SlideInDown, ZoomIn, SlideOutDown } from 
 import { useVentas, Producto } from '../hooks/useVentas';
 import { lightTheme, darkTheme } from '../theme';
 import { createStyles } from '../styles/VentasScreen.styles';
-import { KitchyToolbar } from '../components/KitchyToolbar';
+import { VestaToolbar } from '../components/VestaToolbar';
 import { useTheme } from '../context/ThemeContext';
 import { useAppDimensions } from '../context/DimensionsContext';
 import { useAuth, Negocio } from '../context/AuthContext';
@@ -243,7 +243,7 @@ export default function VentasScreen() {
             {isTablet && renderSidebar()}
 
             <View style={{ flex: 1 }}>
-                <KitchyToolbar
+                <VestaToolbar
                     title="Ventas"
                     notifications={ventas}
                     onIconPress={abrirHistorial}

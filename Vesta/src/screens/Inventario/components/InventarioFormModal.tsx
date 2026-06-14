@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, Modal, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown, FadeInDown } from 'react-native-reanimated';
-import { KitchyInput } from '../../../components/KitchyInput';
-import { KitchySelect } from '../../../components/KitchySelect';
-import { KitchyButton } from '../../../components/KitchyButton';
-import { KitchyDatePicker } from '../../../components/KitchyDatePicker';
+import { VestaInput } from '../../../components/VestaInput';
+import { VestaSelect } from '../../../components/VestaSelect';
+import { VestaButton } from '../../../components/VestaButton';
+import { VestaDatePicker } from '../../../components/VestaDatePicker';
 
 interface Props {
     visible: boolean;
@@ -69,12 +69,12 @@ export const InventarioFormModal: React.FC<Props> = ({
                             contentContainerStyle={{ paddingBottom: 60 }}
                             showsVerticalScrollIndicator={false}
                         >
-                            <KitchyInput label="Nombre" value={nombre} onChangeText={setNombre} />
-                            <KitchyInput label="Descripción" value={descripcion} onChangeText={setDescripcion} />
+                            <VestaInput label="Nombre" value={nombre} onChangeText={setNombre} />
+                            <VestaInput label="Descripción" value={descripcion} onChangeText={setDescripcion} />
                             <View style={styles.formRow}>
-                                <View style={styles.inputSmall}><KitchyInput label="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" /></View>
+                                <View style={styles.inputSmall}><VestaInput label="Cantidad" value={cantidad} onChangeText={setCantidad} keyboardType="numeric" /></View>
                                 <View style={styles.inputSmall}>
-                                    <KitchySelect
+                                    <VestaSelect
                                         label="Medida"
                                         value={unidad}
                                         onSelect={setUnidad}
@@ -91,10 +91,10 @@ export const InventarioFormModal: React.FC<Props> = ({
                                 </View>
                             </View>
                             <View style={styles.formRow}>
-                                <View style={styles.inputSmall}><KitchyInput label="Costo / UD" value={costoUnitario} onChangeText={setCostoUnitario} keyboardType="numeric" /></View>
-                                <View style={styles.inputSmall}><KitchyInput label="Stock Mínimo" value={cantidadMinima} onChangeText={setCantidadMinima} keyboardType="numeric" placeholder="Mínimo" /></View>
+                                <View style={styles.inputSmall}><VestaInput label="Costo / UD" value={costoUnitario} onChangeText={setCostoUnitario} keyboardType="numeric" /></View>
+                                <View style={styles.inputSmall}><VestaInput label="Stock Mínimo" value={cantidadMinima} onChangeText={setCantidadMinima} keyboardType="numeric" placeholder="Mínimo" /></View>
                             </View>
-                            <KitchySelect
+                            <VestaSelect
                                 label="Categoría"
                                 value={categoria}
                                 onSelect={setCategoria}
@@ -109,7 +109,7 @@ export const InventarioFormModal: React.FC<Props> = ({
                             {categoria === 'reventa' && (
                                 <Animated.View entering={FadeInDown}>
                                     <View style={{ position: 'relative' }}>
-                                        <KitchyInput label="Precio Venta Público" value={precioVenta} onChangeText={setPrecioVenta} keyboardType="numeric" placeholder="$0.00" />
+                                        <VestaInput label="Precio Venta Público" value={precioVenta} onChangeText={setPrecioVenta} keyboardType="numeric" placeholder="$0.00" />
                                         {suggestedPrice && (
                                             <TouchableOpacity
                                                 onPress={() => setPrecioVenta(suggestedPrice)}
@@ -144,7 +144,7 @@ export const InventarioFormModal: React.FC<Props> = ({
                                         <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 8 }}>
                                             Deja vacío para usar el % global del negocio.
                                         </Text>
-                                        <KitchyInput
+                                        <VestaInput
                                             label=""
                                             value={comisionEspecialista || ''}
                                             onChangeText={(t) => setComisionEspecialista?.(t)}
@@ -156,13 +156,13 @@ export const InventarioFormModal: React.FC<Props> = ({
                                 </Animated.View>
                             )}
 
-                            <KitchyDatePicker
+                            <VestaDatePicker
                                 label="Fecha Vencimiento"
                                 value={fechaVencimiento}
                                 onChange={setFechaVencimiento}
                             />
                             <View style={{ marginTop: 24 }}>
-                                <KitchyButton title={editItem ? 'Actualizar' : 'Guardar'} onPress={onSubmit} loading={loading} />
+                                <VestaButton title={editItem ? 'Actualizar' : 'Guardar'} onPress={onSubmit} loading={loading} />
                             </View>
                         </ScrollView>
                     </Animated.View>
