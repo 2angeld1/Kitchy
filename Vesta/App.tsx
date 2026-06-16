@@ -193,7 +193,11 @@ export default function App() {
         <ThemeProvider>
           <AuthProvider>
             <SafeAreaProvider>
-              <NavigationContainer>
+              <NavigationContainer
+                documentTitle={{
+                  formatter: () => 'Vesta'
+                }}
+              >
                 <RootNavigator />
                 <VestaToast />
                 <VersionChecker />
