@@ -301,8 +301,8 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                     <View style={[styles.blurCircle, isDark && { backgroundColor: 'rgba(225, 29, 72, 0.05)' }]} />
 
                     <View style={styles.headerContainer}>
-                        <View style={[styles.logoContainer, { backgroundColor: colors.textPrimary }]}>
-                            <Text style={[styles.logoText, { color: colors.card }]}>K<Text style={styles.logoDot}>.</Text></Text>
+                        <View style={[styles.logoContainer, { backgroundColor: '#FFFFFF', padding: 8 }]}>
+                            <Image source={require('../../../assets/images/splash-icon.png')} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
                         </View>
                         <Text style={[styles.title, { color: colors.textPrimary }]}>Empieza con Vesta</Text>
 
