@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Image, Modal, Platform } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { SlideInDown } from 'react-native-reanimated';
 import { useAuth } from '../context/AuthContext';
+import { useCaitlynAvatar } from '../hooks/useCaitlyn';
 
 interface CaitlynPhotoSelectorProps {
     visible: boolean;
@@ -19,7 +20,7 @@ export const CaitlynPhotoSelector: React.FC<CaitlynPhotoSelectorProps> = ({
     onPickImage,
     colors
 }) => {
-    const avatarSource = require('../../assets/caitlyn_beauty_avatar.png');
+    const avatarSource = useCaitlynAvatar();
 
     return (
         <Modal

@@ -6,6 +6,7 @@ import { VestaInput } from '../../../../shared/components/VestaInput';
 import { VestaSelect } from '../../../../shared/components/VestaSelect';
 import { VestaButton } from '../../../../shared/components/VestaButton';
 import { VestaDatePicker } from '../../../../shared/components/VestaDatePicker';
+import { useCaitlynAvatar } from '../../../../shared/hooks/useCaitlyn';
 
 interface Props {
     visible: boolean;
@@ -42,6 +43,7 @@ export const InventarioFormModal: React.FC<Props> = ({
     comisionEspecialista, setComisionEspecialista,
     onSubmit, error
 }) => {
+    const avatarSource = useCaitlynAvatar();
 
     return (
         <Modal visible={visible} transparent animationType="fade">
@@ -127,7 +129,7 @@ export const InventarioFormModal: React.FC<Props> = ({
                                                 }}
                                             >
                                                 <Image
-                                                    source={require('../../../../assets/caitlyn_beauty_avatar.png')}
+                                                    source={avatarSource}
                                                     style={{ width: 14, height: 14, borderRadius: 7 }}
                                                 />
                                                 <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800' }}>

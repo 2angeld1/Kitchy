@@ -11,7 +11,7 @@ import Animated, {
     withSequence, 
     withTiming,
 } from 'react-native-reanimated';
-import { useCaitlyn } from '../hooks/useCaitlyn';
+import { useCaitlyn, useCaitlynAvatar } from '../hooks/useCaitlyn';
 import { useTheme } from '../context/ThemeContext';
 import { lightTheme, darkTheme } from '../theme';
 import { BlurView } from 'expo-blur';
@@ -25,6 +25,7 @@ export const CaitlynAutomaticInsight = () => {
     const colors = isDark ? darkTheme : lightTheme;
     const { user } = useAuth();
     const { getDailyInsight, advice, loading, setAdvice } = useCaitlyn();
+    const avatarSource = useCaitlynAvatar();
     const [expanded, setExpanded] = useState(false);
     const [dismissed, setDismissed] = useState(false);
     const [updating, setUpdating] = useState(false);
@@ -120,7 +121,7 @@ export const CaitlynAutomaticInsight = () => {
                             <ActivityIndicator size="small" color="#FFF" />
                         ) : (
                             <Image 
-                                source={require('../../assets/caitlyn_beauty_avatar.png')}
+                                source={avatarSource}
                                 style={{ width: 56, height: 56, borderRadius: 28 }} 
                                 resizeMode="cover"
                             />

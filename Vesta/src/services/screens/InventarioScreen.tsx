@@ -11,6 +11,7 @@ import { useAppDimensions } from '../../shared/context/DimensionsContext';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../../shared/context/AuthContext';
 import { getCategoriaNegocio } from '../utils/beauty-helpers';
+import { useCaitlynAvatar } from '../../shared/hooks/useCaitlyn';
 import Toast from 'react-native-toast-message';
 
 // Subcomponentes extraídos
@@ -30,6 +31,7 @@ export default function InventarioScreen() {
     const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
     const styles = useMemo(() => createStyles(colors, width), [colors, width]);
+    const avatarSource = useCaitlynAvatar();
 
     const categoriaNegocio = 'BELLEZA';
     const isBelleza = true;
@@ -282,7 +284,7 @@ export default function InventarioScreen() {
                     <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
                     <Animated.View entering={FadeIn} style={styles.iaCard}>
                         <Image
-                            source={require('../../assets/caitlyn_beauty_avatar.png')}
+                            source={avatarSource}
                             style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 10 }}
                         />
                         <Text style={styles.iaTitle}>Caitlyn está analizando...</Text>

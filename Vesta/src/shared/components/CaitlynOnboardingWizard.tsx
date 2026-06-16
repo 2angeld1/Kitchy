@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../services/api';
 import Toast from 'react-native-toast-message';
 import * as ImagePicker from 'expo-image-picker';
+import { useCaitlynAvatar } from '../hooks/useCaitlyn';
 
 export const CaitlynOnboardingWizard = () => {
     const { user, updateOnboardingProgress } = useAuth();
@@ -70,7 +71,7 @@ export const CaitlynOnboardingWizard = () => {
         return null;
     }
 
-    const avatarSource = require('../../assets/caitlyn_beauty_avatar.png');
+    const avatarSource = useCaitlynAvatar();
 
     const handleNextStep = async (nextStep: number) => {
         setLoading(true);

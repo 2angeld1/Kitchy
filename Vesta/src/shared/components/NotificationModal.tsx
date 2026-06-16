@@ -5,6 +5,7 @@ import Animated, { SlideInDown, FadeIn } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../theme';
 import { styles } from '../styles/NotificationModal.styles';
 import { useTheme } from '../context/ThemeContext';
+import { useCaitlynAvatar } from '../hooks/useCaitlyn';
 
 interface Notification {
     id: string;
@@ -24,6 +25,7 @@ interface NotificationModalProps {
 export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, onClose, notifications = [], onNotificationPress }) => {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+    const avatarSource = useCaitlynAvatar();
 
     return (
         <Modal
@@ -63,7 +65,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ visible, o
                                 ]}>
                                     {notif.type === 'ai' ? (
                                         <Image 
-                                            source={require('../../assets/caitlyn_beauty_avatar.png')} 
+                                            source={avatarSource} 
                                             style={{ width: 44, height: 44, borderRadius: 22 }} 
                                         />
                                     ) : (

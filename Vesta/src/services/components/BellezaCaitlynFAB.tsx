@@ -8,6 +8,7 @@ import Animated, {
 import { BlurView } from 'expo-blur';
 import { useTheme } from '../../shared/context/ThemeContext';
 import { lightTheme, darkTheme } from '../../shared/theme';
+import { useCaitlynAvatar } from '../../shared/hooks/useCaitlyn';
 
 const { width } = Dimensions.get('window');
 
@@ -37,6 +38,7 @@ interface Props {
 export const BellezaCaitlynFAB: React.FC<Props> = ({ especialistas, config }) => {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+    const avatarSource = useCaitlynAvatar();
     const [expanded, setExpanded] = useState(false);
 
     if (especialistas.length === 0) return null;
@@ -147,7 +149,7 @@ export const BellezaCaitlynFAB: React.FC<Props> = ({ especialistas, config }) =>
                     style={[styles.fab, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
                 >
                     <Image 
-                        source={require('../../assets/caitlyn_beauty_avatar.png')} 
+                        source={avatarSource} 
                         style={{ width: 56, height: 56, borderRadius: 28 }} 
                         resizeMode="cover"
                     />
