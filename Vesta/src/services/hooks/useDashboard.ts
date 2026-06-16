@@ -110,7 +110,7 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
             
             if (negocioId) {
                 const { io } = require('socket.io-client');
-                const baseUrl = require('../config/api').default.replace('/api', '');
+                const baseUrl = require('../../shared/config/api').default.replace('/api', '');
                 
                 socket = io(baseUrl, {
                     query: { negocioId },
@@ -266,3 +266,4 @@ export const useDashboard = (periodo = 'mes', caitlynAdvice?: string | null) => 
         clearSuccess: () => setSuccess('')
     };
 };
+

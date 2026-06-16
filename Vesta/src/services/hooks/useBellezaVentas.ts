@@ -45,7 +45,7 @@ export const useBellezaVentas = () => {
         setLoading(true);
         try {
             const hoy = getTodayLocalString();
-            const { getInventario } = require('../services/api');
+            const { getInventario } = require('../../shared/services/api');
             const [servRes, espRes, ventRes, invRes] = await Promise.all([
                 getProductos({ disponible: true }),
                 getEspecialistas(),
@@ -103,7 +103,7 @@ export const useBellezaVentas = () => {
         let socket: any;
         if (negocioId) {
             const { io } = require('socket.io-client');
-            const baseUrl = require('../config/api').default.replace('/api', '');
+            const baseUrl = require('../../shared/config/api').default.replace('/api', '');
             
             socket = io(baseUrl, {
                 query: { negocioId },
@@ -201,7 +201,7 @@ export const useBellezaVentas = () => {
 
         setLoading(true);
         try {
-            const { deleteVenta } = require('../services/api');
+            const { deleteVenta } = require('../../shared/services/api');
             await deleteVenta(lastVentaId);
             setLastVentaId(null);
             Toast.show({ type: 'info', text1: 'Venta Anulada', text2: 'La última transacción fue eliminada.' });
@@ -248,3 +248,4 @@ export const useBellezaVentas = () => {
         onRefresh: cargarDatos
     };
 };
+

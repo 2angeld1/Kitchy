@@ -199,7 +199,7 @@ export const useInventario = () => {
         let socket: any;
         if (negocioId) {
             const { io } = require('socket.io-client');
-            const baseUrl = require('../config/api').default.replace('/api', '');
+            const baseUrl = require('../../shared/config/api').default.replace('/api', '');
             
             socket = io(baseUrl, {
                 query: { negocioId },
@@ -650,7 +650,7 @@ export const useInventario = () => {
         cargarComparativa: async () => {
             setLoadingComparativa(true);
             try {
-                const { getComparativaInventario } = require('../services/api');
+                const { getComparativaInventario } = require('../../shared/services/api');
                 const res = await getComparativaInventario({ periodo: 'hoy' });
                 setComparativaData(res.data);
                 setShowComparativa(true);
@@ -662,3 +662,4 @@ export const useInventario = () => {
         }
     };
 };
+

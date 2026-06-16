@@ -270,7 +270,7 @@ export const useVentas = () => {
         let socket: any;
         if (negocioId) {
             const { io } = require('socket.io-client');
-            const baseUrl = require('../config/api').default.replace('/api', '');
+            const baseUrl = require('../../shared/config/api').default.replace('/api', '');
             
             socket = io(baseUrl, {
                 query: { negocioId },
@@ -793,3 +793,4 @@ export const useVentas = () => {
         setHighlightVentaId
     };
 };
+
