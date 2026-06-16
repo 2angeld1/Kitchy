@@ -11,6 +11,7 @@ import { createStyles } from '../styles/PresupuestarioScreen.styles';
 import { ShoppingItem } from '../../shared/types/shopping.types';
 import { useShoppingList } from '../hooks/useShoppingList';
 import { CaitlynPhotoSelector } from '../../shared/components/CaitlynPhotoSelector';
+import { useCaitlynAvatar } from '../../shared/hooks/useCaitlyn';
 import Toast from 'react-native-toast-message';
 
 export default function PresupuestarioScreen() {
@@ -25,6 +26,7 @@ export default function PresupuestarioScreen() {
     } = useShoppingList();
 
     const [showPhotoModal, setShowPhotoModal] = useState(false);
+    const avatarSource = useCaitlynAvatar();
 
     const [budget, setBudget] = useState('100');
     const [inputText, setInputText] = useState('');
@@ -79,7 +81,7 @@ export default function PresupuestarioScreen() {
                                 <Ionicons name="alert-circle" size={40} color="#ef4444" />
                             ) : (
                                 <Image
-                                    source={require('../../assets/caitlyn_avatar.png')}
+                                    source={avatarSource}
                                     style={{ width: 64, height: 64, borderRadius: 32 }}
                                 />
                             )}
