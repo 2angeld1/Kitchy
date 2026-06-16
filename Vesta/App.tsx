@@ -2,31 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './src/screens/LoginScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
-import MainAppNavigator from './src/navigation/MainAppNavigator';
-import UsuariosScreen from './src/screens/UsuariosScreen';
-import GastosScreen from './src/screens/GastosScreen';
-import FinanzasScreen from './src/screens/FinanzasScreen';
-import ComisionesScreen from './src/screens/ComisionesScreen';
-import EspecialistasScreen from './src/screens/EspecialistasScreen';
-import ServiciosScreen from './src/screens/ServiciosScreen';
-import SoporteScreen from './src/screens/SoporteScreen';
-import CaitlynStrategyScreen from './src/screens/CaitlynStrategyScreen';
-import BellezaResumenScreen from './src/screens/BellezaResumenScreen';
-import CalendarioEspecialistasScreen from './src/screens/CalendarioEspecialistasScreen';
-import EncuestasScreen from './src/screens/EncuestasScreen';
-import FeedbacksScreen from './src/screens/FeedbacksScreen';
-import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
-import ReservasScreen from './src/screens/ReservasScreen';
-import { AuthProvider } from './src/context/AuthContext';
-import { useAuth } from './src/context/AuthContext';
 import { View, ActivityIndicator, Platform } from 'react-native';
-import { lightTheme, darkTheme } from './src/theme';
-import VestaToast from './src/components/VestaToast';
-import { VersionChecker } from './src/components/VersionChecker';
-import { ThemeProvider, useTheme } from './src/context/ThemeContext';
-import { DimensionsProvider } from './src/context/DimensionsContext';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
@@ -37,6 +13,44 @@ import {
   Inter_700Bold,
   Inter_900Black
 } from '@expo-google-fonts/inter';
+
+// Shared screens
+import LoginScreen from './src/shared/screens/LoginScreen';
+import RegisterScreen from './src/shared/screens/RegisterScreen';
+import ForgotPasswordScreen from './src/shared/screens/ForgotPasswordScreen';
+import UsuariosScreen from './src/shared/screens/UsuariosScreen';
+import GastosScreen from './src/shared/screens/GastosScreen';
+import FinanzasScreen from './src/shared/screens/FinanzasScreen';
+import SoporteScreen from './src/shared/screens/SoporteScreen';
+import CaitlynStrategyScreen from './src/shared/screens/CaitlynStrategyScreen';
+import EncuestasScreen from './src/shared/screens/EncuestasScreen';
+import FeedbacksScreen from './src/shared/screens/FeedbacksScreen';
+import ReservasScreen from './src/shared/screens/ReservasScreen';
+
+// Market screens
+import ProductosScreen from './src/market/screens/ProductosScreen';
+import MenuAppScreen from './src/market/screens/MenuAppScreen';
+import ConfiguracionMenuScreen from './src/market/screens/ConfiguracionMenuScreen';
+import PresupuestarioScreen from './src/market/screens/PresupuestarioScreen';
+
+// Services screens
+import EspecialistasScreen from './src/services/screens/EspecialistasScreen';
+import ComisionesScreen from './src/services/screens/ComisionesScreen';
+import ServiciosScreen from './src/services/screens/ServiciosScreen';
+import BellezaResumenScreen from './src/services/screens/BellezaResumenScreen';
+import CalendarioEspecialistasScreen from './src/services/screens/CalendarioEspecialistasScreen';
+
+// Navigation
+import MainAppNavigator from './src/navigation/MainAppNavigator';
+
+// Shared context & components
+import { AuthProvider, useAuth } from './src/shared/context/AuthContext';
+import { ThemeProvider, useTheme } from './src/shared/context/ThemeContext';
+import { DimensionsProvider } from './src/shared/context/DimensionsContext';
+import { lightTheme, darkTheme } from './src/shared/theme';
+import VestaToast from './src/shared/components/VestaToast';
+import { VersionChecker } from './src/shared/components/VersionChecker';
+import { CaitlynOnboardingWizard } from './src/shared/components/CaitlynOnboardingWizard';
 
 // Suprimir advertencias inofensivas en Web provocadas por react-native-chart-kit / react-native-svg
 if (Platform.OS === 'web') {
@@ -53,26 +67,33 @@ if (Platform.OS === 'web') {
 }
 
 export type RootStackParamList = {
+  // Auth
   Login: undefined;
   Register: undefined;
+  ForgotPassword: undefined;
+  // Main
   Main: undefined;
+  // Shared
   Usuarios: undefined;
   Gastos: undefined;
   Finanzas: undefined;
-  Comisiones: undefined;
-  Especialistas: undefined;
-  Servicios: undefined;
   Soporte: undefined;
   CaitlynStrategy: { alerta: any };
-  BellezaResumen: undefined;
-  CalendarioEspecialistas: undefined;
   Encuestas: undefined;
   Feedbacks: undefined;
-  ForgotPassword: undefined;
   Reservas: undefined;
+  // Market
+  Productos: { editProductId?: string; suggestedPrice?: string } | undefined;
+  MenuApp: undefined;
+  ConfiguracionMenu: undefined;
+  Presupuestario: undefined;
+  // Services
+  Especialistas: undefined;
+  Comisiones: undefined;
+  Servicios: undefined;
+  BellezaResumen: undefined;
+  CalendarioEspecialistas: undefined;
 };
-
-import { CaitlynOnboardingWizard } from './src/components/CaitlynOnboardingWizard';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const ExpoStatusBar = StatusBar as any;
@@ -110,20 +131,31 @@ function RootNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <>
+            {/* Main Tabs */}
             <Stack.Screen name="Main" component={MainAppNavigator} />
+
+            {/* Shared screens */}
             <Stack.Screen name="Usuarios" component={UsuariosScreen} />
             <Stack.Screen name="Gastos" component={GastosScreen} />
             <Stack.Screen name="Finanzas" component={FinanzasScreen} />
-            <Stack.Screen name="Comisiones" component={ComisionesScreen} />
-            <Stack.Screen name="Especialistas" component={EspecialistasScreen} />
-            <Stack.Screen name="Servicios" component={ServiciosScreen} />
             <Stack.Screen name="Soporte" component={SoporteScreen} />
             <Stack.Screen name="CaitlynStrategy" component={CaitlynStrategyScreen} />
-            <Stack.Screen name="BellezaResumen" component={BellezaResumenScreen} />
-            <Stack.Screen name="CalendarioEspecialistas" component={CalendarioEspecialistasScreen} />
             <Stack.Screen name="Encuestas" component={EncuestasScreen} />
             <Stack.Screen name="Feedbacks" component={FeedbacksScreen} />
             <Stack.Screen name="Reservas" component={ReservasScreen} />
+
+            {/* Market screens */}
+            <Stack.Screen name="Productos" component={ProductosScreen} />
+            <Stack.Screen name="MenuApp" component={MenuAppScreen} />
+            <Stack.Screen name="ConfiguracionMenu" component={ConfiguracionMenuScreen} />
+            <Stack.Screen name="Presupuestario" component={PresupuestarioScreen} />
+
+            {/* Services screens */}
+            <Stack.Screen name="Especialistas" component={EspecialistasScreen} />
+            <Stack.Screen name="Comisiones" component={ComisionesScreen} />
+            <Stack.Screen name="Servicios" component={ServiciosScreen} />
+            <Stack.Screen name="BellezaResumen" component={BellezaResumenScreen} />
+            <Stack.Screen name="CalendarioEspecialistas" component={CalendarioEspecialistasScreen} />
           </>
         ) : (
           <>

@@ -1,5 +1,5 @@
 {
-  "name": "vesta-services",
+  "name": "vesta",
   "main": "index.ts",
   "version": "1.0.0",
   "dependencies": {

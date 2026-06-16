@@ -1,22 +1,36 @@
 import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DashboardScreen from '../screens/DashboardScreen';
-import AdminHubScreen from '../screens/AdminHubScreen';
-import VentasScreen from '../screens/VentasScreen';
-import InventarioScreen from '../screens/InventarioScreen';
 import { Ionicons } from '@expo/vector-icons';
-import { lightTheme, darkTheme, typography } from '../theme';
-import { useAuth, Negocio } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import CalendarioEspecialistasScreen from '../screens/CalendarioEspecialistasScreen';
+import { lightTheme, darkTheme, typography } from '../shared/theme';
+import { useAuth, Negocio } from '../shared/context/AuthContext';
+import { useTheme } from '../shared/context/ThemeContext';
+
+// Market screens
+import MarketDashboardScreen from '../market/screens/DashboardScreen';
+import MarketVentasScreen from '../market/screens/VentasScreen';
+import MarketInventarioScreen from '../market/screens/InventarioScreen';
+
+// Services screens
+import ServicesDashboardScreen from '../services/screens/DashboardScreen';
+import ServicesVentasScreen from '../services/screens/VentasScreen';
+import ServicesInventarioScreen from '../services/screens/InventarioScreen';
+import CalendarioEspecialistasScreen from '../services/screens/CalendarioEspecialistasScreen';
+
+// Shared screens
+import AdminHubScreen from '../shared/screens/AdminHubScreen';
+
+// Categorías que son "Market" (venta de productos/comida)
+const MARKET_CATEGORIES = ['COMIDA', 'FRUTERIA'];
+// Categorías que son "Services" (servicios con especialistas)
+const SERVICES_CATEGORIES = ['BELLEZA', 'LAVAUTOS', 'JARDINERIA'];
 
 export type MainTabParamList = {
     Dashboard: undefined;
     Ventas: undefined;
     Inventario: undefined;
     Calendario: undefined;
-    Panel: undefined; // Pestaña que agrupa todas las opciones de admin
+    Panel: undefined;
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -25,29 +39,56 @@ export default function MainAppNavigator() {
     const { isAdmin, user } = useAuth();
     const { isDark } = useTheme();
 
+    const negocioActual = typeof user?.negocioActivo === 'object'
+        ? user.negocioActivo as Negocio
+        : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
+
+    const categoria = negocioActual?.categoria || 'COMIDA';
+    const isMarket = MARKET_CATEGORIES.includes(categoria);
+
     // Explicit theme colors based on context
     const colors = isDark ? darkTheme : lightTheme;
+
+    // Seleccionar las pantallas correctas según el tipo de negocio
+    const DashboardScreen = isMarket ? MarketDashboardScreen : ServicesDashboardScreen;
+    const VentasScreen = isMarket ? MarketVentasScreen : ServicesVentasScreen;
+    const InventarioScreen = isMarket ? MarketInventarioScreen : ServicesInventarioScreen;
+
+    // Decidir si mostrar inventario (LAVAUTOS sin establecimiento no lo muestra)
+    const showInventario = !(categoria === 'LAVAUTOS' && negocioActual?.esEstablecimiento === false);
+
+    // Iconos según categoría
+    const getTabIcon = (route: string, focused: boolean): keyof typeof Ionicons.glyphMap => {
+        if (isMarket) {
+            // Iconos estilo Market
+            switch (route) {
+                case 'Dashboard': return focused ? 'home' : 'home-outline';
+                case 'Ventas': return focused ? 'cart' : 'cart-outline';
+                case 'Inventario': return focused ? 'cube' : 'cube-outline';
+                case 'Panel': return focused ? 'grid' : 'grid-outline';
+                default: return 'home';
+            }
+        } else {
+            // Iconos estilo Services
+            switch (route) {
+                case 'Dashboard': return focused ? 'sparkles' : 'sparkles-outline';
+                case 'Ventas': return focused ? 'cut' : 'cut-outline';
+                case 'Inventario': return focused ? 'brush' : 'brush-outline';
+                case 'Calendario': return focused ? 'calendar' : 'calendar-outline';
+                case 'Panel': return focused ? 'grid' : 'grid-outline';
+                default: return 'home';
+            }
+        }
+    };
 
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
-                animation: 'shift', // Transición de deslizamiento suave (React Navigation 7+)
+                animation: 'shift',
                 tabBarIcon: ({ focused, color }) => {
-                    let iconName: keyof typeof Ionicons.glyphMap = 'home';
-                    if (route.name === 'Dashboard') {
-                        iconName = focused ? 'sparkles' : 'sparkles-outline';
-                    } else if (route.name === 'Ventas') {
-                        iconName = focused ? 'cut' : 'cut-outline';
-                    } else if (route.name === 'Inventario') {
-                        iconName = focused ? 'brush' : 'brush-outline';
-                    } else if (route.name === 'Calendario') {
-                        iconName = focused ? 'calendar' : 'calendar-outline';
-                    } else if (route.name === 'Panel') {
-                        iconName = focused ? 'grid' : 'grid-outline';
-                    }
-
-                    return <Ionicons name={iconName} size={20} color={color} />; 
+                    const iconName = getTabIcon(route.name, focused);
+                    return <Ionicons name={iconName} size={20} color={color} />;
                 },
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textMuted,
@@ -55,14 +96,13 @@ export default function MainAppNavigator() {
                     backgroundColor: colors.card,
                     borderTopWidth: 1,
                     borderTopColor: colors.border,
-                    height: Platform.OS === 'ios' ? 85 : 55, // Altura general más limpia
+                    height: Platform.OS === 'ios' ? 85 : 55,
                     paddingBottom: Platform.OS === 'ios' ? 30 : 6,
                     paddingTop: 6,
-                    // Si hay 6 items, ayuda a que los items estén muy pegados
                     paddingHorizontal: 5,
                 },
                 tabBarLabelStyle: {
-                    fontSize: 10, // Texto super tiny para que no sobresalga con muchos items
+                    fontSize: 10,
                     fontWeight: typography.fontWeight.bold,
                     marginBottom: Platform.OS === 'ios' ? 0 : 4,
                 }
@@ -78,19 +118,16 @@ export default function MainAppNavigator() {
                 component={VentasScreen}
                 options={{ tabBarLabel: 'Ventas' }}
             />
-            {(() => {
-                const negocioActivo = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
-                const showInventario = !(negocioActivo?.categoria === 'LAVAUTOS' && negocioActivo?.esEstablecimiento === false);
-                return showInventario ? (
-                    <Tab.Screen
-                        name="Inventario"
-                        component={InventarioScreen}
-                        options={{ tabBarLabel: 'Inventario' }}
-                    />
-                ) : null;
-            })()}
+            {showInventario && (
+                <Tab.Screen
+                    name="Inventario"
+                    component={InventarioScreen}
+                    options={{ tabBarLabel: 'Inventario' }}
+                />
+            )}
 
-            {isAdmin && (
+            {/* Calendario solo para Services (Belleza, Lavautos, Jardinería) */}
+            {!isMarket && isAdmin && (
                 <Tab.Screen
                     name="Calendario"
                     component={CalendarioEspecialistasScreen}
@@ -98,7 +135,7 @@ export default function MainAppNavigator() {
                 />
             )}
 
-            {/* Agrupación de todas las rutas "Pro/Admin" en una sola pestaña */}
+            {/* Panel de Admin */}
             {isAdmin && (
                 <Tab.Screen
                     name="Panel"
