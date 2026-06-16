@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../navigation/MainAppNavigator';
 import { useAuth } from '../../shared/context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
+import { useCaitlynAvatar } from '../../shared/hooks/useCaitlyn';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../../shared/theme';
@@ -36,6 +37,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const styles = React.useMemo(() => createStyles(colors), [colors]);
+    const avatarSource = useCaitlynAvatar();
 
     const periodos = [
         { id: 'hoy', label: 'Hoy' },
@@ -123,7 +125,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             gap: 12
                         }}>
                             <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', borderWidth: 2, borderColor: colors.primary }}>
-                                <Image source={require('../../assets/caitlyn_beauty_avatar.png')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                                <Image source={avatarSource} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
                             </View>
                             <View style={{ flex: 1 }}>
                                 <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 14 }}>Caitlyn AI Insight</Text>

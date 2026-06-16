@@ -13,6 +13,31 @@ let productAdviceCache: Record<string, { message: string, reasoning: string | nu
 // Cache global para las alertas del Dashboard (Evita Rate Limit al navegar entre pestañas)
 let dashboardAlertsCache: { hash: string, message: string } | null = null;
 
+import { useAuth, Negocio } from '../context/AuthContext';
+
+export const useCaitlynAvatar = () => {
+    const { user } = useAuth();
+    
+    const negocioActual = typeof user?.negocioActivo === 'object'
+        ? user.negocioActivo as Negocio
+        : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
+
+    const categoria = negocioActual?.categoria;
+
+    if (categoria === 'FRUTERIA') {
+        return require('../../../assets/caitlyn_frutera.png');
+    } else if (categoria === 'LAVAUTOS') {
+        return require('../../../assets/caitlyn_lavando_autos.png');
+    } else if (categoria === 'JARDINERIA') {
+        return require('../../../assets/caitlyn_jardinera.png');
+    } else if (categoria === 'BELLEZA') {
+        return require('../../../assets/caitlyn_beauty_avatar.png');
+    }
+    
+    return require('../../../assets/caitlyn_avatar.png');
+};
+
+
 export const useCaitlyn = () => {
     const [loading, setLoading] = useState(false);
     const [advice, setAdvice] = useState<string | null>(cachedInsight); // PARA EL DASHBOARD

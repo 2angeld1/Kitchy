@@ -6,6 +6,7 @@ import { VestaInput } from '../../../../shared/components/VestaInput';
 import { VestaSelect } from '../../../../shared/components/VestaSelect';
 import { VestaButton } from '../../../../shared/components/VestaButton';
 import { VestaDatePicker } from '../../../../shared/components/VestaDatePicker';
+import { useCaitlynAvatar } from '../../../../shared/hooks/useCaitlyn';
 
 interface Props {
     visible: boolean;
@@ -29,7 +30,7 @@ interface Props {
     codigoBarras: string; setCodigoBarras: (v: string) => void;
     fechaVencimiento: string; setFechaVencimiento: (v: string) => void;
     onSubmit: () => void;
-    error?: string;
+    error?: string | null;
 }
 
 export const InventarioFormModal: React.FC<Props> = ({
@@ -40,6 +41,7 @@ export const InventarioFormModal: React.FC<Props> = ({
     categoria, setCategoria, codigoBarras, setCodigoBarras, fechaVencimiento, setFechaVencimiento,
     onSubmit, error
 }) => {
+    const avatarSource = useCaitlynAvatar();
 
     return (
         <Modal visible={visible} transparent animationType="fade">
@@ -129,9 +131,7 @@ export const InventarioFormModal: React.FC<Props> = ({
                                                 }}
                                             >
                                                 <Image
-                                                    source={categoriaNegocio === 'FRUTERIA' 
-                                                        ? require('../../../../assets/caitlyn_frutera.png')
-                                                        : require('../../../../assets/caitlyn_avatar.png')}
+                                                    source={avatarSource}
                                                     style={{ width: 14, height: 14, borderRadius: 7 }}
                                                 />
                                                 <Text style={{ fontSize: 10, color: colors.primary, fontWeight: '800' }}>

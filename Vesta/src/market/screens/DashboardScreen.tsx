@@ -5,7 +5,7 @@ import { MainTabParamList } from '../../navigation/MainAppNavigator';
 import { useAuth, Negocio } from '../../shared/context/AuthContext';
 import { useDashboard } from '../hooks/useDashboard';
 import { useGastos } from '../../shared/hooks/useGastos';
-import { useCaitlyn } from '../../shared/hooks/useCaitlyn';
+import { useCaitlyn, useCaitlynAvatar } from '../../shared/hooks/useCaitlyn';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { lightTheme, darkTheme } from '../../shared/theme';
@@ -95,7 +95,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
         ? user.negocioActivo as Negocio
         : (user?.negocioIds?.find(n => (typeof n === 'object' ? n._id : n) === user?.negocioActivo) as Negocio);
 
-    const isFruteria = (negocioActual as any)?.categoria === 'FRUTERIA';
+    const avatarSource = useCaitlynAvatar();
 
     return (
         <View style={styles.container}>
@@ -148,7 +148,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                             <Animated.View entering={FadeInDown.springify().damping(15).delay(400)} style={[styles.glassCardGrid, { width: cardWidth }]}>
                                 <View style={[styles.glassIconContainerPrimary, { backgroundColor: 'rgba(16, 185, 129, 0.1)', overflow: 'hidden' }]}>
                                     <Image
-                                        source={isFruteria ? require('../../assets/caitlyn_frutera.png') : require('../../assets/caitlyn_avatar.png')}
+                                        source={avatarSource}
                                         style={{ width: 44, height: 44, borderRadius: 22 }}
                                     />
                                 </View>

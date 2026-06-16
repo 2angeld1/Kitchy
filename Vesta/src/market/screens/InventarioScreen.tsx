@@ -10,6 +10,7 @@ import { useTheme } from '../../shared/context/ThemeContext';
 import { useAppDimensions } from '../../shared/context/DimensionsContext';
 import { useInventario } from '../hooks/useInventario';
 import { useAuth } from '../../shared/context/AuthContext';
+import { useCaitlynAvatar } from '../../shared/hooks/useCaitlyn';
 import { getCategoriaNegocio } from '../../shared/utils/beauty-helpers';
 import Toast from 'react-native-toast-message';
 
@@ -34,6 +35,7 @@ export default function InventarioScreen() {
 
     const categoriaNegocio = useMemo(() => getCategoriaNegocio(user), [user]);
     const isFruteria = categoriaNegocio === 'FRUTERIA';
+    const avatarSource = useCaitlynAvatar();
 
     const {
         loading, refreshing, error, success, isAnalyzing, clearError, clearSuccess, itemsFiltrados,
@@ -296,9 +298,7 @@ export default function InventarioScreen() {
                     <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
                     <Animated.View entering={FadeIn} style={styles.iaCard}>
                         <Image
-                            source={isFruteria 
-                                ? require('../../assets/caitlyn_frutera.png')
-                                : require('../../assets/caitlyn_avatar.png')}
+                            source={avatarSource}
                             style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 10 }}
                         />
                         <Text style={styles.iaTitle}>Caitlyn está analizando...</Text>

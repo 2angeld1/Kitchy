@@ -6,6 +6,7 @@ import { IIngrediente, Producto, ProductoFormModalProps } from '../../../types/p
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createModalStyles } from '../../../styles/ProductoForm.styles';
+import { useCaitlynAvatar } from '../../../../shared/hooks/useCaitlyn';
 
 export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
     visible, onClose, editItem, nombre, setNombre, descripcion, setDescripcion,
@@ -21,6 +22,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
 }) => {
 
     const styles = createModalStyles(colors);
+    const avatarSource = useCaitlynAvatar();
 
     const renderRightActions = (index: number) => (
         <TouchableOpacity
@@ -113,7 +115,7 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                                 alignSelf: 'flex-start'
                                             }}>
                                                 <Image 
-                                                    source={require('../../../../assets/caitlyn_avatar.png')} 
+                                                    source={avatarSource} 
                                                     style={{ width: 14, height: 14, borderRadius: 7, marginRight: 4 }} 
                                                 />
                                                 <Text style={{ fontSize: 11, color: '#d97706', fontWeight: '800' }}>
@@ -176,10 +178,10 @@ export const ProductoFormModal: React.FC<ProductoFormModalProps> = ({
                                 {/* 🤖 CAITLYN ASSISTANT CARD */}
                                 <View style={styles.caitlynCard}>
                                     <View style={styles.caitlynHeader}>
-                                        <View style={[styles.caitlynIconCircle, { overflow: 'hidden' }]}>
-                                            <Image 
-                                                source={require('../../../../assets/caitlyn_avatar.png')} 
-                                                style={{ width: 44, height: 44, borderRadius: 22 }} 
+                                        <View style={styles.caitlynIconCircle}>
+                                            <Image
+                                                source={avatarSource}
+                                                style={{ width: 40, height: 40, borderRadius: 20 }}
                                             />
                                         </View>
                                         <View style={styles.caitlynHeaderText}>

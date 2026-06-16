@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, Modal, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useCaitlynAvatar } from '../../../../shared/hooks/useCaitlyn';
 
 interface MenuIdeasModalProps {
     visible: boolean;
@@ -18,6 +19,7 @@ interface MenuIdeasModalProps {
 export function MenuIdeasModal({ 
     visible, onClose, generateMenuIdeas, menuIdeas, menuSource, loading, error, colors, onUseIdea 
 }: MenuIdeasModalProps) {
+    const avatarSource = useCaitlynAvatar();
     const hasRequestedRef = useRef(false);
 
     useEffect(() => {
@@ -50,7 +52,7 @@ export function MenuIdeasModal({
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <View style={{ marginRight: 12, overflow: 'hidden' }}>
                                 <Image 
-                                    source={require('../../../../assets/caitlyn_avatar.png')} 
+                                    source={avatarSource} 
                                     style={{ width: 44, height: 44, borderRadius: 22 }} 
                                 />
                             </View>
