@@ -29,7 +29,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
                 <View style={styles.headerContainer}>
                     <View style={[styles.logoContainer, { backgroundColor: '#FFFFFF', padding: 8 }]}>
-                        <Image source={require('../../../assets/images/icon.png')} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
+                        <Image source={require('../../../assets/images/splash-icon.png')} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
                     </View>
 
                     <Text style={[styles.title, { color: colors.textPrimary }]}>¡Bienvenido!</Text>
