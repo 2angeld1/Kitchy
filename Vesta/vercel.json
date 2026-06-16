@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npx expo export && node -e \"const fs=require('fs');let h=fs.readFileSync('dist/index.html','utf8');if(!h.includes('manifest.json')){h=h.replace('</head>','<link rel=\\\"manifest\\\" href=\\\"/manifest.json\\\"><meta name=\\\"theme-color\\\" content=\\\"#208AEF\\\"><meta name=\\\"apple-mobile-web-app-capable\\\" content=\\\"yes\\\"><meta name=\\\"apple-mobile-web-app-status-bar-style\\\" content=\\\"default\\\"><link rel=\\\"apple-touch-icon\\\" href=\\\"/icon-512.png\\\"></head>');fs.writeFileSync('dist/index.html',h)}\"",
+  "buildCommand": "npx expo export && node scripts/inject-pwa.js",
   "outputDirectory": "dist",
   "rewrites": [
     {
