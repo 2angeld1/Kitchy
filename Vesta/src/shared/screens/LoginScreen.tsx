@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../App';
 import { useLogin } from '../hooks/useLogin';
@@ -28,8 +28,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
                 <View style={[styles.blurCircle, isDark && { backgroundColor: 'rgba(225, 29, 72, 0.05)' }]} />
 
                 <View style={styles.headerContainer}>
-                    <View style={[styles.logoContainer, { backgroundColor: colors.textPrimary }]}>
-                        <Text style={[styles.logoText, { color: colors.card }]}>K<Text style={styles.logoDot}>.</Text></Text>
+                    <View style={[styles.logoContainer, { backgroundColor: '#FFFFFF', padding: 8 }]}>
+                        <Image source={require('../../../assets/images/icon.png')} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
                     </View>
 
                     <Text style={[styles.title, { color: colors.textPrimary }]}>¡Bienvenido!</Text>
