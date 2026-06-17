@@ -20,13 +20,8 @@ export default function AdminHubScreen() {
     const { exportarReporte } = useGastos();
     const { user } = useAuth();
 
-    // Detectar categoría del negocio activo de forma robusta
-    const categoriaNegocio = (typeof user?.negocioActivo === 'object' && user.negocioActivo?.categoria) 
-        ? user.negocioActivo.categoria 
-        : 'BELLEZA';
-
-    // Obtener la configuración ("vestido") según el negocio
-    const config = useMemo(() => getAdminHubConfig(categoriaNegocio), [categoriaNegocio]);
+    // Obtener la configuración ("vestido") según el negocio activo
+    const config = useMemo(() => getAdminHubConfig(user), [user]);
     
     // States para reportes
     const [showRangeModal, setShowRangeModal] = useState(false);
