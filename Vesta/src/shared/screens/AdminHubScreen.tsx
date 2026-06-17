@@ -21,7 +21,9 @@ export default function AdminHubScreen() {
     const { user } = useAuth();
 
     // Detectar categoría del negocio activo de forma robusta
-    const categoriaNegocio = 'BELLEZA';
+    const categoriaNegocio = (typeof user?.negocioActivo === 'object' && user.negocioActivo?.categoria) 
+        ? user.negocioActivo.categoria 
+        : 'BELLEZA';
 
     // Obtener la configuración ("vestido") según el negocio
     const config = useMemo(() => getAdminHubConfig(categoriaNegocio), [categoriaNegocio]);
