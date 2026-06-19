@@ -166,7 +166,17 @@ const ReservasScreen = () => {
                                 {!isLavadoIndividual && (
                                     <View style={{ flex: 1 }}>
                                         <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>SERVICIOS</Text>
-                                        <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={personas} onChangeText={setPersonas} keyboardType="default" placeholder="Corte, Barba..." />
+                                        <TextInput 
+                                            style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} 
+                                            value={personas} 
+                                            onChangeText={setPersonas} 
+                                            keyboardType="default" 
+                                            placeholder={
+                                                negocioActivo?.categoria === 'LAVAUTOS' ? "Básico, Completo..." :
+                                                negocioActivo?.categoria === 'JARDINERIA' ? "Poda, Abono..." :
+                                                "Corte, Barba..."
+                                            } 
+                                        />
                                     </View>
                                 )}
                             </View>

@@ -8,12 +8,16 @@ import { useTheme } from '../../shared/context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { getProductos, createProducto, deleteProducto, updateProducto } from '../../shared/services/api';
 import { VestaButton } from '../../shared/components/VestaButton';
+import { useAuth } from '../../shared/context/AuthContext';
 import Toast from 'react-native-toast-message';
 
 export default function ServiciosScreen() {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const navigation = useNavigation();
+    const { user } = useAuth();
+    
+    const negocioActivo = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
 
     const [servicios, setServicios] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -165,7 +169,11 @@ export default function ServiciosScreen() {
                         
                         <Text style={{ color: colors.textMuted, marginBottom: 8 }}>Nombre del Servicio</Text>
                         <TextInput 
-                            placeholder="Ej. Corte y Barba"
+                            placeholder={
+                                negocioActivo?.categoria === 'LAVAUTOS' ? "Ej. Lavado Completo" :
+                                negocioActivo?.categoria === 'JARDINERIA' ? "Ej. Poda de Césped" :
+                                "Ej. Corte y Barba"
+                            }
                             placeholderTextColor={colors.textMuted}
                             value={nombre}
                             onChangeText={setNombre}
