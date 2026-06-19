@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../IonicNotif"
+		},
+		{
+			"path": "../gosen-engines"
 		}
 	],
 	"settings": {}
