@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,6 +62,13 @@ export default function VentasScreen() {
     const [activeTab, setActiveTab] = useState<'servicios' | 'productos'>('servicios');
     const successScale = useSharedValue(0);
 
+    // Auto-seleccionar especialista si es individual
+    useEffect(() => {
+        if (isLavadoIndividual && especialistas.length > 0 && !especialistaSeleccionado) {
+            setEspecialistaSeleccionado(especialistas[0]._id);
+        }
+    }, [isLavadoIndividual, especialistas, especialistaSeleccionado, setEspecialistaSeleccionado]);
+
     // Estado para Precios Variables
     const [showPrecioModal, setShowPrecioModal] = useState(false);
     const [precioManual, setPrecioManual] = useState('');
@@ -96,7 +103,7 @@ export default function VentasScreen() {
     };
 
     const requiereEspecialista = itemsSeleccionados.some(s => !s.isInventory);
-    const canCheckout = itemsSeleccionados.length > 0 && (!requiereEspecialista || especialistaSeleccionado);
+    const canCheckout = itemsSeleccionados.length > 0 && (!requiereEspecialista || especialistaSeleccionado || isLavadoIndividual);
 
     const handleCobrar = async (clienteInfo: any) => {
         await procesarCobro(clienteInfo, () => {
@@ -121,7 +128,7 @@ export default function VentasScreen() {
             style={styles.container}
         >
             <VestaToolbar
-                title="Punto de Venta"
+                title={isLavadoIndividual ? "Registro de Lavado" : "Punto de Venta"}
                 onNotificationPress={abrirHistorial}
                 extraButtons={
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -168,9 +175,10 @@ export default function VentasScreen() {
                 {activeTab === 'servicios' && (
                     <>
                         {/* 1. ¿QUIEN ATENDIO? - TOP PRIORITY GRID */}
-                        <View style={styles.especialistaSection}>
-                            <Text style={styles.especialistaTitle}>¿Quién atendió hoy?</Text>
-                            <View style={styles.especialistaGrid}>
+                        {!isLavadoIndividual && (
+                            <View style={styles.especialistaSection}>
+                                <Text style={styles.especialistaTitle}>¿Quién atendió hoy?</Text>
+                                <View style={styles.especialistaGrid}>
                                 {especialistas.map((esp, idx) => {
                                     const isSelected = especialistaSeleccionado === esp._id;
                                     return (
@@ -202,8 +210,9 @@ export default function VentasScreen() {
                                         </Animated.View>
                                     );
                                 })}
+                                </View>
                             </View>
-                        </View>
+                        )}
 
                         {/* 2. SELECCIONAR SERVICIO - GRID */}
                         <View style={styles.section}>

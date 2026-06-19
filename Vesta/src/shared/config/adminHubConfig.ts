@@ -296,6 +296,14 @@ const LAVAUTOS_LAVADERO_CONFIG: AdminHubConfig = {
     subtitle: 'Administración de tu car wash',
     menuItems: [
         {
+            id: 'productos',
+            title: 'Tipos de Lavado',
+            desc: 'Crea tus servicios y precios',
+            icon: 'car-sport-outline',
+            color: '#38BDF8',
+            navigation: 'Servicios'
+        },
+        {
             id: 'gastos',
             title: 'Facturas',
             desc: 'Ver Gastos',

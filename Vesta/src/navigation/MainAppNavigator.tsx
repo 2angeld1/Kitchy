@@ -19,7 +19,6 @@ import CalendarioEspecialistasScreen from '../services/screens/CalendarioEspecia
 
 // Shared screens
 import AdminHubScreen from '../shared/screens/AdminHubScreen';
-import ReservasScreen from '../shared/screens/ReservasScreen';
 
 // Categorías que son "Market" (venta de productos/comida)
 const MARKET_CATEGORIES = ['COMIDA', 'FRUTERIA'];
@@ -53,7 +52,7 @@ export default function MainAppNavigator() {
 
     // Seleccionar las pantallas correctas según el tipo de negocio
     const DashboardScreen = isMarket ? MarketDashboardScreen : ServicesDashboardScreen;
-    const VentasScreen = isMarket ? MarketVentasScreen : (isLavadoIndividual ? ReservasScreen : ServicesVentasScreen);
+    const VentasScreen = isMarket ? MarketVentasScreen : ServicesVentasScreen;
     const InventarioScreen = isMarket ? MarketInventarioScreen : ServicesInventarioScreen;
 
     // Decidir si mostrar inventario (ahora siempre se muestra para que registren insumos)
@@ -131,8 +130,8 @@ export default function MainAppNavigator() {
                 />
             )}
 
-            {/* Calendario solo para Services (Belleza, Lavautos, Jardinería) */}
-            {!isMarket && isAdmin && (
+            {/* Calendario solo para Services (Belleza, Lavautos, Jardinería) pero no para individuales */}
+            {!isMarket && isAdmin && !isLavadoIndividual && (
                 <Tab.Screen
                     name="Calendario"
                     component={CalendarioEspecialistasScreen}
