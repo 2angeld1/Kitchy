@@ -19,6 +19,7 @@ import CalendarioEspecialistasScreen from '../services/screens/CalendarioEspecia
 
 // Shared screens
 import AdminHubScreen from '../shared/screens/AdminHubScreen';
+import ReservasScreen from '../shared/screens/ReservasScreen';
 
 // Categorías que son "Market" (venta de productos/comida)
 const MARKET_CATEGORIES = ['COMIDA', 'FRUTERIA'];
@@ -45,17 +46,18 @@ export default function MainAppNavigator() {
 
     const categoria = negocioActual?.categoria || 'COMIDA';
     const isMarket = MARKET_CATEGORIES.includes(categoria);
+    const isLavadoIndividual = categoria === 'LAVAUTOS' && negocioActual?.esEstablecimiento === false;
 
     // Explicit theme colors based on context
     const colors = isDark ? darkTheme : lightTheme;
 
     // Seleccionar las pantallas correctas según el tipo de negocio
     const DashboardScreen = isMarket ? MarketDashboardScreen : ServicesDashboardScreen;
-    const VentasScreen = isMarket ? MarketVentasScreen : ServicesVentasScreen;
+    const VentasScreen = isMarket ? MarketVentasScreen : (isLavadoIndividual ? ReservasScreen : ServicesVentasScreen);
     const InventarioScreen = isMarket ? MarketInventarioScreen : ServicesInventarioScreen;
 
-    // Decidir si mostrar inventario (LAVAUTOS sin establecimiento no lo muestra)
-    const showInventario = !(categoria === 'LAVAUTOS' && negocioActual?.esEstablecimiento === false);
+    // Decidir si mostrar inventario (ahora siempre se muestra para que registren insumos)
+    const showInventario = true;
 
     // Iconos según categoría
     const getTabIcon = (route: string, focused: boolean): keyof typeof Ionicons.glyphMap => {
@@ -72,7 +74,10 @@ export default function MainAppNavigator() {
             // Iconos estilo Services
             switch (route) {
                 case 'Dashboard': return focused ? 'sparkles' : 'sparkles-outline';
-                case 'Ventas': return focused ? 'cut' : 'cut-outline';
+                case 'Ventas': 
+                    if (categoria === 'LAVAUTOS') return focused ? 'car-sport' : 'car-sport-outline';
+                    if (categoria === 'JARDINERIA') return focused ? 'leaf' : 'leaf-outline';
+                    return focused ? 'cut' : 'cut-outline';
                 case 'Inventario': return focused ? 'brush' : 'brush-outline';
                 case 'Calendario': return focused ? 'calendar' : 'calendar-outline';
                 case 'Panel': return focused ? 'grid' : 'grid-outline';
@@ -116,7 +121,7 @@ export default function MainAppNavigator() {
             <Tab.Screen
                 name="Ventas"
                 component={VentasScreen}
-                options={{ tabBarLabel: 'Ventas' }}
+                options={{ tabBarLabel: isLavadoIndividual ? 'Lavados' : 'Ventas' }}
             />
             {showInventario && (
                 <Tab.Screen

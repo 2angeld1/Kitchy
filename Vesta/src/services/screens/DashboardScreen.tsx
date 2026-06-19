@@ -23,6 +23,8 @@ type DashboardScreenProps = {
 
 export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     const { user } = useAuth();
+    const negocioActivo = typeof user?.negocioActivo === 'object' ? (user.negocioActivo as any) : null;
+    const isLavadoIndividual = negocioActivo?.categoria === 'LAVAUTOS' && negocioActivo?.esEstablecimiento === false;
     const [periodo, setPeriodo] = React.useState<'hoy' | 'semana' | 'quincena' | 'mes'>('mes');
     const {
         data,
@@ -195,49 +197,51 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
                         </View>
 
                         {/* 3. Ranking de Barberos / Especialistas */}
-                        <Animated.View entering={FadeInDown.springify().damping(15).delay(450)}>
-                            <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                                <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
-                                    <View style={[styles.glassIconSmall, { backgroundColor: colors.primaryLight + '20' }]}>
-                                        <Ionicons name="star-outline" size={18} color={colors.primaryLight} />
+                        {!isLavadoIndividual && (
+                            <Animated.View entering={FadeInDown.springify().damping(15).delay(450)}>
+                                <View style={[styles.glassSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                    <View style={[styles.sectionHeader, { borderBottomColor: colors.border, backgroundColor: colors.card }]}>
+                                        <View style={[styles.glassIconSmall, { backgroundColor: colors.primaryLight + '20' }]}>
+                                            <Ionicons name="star-outline" size={18} color={colors.primaryLight} />
+                                        </View>
+                                        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Top Especialistas</Text>
                                     </View>
-                                    <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Top Especialistas</Text>
-                                </View>
-                                <View style={styles.listContainer}>
-                                    {data.comisiones?.especialistas && data.comisiones.especialistas.length > 0 ? (
-                                        data.comisiones.especialistas.sort((a, b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => {
-                                            const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-                                            const isTop3 = idx < 3;
-                                            const rankColor = isTop3 ? rankColors[idx] : colors.textPrimary;
+                                    <View style={styles.listContainer}>
+                                        {data.comisiones?.especialistas && data.comisiones.especialistas.length > 0 ? (
+                                            data.comisiones.especialistas.sort((a, b) => b.generado - a.generado).slice(0, 5).map((esp, idx) => {
+                                                const rankColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+                                                const isTop3 = idx < 3;
+                                                const rankColor = isTop3 ? rankColors[idx] : colors.textPrimary;
 
-                                            return (
-                                                <View key={esp.id} style={[styles.glassListItem, { borderBottomColor: idx === data.comisiones!.especialistas.length - 1 ? 'transparent' : colors.border }]}>
-                                                    <View style={[styles.listItemRank, isTop3 && { borderColor: rankColor, backgroundColor: rankColor + '10' }]}>
-                                                        <Text style={[styles.listItemRankText, { color: isTop3 ? rankColor : colors.textPrimary }]}>{idx + 1}</Text>
-                                                    </View>
-                                                    <View style={styles.listItemInfo}>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                                            <Text style={[styles.listItemTitle, { color: colors.textPrimary }]}>{esp.nombre}</Text>
-                                                            {idx === 0 && <Ionicons name="medal" size={14} color="#FFD700" />}
+                                                return (
+                                                    <View key={esp.id} style={[styles.glassListItem, { borderBottomColor: idx === data.comisiones!.especialistas.length - 1 ? 'transparent' : colors.border }]}>
+                                                        <View style={[styles.listItemRank, isTop3 && { borderColor: rankColor, backgroundColor: rankColor + '10' }]}>
+                                                            <Text style={[styles.listItemRankText, { color: isTop3 ? rankColor : colors.textPrimary }]}>{idx + 1}</Text>
                                                         </View>
-                                                        <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>
-                                                            {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día • {esp.porcentajeActual}% com.
-                                                        </Text>
+                                                        <View style={styles.listItemInfo}>
+                                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                                                <Text style={[styles.listItemTitle, { color: colors.textPrimary }]}>{esp.nombre}</Text>
+                                                                {idx === 0 && <Ionicons name="medal" size={14} color="#FFD700" />}
+                                                            </View>
+                                                            <Text style={[styles.listItemSubtitle, { color: colors.textMuted }]}>
+                                                                {esp.servicios} {esp.servicios === 1 ? 'servicio' : 'servicios'} • {esp.eficiencia} serv/día • {esp.porcentajeActual}% com.
+                                                            </Text>
+                                                        </View>
+                                                        <View
+                                                            style={[styles.listItemRightBadge, { backgroundColor: isTop3 ? rankColor + '15' : colors.primaryLight + '20' }]}
+                                                        >
+                                                            <Text style={[styles.listItemRightBadgeText, { color: isTop3 ? rankColor : (isDark ? colors.primaryLight : '#0284c7') }]}>${esp.pago.toFixed(0)}</Text>
+                                                        </View>
                                                     </View>
-                                                    <View
-                                                        style={[styles.listItemRightBadge, { backgroundColor: isTop3 ? rankColor + '15' : colors.primaryLight + '20' }]}
-                                                    >
-                                                        <Text style={[styles.listItemRightBadgeText, { color: isTop3 ? rankColor : (isDark ? colors.primaryLight : '#0284c7') }]}>${esp.pago.toFixed(0)}</Text>
-                                                    </View>
-                                                </View>
-                                            );
-                                        })
-                                    ) : (
-                                        <Text style={[styles.emptyText, { color: colors.textMuted }]}>No hay servicios en este rango.</Text>
-                                    )}
+                                                );
+                                            })
+                                        ) : (
+                                            <Text style={[styles.emptyText, { color: colors.textMuted }]}>No hay servicios en este rango.</Text>
+                                        )}
+                                    </View>
                                 </View>
-                            </View>
-                        </Animated.View>
+                            </Animated.View>
+                        )}
 
                         {/* 4. Servicios Recientes */}
                         <Animated.View entering={FadeInDown.springify().damping(15).delay(500)}>

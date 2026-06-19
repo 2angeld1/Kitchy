@@ -296,14 +296,6 @@ const LAVAUTOS_LAVADERO_CONFIG: AdminHubConfig = {
     subtitle: 'Administración de tu car wash',
     menuItems: [
         {
-            id: 'reservas',
-            title: 'Registro de Lavado',
-            desc: 'Conteo y Reservas',
-            icon: 'car-sport-outline',
-            color: '#38BDF8',
-            navigation: 'Reservas'
-        },
-        {
             id: 'gastos',
             title: 'Facturas',
             desc: 'Ver Gastos',

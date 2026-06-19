@@ -42,7 +42,7 @@ export const NegocioEditModal: React.FC<Props> = ({
     const [telefono, setTelefono] = useState('');
     const [direccion, setDireccion] = useState('');
     const [categoria, setCategoria] = useState<'COMIDA' | 'BELLEZA' | 'FRUTERIA' | 'LAVAUTOS' | 'JARDINERIA'>('BELLEZA');
-    const [esLavadero, setEsLavadero] = useState(false);
+    const [sinEspacioFisico, setSinEspacioFisico] = useState(false);
     const [googleMapsReviewUrl, setGoogleMapsReviewUrl] = useState('');
     const [horarios, setHorarios] = useState<any>({});
     
@@ -56,6 +56,7 @@ export const NegocioEditModal: React.FC<Props> = ({
             setDireccion(negocio.direccion || '');
             setGoogleMapsReviewUrl(negocio.googleMapsReviewUrl || '');
             setCategoria(negocio.categoria || 'BELLEZA');
+            setSinEspacioFisico(negocio.esEstablecimiento === false);
             setHorarios(negocio.horarios || {
                 lunes: { abierto: true, inicio: '08:00', fin: '20:00' },
                 martes: { abierto: true, inicio: '08:00', fin: '20:00' },
@@ -83,11 +84,17 @@ export const NegocioEditModal: React.FC<Props> = ({
     };
 
     const handleSubmit = async () => {
-        const success = await onConfirm(negocio._id, { 
+        const payload: any = { 
             nombre, categoria, telefono, direccion, googleMapsReviewUrl, horarios 
-        });
+        };
+        
+        if (categoria === 'LAVAUTOS' || categoria === 'BELLEZA') {
+            payload.esEstablecimiento = !sinEspacioFisico;
+        }
+
+        const success = await onConfirm(negocio._id, payload);
         if (success) {
-            if (esLavadero && categoria === 'LAVAUTOS') {
+            if (sinEspacioFisico && categoria === 'LAVAUTOS' && negocio.esEstablecimiento !== false) {
                 try {
                     await createEspecialista({
                         nombre: user?.nombre || 'Lavadero',
@@ -162,7 +169,9 @@ export const NegocioEditModal: React.FC<Props> = ({
                         >
                             <VestaInput label="Nombre del Negocio" value={nombre} onChangeText={setNombre} />
                             <VestaInput label="WhatsApp" placeholder="Ej. 61234567" keyboardType="phone-pad" value={telefono} onChangeText={setTelefono} />
-                            <VestaInput label="Dirección Física" placeholder="Ej. Calle 50, local 4" value={direccion} onChangeText={setDireccion} />
+                            {!sinEspacioFisico && (
+                                <VestaInput label="Dirección Física" placeholder="Ej. Calle 50, local 4" value={direccion} onChangeText={setDireccion} />
+                            )}
                             <VestaInput label="Link de Reseñas de Google" placeholder="https://g.page/r/..." value={googleMapsReviewUrl} onChangeText={setGoogleMapsReviewUrl} />
 
                             <Text style={{ fontSize: 13, fontWeight: '800', color: colors.textSecondary, marginTop: 16, marginBottom: 10, marginLeft: 4 }}>
@@ -202,32 +211,32 @@ export const NegocioEditModal: React.FC<Props> = ({
                                     })}
                             </View>
 
-                            {categoria === 'LAVAUTOS' && (
+                            {(categoria === 'LAVAUTOS' || categoria === 'BELLEZA') && (
                                 <TouchableOpacity
-                                    onPress={() => setEsLavadero(!esLavadero)}
+                                    onPress={() => setSinEspacioFisico(!sinEspacioFisico)}
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
                                         gap: 10,
-                                        backgroundColor: esLavadero ? '#38BDF820' : colors.surface,
+                                        backgroundColor: sinEspacioFisico ? '#38BDF820' : colors.surface,
                                         padding: 12,
                                         borderRadius: 14,
                                         borderWidth: 1.5,
-                                        borderColor: esLavadero ? '#38BDF8' : colors.border,
+                                        borderColor: sinEspacioFisico ? '#38BDF8' : colors.border,
                                         marginBottom: 8,
                                     }}
                                 >
                                     <Ionicons
-                                        name={esLavadero ? 'checkbox' : 'square-outline'}
+                                        name={sinEspacioFisico ? 'checkbox' : 'square-outline'}
                                         size={22}
-                                        color={esLavadero ? '#38BDF8' : colors.textMuted}
+                                        color={sinEspacioFisico ? '#38BDF8' : colors.textMuted}
                                     />
                                     <View style={{ flex: 1 }}>
-                                        <Text style={{ fontSize: 14, fontWeight: '800', color: esLavadero ? '#38BDF8' : colors.textPrimary }}>
-                                            Soy lavadero
+                                        <Text style={{ fontSize: 14, fontWeight: '800', color: sinEspacioFisico ? '#38BDF8' : colors.textPrimary }}>
+                                            No tengo espacio físico
                                         </Text>
                                         <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
-                                            Crear mi perfil como lavadero de este local
+                                            Servicio móvil o a domicilio para una sola persona
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
