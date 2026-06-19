@@ -23,6 +23,7 @@ export default function VentasScreen() {
 
     const negocio = user?.negocioActivo as Negocio;
     const BILLETES = negocio?.config?.denominaciones || [1, 5, 10, 20, 50, 100];
+    const isLavadoIndividual = negocio?.categoria === 'LAVAUTOS' && negocio?.esEstablecimiento === false;
 
     const {
         servicios,
@@ -147,20 +148,22 @@ export default function VentasScreen() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
                 {/* TABS PARA CAMBIAR ENTRE SERVICIOS Y PRODUCTOS RÁPIDAMENTE */}
-                <View style={{ flexDirection: 'row', marginTop: 16, marginBottom: 8, marginHorizontal: 20, backgroundColor: colors.surface, padding: 4, borderRadius: 12 }}>
-                    <TouchableOpacity
-                        style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8, backgroundColor: activeTab === 'servicios' ? colors.primary : 'transparent' }}
-                        onPress={() => setActiveTab('servicios')}
-                    >
-                        <Text style={{ fontWeight: 'bold', fontSize: 13, color: activeTab === 'servicios' ? '#fff' : colors.textMuted }}>Servicios</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8, backgroundColor: activeTab === 'productos' ? colors.primary : 'transparent' }}
-                        onPress={() => setActiveTab('productos')}
-                    >
-                        <Text style={{ fontWeight: 'bold', fontSize: 13, color: activeTab === 'productos' ? '#fff' : colors.textMuted }}>Productos (Reventa)</Text>
-                    </TouchableOpacity>
-                </View>
+                {!isLavadoIndividual && (
+                    <View style={{ flexDirection: 'row', marginTop: 16, marginBottom: 8, marginHorizontal: 20, backgroundColor: colors.surface, padding: 4, borderRadius: 12 }}>
+                        <TouchableOpacity
+                            style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8, backgroundColor: activeTab === 'servicios' ? colors.primary : 'transparent' }}
+                            onPress={() => setActiveTab('servicios')}
+                        >
+                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: activeTab === 'servicios' ? '#fff' : colors.textMuted }}>Servicios</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8, backgroundColor: activeTab === 'productos' ? colors.primary : 'transparent' }}
+                            onPress={() => setActiveTab('productos')}
+                        >
+                            <Text style={{ fontWeight: 'bold', fontSize: 13, color: activeTab === 'productos' ? '#fff' : colors.textMuted }}>Productos (Reventa)</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 {activeTab === 'servicios' && (
                     <>
@@ -225,7 +228,7 @@ export default function VentasScreen() {
                                             >
                                                 <View style={styles.cardHeader}>
                                                     <View style={[styles.iconContainer, { backgroundColor: isSelected ? colors.primary : colors.surface }]}>
-                                                        <Ionicons name={getBeautyIcon(ser.nombre)} size={18} color={isSelected ? '#fff' : colors.primary} />
+                                                        <Ionicons name={getBeautyIcon(ser.nombre, negocio?.categoria)} size={18} color={isSelected ? '#fff' : colors.primary} />
                                                     </View>
                                                     {isSelected && (
                                                         <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 20, borderWidth: 1, borderColor: colors.border }}>
@@ -445,10 +448,12 @@ export default function VentasScreen() {
                     </Animated.View>
                 )}
 
-                <BellezaCaitlynFAB
-                    especialistas={especialistas}
-                    config={(negocio.comisionConfig as any) || { tipo: 'fijo' }}
-                />
+                {!isLavadoIndividual && (
+                    <BellezaCaitlynFAB
+                        especialistas={especialistas}
+                        config={(negocio.comisionConfig as any) || { tipo: 'fijo' }}
+                    />
+                )}
 
                 <VentasHistorialModal
                     visible={showHistorial}

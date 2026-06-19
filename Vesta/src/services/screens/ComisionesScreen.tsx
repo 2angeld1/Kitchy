@@ -7,6 +7,7 @@ import { VestaToolbar } from '../../shared/components/VestaToolbar';
 import { VestaInput } from '../../shared/components/VestaInput';
 import { VestaButton } from '../../shared/components/VestaButton';
 import { useTheme } from '../../shared/context/ThemeContext';
+import { useAuth, Negocio } from '../../shared/context/AuthContext';
 import { lightTheme, darkTheme } from '../../shared/theme';
 import { useComisiones } from '../hooks/useComisiones';
 import { createStyles } from '../styles/ComisionesScreen.styles';
@@ -36,6 +37,10 @@ export default function ComisionesScreen() {
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
     const styles = useMemo(() => createStyles(colors), [colors]);
+
+    const { user } = useAuth();
+    const negocioActivo = typeof user?.negocioActivo === 'object' ? (user.negocioActivo as Negocio) : null;
+    const isLavadoIndividual = negocioActivo?.categoria === 'LAVAUTOS' && negocioActivo?.esEstablecimiento === false;
 
     const { 
         loading, 
@@ -156,7 +161,7 @@ export default function ComisionesScreen() {
 
             {/* TAB SELECTOR */}
             <View style={styles.mainHeaderTabs}>
-                {['resumen', 'reventa', 'ajustes'].map((tab) => (
+                {(isLavadoIndividual ? ['resumen', 'ajustes'] : ['resumen', 'reventa', 'ajustes']).map((tab) => (
                     <TouchableOpacity 
                         key={tab}
                         style={[styles.mainTab, activeTab === tab && styles.mainTabActive]}

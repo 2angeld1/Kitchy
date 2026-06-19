@@ -9,7 +9,7 @@ import { Negocio } from '../context/AuthContext';
  * Retorna el nombre del icono de Ionicons basado en el nombre del servicio
  * @param nombre Nombre del servicio o producto
  */
-export const getBeautyIcon = (nombre: string): any => {
+export const getBeautyIcon = (nombre: string, categoria?: string): any => {
     const n = nombre.toLowerCase();
     if (n.includes('corte')) return 'cut';
     if (n.includes('barba')) return 'brush';
@@ -18,7 +18,16 @@ export const getBeautyIcon = (nombre: string): any => {
     if (n.includes('tinte')) return 'color-palette';
     if (n.includes('peinado')) return 'sparkles';
     if (n.includes('facial')) return 'leaf';
-    return 'flash'; // Icono por defecto
+    
+    // Car Wash icons
+    if (n.includes('aspirado')) return 'hardware-chip';
+    if (n.includes('encerado')) return 'sparkles';
+    if (n.includes('pulido')) return 'color-wand';
+    if (n.includes('motor')) return 'cog';
+    if (n.includes('detallado') || n.includes('detailing')) return 'diamond';
+    if (n.includes('auto') || n.includes('carro') || n.includes('coche')) return 'car-sport';
+
+    return categoria === 'LAVAUTOS' ? 'car-sport' : 'flash'; // Icono por defecto
 };
 
 /**

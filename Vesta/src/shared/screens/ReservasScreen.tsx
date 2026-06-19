@@ -15,6 +15,8 @@ const ReservasScreen = () => {
     const { user } = useAuth();
     const colors = isDark ? darkTheme : lightTheme;
     
+    const negocioActivo = typeof user?.negocioActivo === 'object' ? user.negocioActivo : null;
+    const isLavadoIndividual = negocioActivo?.categoria === 'LAVAUTOS' && negocioActivo?.esEstablecimiento === false;
     const isBelleza = true;
 
     const {
@@ -36,7 +38,7 @@ const ReservasScreen = () => {
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
             <VestaToolbar 
-                title="Gestión de Reservas" 
+                title={isLavadoIndividual ? "Registro de Lavado" : "Gestión de Reservas"} 
                 onBack={() => navigation.goBack()} 
             />
 
@@ -46,7 +48,9 @@ const ReservasScreen = () => {
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refreshReservas} tintColor={colors.primary} />}
             >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                    <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary }}>Reservas de Hoy</Text>
+                    <Text style={{ fontSize: 18, fontWeight: '800', color: colors.textPrimary }}>
+                        {isLavadoIndividual ? "Lavados de Hoy" : "Reservas de Hoy"}
+                    </Text>
                     <TouchableOpacity style={{ backgroundColor: colors.primary + '20', padding: 8, borderRadius: 10 }}>
                         <Ionicons name="calendar-outline" size={20} color={colors.primary} />
                     </TouchableOpacity>
@@ -56,8 +60,10 @@ const ReservasScreen = () => {
                     <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
                 ) : reservas.length === 0 ? (
                     <View style={{ alignItems: 'center', marginTop: 100, opacity: 0.5 }}>
-                        <Ionicons name="journal-outline" size={64} color={colors.textMuted} />
-                        <Text style={{ color: colors.textMuted, marginTop: 10 }}>No hay reservas para esta fecha.</Text>
+                        <Ionicons name={isLavadoIndividual ? "car-outline" : "journal-outline"} size={64} color={colors.textMuted} />
+                        <Text style={{ color: colors.textMuted, marginTop: 10 }}>
+                            {isLavadoIndividual ? "No hay lavados registrados para esta fecha." : "No hay reservas para esta fecha."}
+                        </Text>
                     </View>
                 ) : (
                     reservas.map((item) => (
@@ -110,7 +116,9 @@ const ReservasScreen = () => {
                 <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 25, height: '80%' }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                            <Text style={{ fontSize: 22, fontWeight: '900', color: colors.textPrimary }}>Nueva Reserva</Text>
+                            <Text style={{ fontSize: 22, fontWeight: '900', color: colors.textPrimary }}>
+                                {isLavadoIndividual ? "Registrar Lavado" : "Nueva Reserva"}
+                            </Text>
                             <TouchableOpacity onPress={() => setShowModal(false)}><Ionicons name="close" size={28} color={colors.textPrimary} /></TouchableOpacity>
                         </View>
 
@@ -155,34 +163,40 @@ const ReservasScreen = () => {
                                     <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>HORA CITA</Text>
                                     <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={hora} onChangeText={setHora} placeholder="12:00" />
                                 </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>SERVICIOS</Text>
-                                    <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={personas} onChangeText={setPersonas} keyboardType="default" placeholder="Corte, Barba..." />
-                                </View>
+                                {!isLavadoIndividual && (
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8 }}>SERVICIOS</Text>
+                                        <TextInput style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} value={personas} onChangeText={setPersonas} keyboardType="default" placeholder="Corte, Barba..." />
+                                    </View>
+                                )}
                             </View>
 
-                            <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>ESPECIALISTA</Text>
-                            <TextInput 
-                                style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} 
-                                value={nombreRecurso} 
-                                onChangeText={setNombreRecurso} 
-                                placeholder="Ej: Juan Pérez" 
-                            />
+                            {!isLavadoIndividual && (
+                                <>
+                                    <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>ESPECIALISTA</Text>
+                                    <TextInput 
+                                        style={{ backgroundColor: isDark ? colors.border : '#F5F5F5', padding: 15, borderRadius: 15, color: colors.textPrimary }} 
+                                        value={nombreRecurso} 
+                                        onChangeText={setNombreRecurso} 
+                                        placeholder="Ej: Juan Pérez" 
+                                    />
 
-                            {/* Sugerencias de Especialistas */}
-                            {sugerenciasEspecialistas.length > 0 && (
-                                <View style={{ backgroundColor: colors.surface, borderRadius: 15, marginTop: 5, padding: 5, borderWidth: 1, borderColor: colors.border }}>
-                                    {sugerenciasEspecialistas.map((esp) => (
-                                        <TouchableOpacity 
-                                            key={esp._id} 
-                                            onPress={() => seleccionarEspecialista(esp)}
-                                            style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }}
-                                        >
-                                            <Ionicons name="person-circle-outline" size={20} color={colors.primary} style={{ marginRight: 10 }} />
-                                            <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>{esp.nombre}</Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
+                                    {/* Sugerencias de Especialistas */}
+                                    {sugerenciasEspecialistas.length > 0 && (
+                                        <View style={{ backgroundColor: colors.surface, borderRadius: 15, marginTop: 5, padding: 5, borderWidth: 1, borderColor: colors.border }}>
+                                            {sugerenciasEspecialistas.map((esp) => (
+                                                <TouchableOpacity 
+                                                    key={esp._id} 
+                                                    onPress={() => seleccionarEspecialista(esp)}
+                                                    style={{ padding: 12, borderBottomWidth: 1, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center' }}
+                                                >
+                                                    <Ionicons name="person-circle-outline" size={20} color={colors.primary} style={{ marginRight: 10 }} />
+                                                    <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>{esp.nombre}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    )}
+                                </>
                             )}
 
                             <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textMuted, marginBottom: 8, marginTop: 20 }}>NOTAS</Text>

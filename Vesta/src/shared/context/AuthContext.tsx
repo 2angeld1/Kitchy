@@ -52,7 +52,7 @@ interface AuthContextType {
         telefono?: string;
         logo?: string;
         categoriaNegocio?: string;
-        esLavadero?: boolean;
+        esEstablecimiento?: boolean;
     }) => Promise<void>;
     logout: () => void;
     switchNegocioContext: (newUserContext: User, newToken: string) => Promise<void>;
@@ -109,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         telefono?: string;
         logo?: string;
         categoriaNegocio?: string;
-        esLavadero?: boolean;
+        esEstablecimiento?: boolean;
     }) => {
         const response = await apiRegister(data);
         const { token: newToken, user: userData } = response.data;

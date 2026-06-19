@@ -27,7 +27,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
         logo, setLogo, seleccionarImagen,
         obtenerUbicacionGps, gpsLoading,
         categoriaNegocio, setCategoriaNegocio,
-        esLavadero, setEsLavadero,
+        sinEspacioFisico, setSinEspacioFisico,
         loading, error, handleRegister
     } = useRegister();
 
@@ -107,30 +107,30 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
                         {categoriaNegocio === 'LAVAUTOS' && (
                             <TouchableOpacity
-                                onPress={() => setEsLavadero(!esLavadero)}
+                                onPress={() => setSinEspacioFisico(!sinEspacioFisico)}
                                 style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     gap: 10,
-                                    backgroundColor: esLavadero ? '#38BDF820' : colors.card,
+                                    backgroundColor: sinEspacioFisico ? '#38BDF820' : colors.card,
                                     padding: 12,
                                     borderRadius: 14,
                                     borderWidth: 1.5,
-                                    borderColor: esLavadero ? '#38BDF8' : colors.border,
+                                    borderColor: sinEspacioFisico ? '#38BDF8' : colors.border,
                                     marginBottom: 4,
                                 }}
                             >
                                 <Ionicons
-                                    name={esLavadero ? 'checkbox' : 'square-outline'}
+                                    name={sinEspacioFisico ? 'checkbox' : 'square-outline'}
                                     size={22}
-                                    color={esLavadero ? '#38BDF8' : colors.textMuted}
+                                    color={sinEspacioFisico ? '#38BDF8' : colors.textMuted}
                                 />
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ fontSize: 14, fontWeight: '800', color: esLavadero ? '#38BDF8' : colors.textPrimary }}>
-                                        Soy lavadero
+                                    <Text style={{ fontSize: 14, fontWeight: '800', color: sinEspacioFisico ? '#38BDF8' : colors.textPrimary }}>
+                                        No tengo espacio físico
                                     </Text>
                                     <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 1 }}>
-                                        Crearás un usuario de lavadero vinculado a tu negocio
+                                        Servicio móvil o a domicilio para una sola persona
                                     </Text>
                                 </View>
                             </TouchableOpacity>
@@ -153,31 +153,33 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                     >
                         <Text style={[styles.stepTitle, { color: colors.textPrimary }]}>Ubicación y Contacto</Text>
 
-                        <View style={styles.inputWithHelper}>
-                            <View style={styles.labelRow}>
-                                <Text style={[styles.label, { color: colors.textSecondary }]}>Ubicación / Dirección</Text>
-                                <TouchableOpacity
-                                    onPress={obtenerUbicacionGps}
-                                    disabled={gpsLoading}
-                                    style={styles.gpsButtonInline}
-                                >
-                                    {gpsLoading ? (
-                                        <ActivityIndicator size="small" color={colors.primary} />
-                                    ) : (
-                                        <>
-                                            <Ionicons name="location" size={14} color={colors.primary} />
-                                            <Text style={{ color: colors.primary, fontSize: 12, fontWeight: 'bold' }}>Detectar GPS</Text>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
+                        {!sinEspacioFisico && (
+                            <View style={styles.inputWithHelper}>
+                                <View style={styles.labelRow}>
+                                    <Text style={[styles.label, { color: colors.textSecondary }]}>Ubicación / Dirección</Text>
+                                    <TouchableOpacity
+                                        onPress={obtenerUbicacionGps}
+                                        disabled={gpsLoading}
+                                        style={styles.gpsButtonInline}
+                                    >
+                                        {gpsLoading ? (
+                                            <ActivityIndicator size="small" color={colors.primary} />
+                                        ) : (
+                                            <>
+                                                <Ionicons name="location" size={14} color={colors.primary} />
+                                                <Text style={{ color: colors.primary, fontSize: 12, fontWeight: 'bold' }}>Detectar GPS</Text>
+                                            </>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                                <VestaInput
+                                    value={direccion}
+                                    onChangeText={setDireccion}
+                                    placeholder="Ej. Calle 50, Plaza X"
+                                    style={{ marginTop: 0 }}
+                                />
                             </View>
-                            <VestaInput
-                                value={direccion}
-                                onChangeText={setDireccion}
-                                placeholder="Ej. Calle 50, Plaza X"
-                                style={{ marginTop: 0 }}
-                            />
-                        </View>
+                        )}
 
                         <VestaInput
                             label="Teléfono de contacto"

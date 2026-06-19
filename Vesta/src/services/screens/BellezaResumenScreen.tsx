@@ -6,6 +6,7 @@ import { styles } from '../styles/BellezaResumenScreen.styles';
 import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
 import { VestaToolbar } from '../../shared/components/VestaToolbar';
 import { useTheme } from '../../shared/context/ThemeContext';
+import { useAuth, Negocio } from '../../shared/context/AuthContext';
 import { lightTheme, darkTheme } from '../../shared/theme';
 import { VestaInput } from '../../shared/components/VestaInput';
 import { useBellezaResumen } from '../hooks/useBellezaResumen';
@@ -14,6 +15,9 @@ export default function BellezaResumenScreen() {
     const navigation = useNavigation();
     const { isDark } = useTheme();
     const colors = isDark ? darkTheme : lightTheme;
+    const { user } = useAuth();
+    const negocioActivo = typeof user?.negocioActivo === 'object' ? (user.negocioActivo as Negocio) : null;
+    const isLavadoIndividual = negocioActivo?.categoria === 'LAVAUTOS' && negocioActivo?.esEstablecimiento === false;
     const { activeTab, setActiveTab, loading, refreshing, onRefresh, resumenEspecialistas, expandedEspecialista, toggleAccordion, isExporting, handleDescargarGlobal, handleEnviarEspecialistas } = useBellezaResumen();
 
     const renderItemRow = (item: any, idx: number) => {
@@ -32,10 +36,12 @@ export default function BellezaResumenScreen() {
                     <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Precio</Text>
                     <Text style={[styles.itemValue, { color: colors.textPrimary }]}>${item.precio.toFixed(2)}</Text>
                 </View>
-                <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                    <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Com. ({item.porcentaje}%)</Text>
-                    <Text style={[styles.itemValue, { color: colors.primary, fontWeight: '800' }]}>${item.comision.toFixed(2)}</Text>
-                </View>
+                {!isLavadoIndividual && (
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                        <Text style={[styles.itemLabel, { color: colors.textMuted }]}>Com. ({item.porcentaje}%)</Text>
+                        <Text style={[styles.itemValue, { color: colors.primary, fontWeight: '800' }]}>${item.comision.toFixed(2)}</Text>
+                    </View>
+                )}
             </View>
         );
     };
@@ -43,7 +49,10 @@ export default function BellezaResumenScreen() {
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <VestaToolbar
-                title="Resumen de Belleza"
+                title={negocioActivo?.categoria === 'LAVAUTOS' ? 'Resumen de Lavados' : 
+                       negocioActivo?.categoria === 'JARDINERIA' ? 'Resumen de Jardinería' : 
+                       negocioActivo?.categoria === 'BELLEZA' ? 'Resumen de Belleza' : 
+                       'Resumen de Ventas'}
                 onBack={() => navigation.goBack()}
                 showNotifications={false}
             />
@@ -109,8 +118,8 @@ export default function BellezaResumenScreen() {
                                             </View>
                                         </View>
                                         <View style={styles.espTotals}>
-                                            <Text style={styles.totalLabel}>Ganado</Text>
-                                            <Text style={[styles.totalAmount, { color: colors.primary }]}>${esp.totalComision.toFixed(2)}</Text>
+                                            <Text style={styles.totalLabel}>{isLavadoIndividual ? 'Vendido' : 'Ganado'}</Text>
+                                            <Text style={[styles.totalAmount, { color: colors.primary }]}>${(isLavadoIndividual ? esp.totalRecaudado : esp.totalComision).toFixed(2)}</Text>
                                         </View>
                                         <Ionicons
                                             name={expandedEspecialista === esp.id ? "chevron-up" : "chevron-down"}
@@ -141,13 +150,15 @@ export default function BellezaResumenScreen() {
 
                                             <View style={[styles.summaryFooter, { backgroundColor: `${colors.primary}08` }]}>
                                                 <View style={styles.footerRow}>
-                                                    <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>Recaudado Total:</Text>
+                                                    <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>{isLavadoIndividual ? 'Total Ventas:' : 'Recaudado Total:'}</Text>
                                                     <Text style={[styles.footerValue, { color: colors.textPrimary }]}>${esp.totalRecaudado.toFixed(2)}</Text>
                                                 </View>
-                                                <View style={styles.footerRow}>
-                                                    <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>Tu Comisión Total:</Text>
-                                                    <Text style={[styles.footerValue, { color: colors.primary, fontWeight: '900', fontSize: 18 }]}>${esp.totalComision.toFixed(2)}</Text>
-                                                </View>
+                                                {!isLavadoIndividual && (
+                                                    <View style={styles.footerRow}>
+                                                        <Text style={[styles.footerLabel, { color: colors.textSecondary }]}>Tu Comisión Total:</Text>
+                                                        <Text style={[styles.footerValue, { color: colors.primary, fontWeight: '900', fontSize: 18 }]}>${esp.totalComision.toFixed(2)}</Text>
+                                                    </View>
+                                                )}
                                                 </View>
                                         </Animated.View>
                                     )}
@@ -161,14 +172,16 @@ export default function BellezaResumenScreen() {
             {/* Botones de Acción Globales */}
             {!loading && resumenEspecialistas.length > 0 && (
                 <View style={{ padding: 16, backgroundColor: colors.card, borderTopWidth: 1, borderColor: colors.border }}>
-                    <TouchableOpacity
-                        style={[styles.generateBtn, { backgroundColor: colors.primary, marginBottom: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }]}
-                        onPress={handleEnviarEspecialistas}
-                        disabled={isExporting}
-                    >
-                        {isExporting ? <ActivityIndicator color="#fff" /> : <Ionicons name="mail" size={20} color="#fff" />}
-                        <Text style={styles.generateBtnText}>Enviar Reportes (Masivo)</Text>
-                    </TouchableOpacity>
+                    {!isLavadoIndividual && (
+                        <TouchableOpacity
+                            style={[styles.generateBtn, { backgroundColor: colors.primary, marginBottom: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }]}
+                            onPress={handleEnviarEspecialistas}
+                            disabled={isExporting}
+                        >
+                            {isExporting ? <ActivityIndicator color="#fff" /> : <Ionicons name="mail" size={20} color="#fff" />}
+                            <Text style={styles.generateBtnText}>Enviar Reportes (Masivo)</Text>
+                        </TouchableOpacity>
+                    )}
 
                     <TouchableOpacity
                         style={[styles.generateBtn, { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }]}
