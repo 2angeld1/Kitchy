@@ -4,7 +4,7 @@ title: Licencia de Uso (EULA)
 
 # ACUERDO DE LICENCIA DE USUARIO FINAL (EULA)
 
-## **Kitchy — Sistema Integral de Punto de Venta con Inteligencia Artificial**
+## **Vesta — Sistema Integral de Punto de Venta con Inteligencia Artificial**
 
 **Última actualización:** 29 de abril de 2026  
 **Versión:** 1.0
@@ -13,13 +13,13 @@ title: Licencia de Uso (EULA)
 
 **IMPORTANTE: LEE ESTE ACUERDO ANTES DE UTILIZAR KITCHY.**
 
-Al instalar, acceder o utilizar la aplicación Kitchy, aceptas los términos de esta Licencia de Usuario Final. Si no estás de acuerdo, no utilices el Software.
+Al instalar, acceder o utilizar la aplicación Vesta, aceptas los términos de esta Licencia de Usuario Final. Si no estás de acuerdo, no utilices el Software.
 
 ---
 
 ## 1. Otorgamiento de Licencia
 
-**1.1.** El titular de Kitchy (en adelante, "el Licenciante") te otorga una licencia **no exclusiva, intransferible, revocable y limitada** para utilizar el Software de acuerdo con el plan de suscripción que hayas contratado.
+**1.1.** El titular de Vesta (en adelante, "el Licenciante") te otorga una licencia **no exclusiva, intransferible, revocable y limitada** para utilizar el Software de acuerdo con el plan de suscripción que hayas contratado.
 
 **1.2.** Esta licencia te permite:
 - Acceder al Software desde tus dispositivos autorizados.
@@ -41,7 +41,7 @@ Al instalar, acceder o utilizar la aplicación Kitchy, aceptas los términos de 
 - Los modelos de Machine Learning, algoritmos de costeo inteligente, y sistemas de scraping.
 - Los diseños de interfaz, temas visuales, iconografía y experiencia de usuario.
 - La arquitectura del sistema, esquemas de base de datos y flujos de datos.
-- La marca "Kitchy", el nombre "Caitlyn", logotipos y material gráfico.
+- La marca "Vesta", el nombre "Caitlyn", logotipos y material gráfico.
 
 **2.2.** Este acuerdo **no transfiere** ningún derecho de propiedad intelectual. Solo adquieres un derecho de **uso**.
 
@@ -130,4 +130,4 @@ Este acuerdo se rige por las leyes de la **República de Panamá**. Las controve
 
 ---
 
-*Al utilizar Kitchy, confirmas que has leído y aceptado este Acuerdo de Licencia de Usuario Final.*
+*Al utilizar Vesta, confirmas que has leído y aceptado este Acuerdo de Licencia de Usuario Final.*

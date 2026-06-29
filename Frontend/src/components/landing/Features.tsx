@@ -11,7 +11,7 @@ export const Features = () => (
               title: "Control Total", 
               desc: "Monitorea cada centavo. Desde el costo del tomate hasta la comisión del barbero.", 
               icon: ShieldCheck,
-              color: "text-rose-500" 
+              color: "text-emerald-500" 
             },
             { 
               title: "Crecimiento Real", 

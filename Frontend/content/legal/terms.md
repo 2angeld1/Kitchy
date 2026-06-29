@@ -1,32 +1,32 @@
 # TÉRMINOS Y CONDICIONES DE USO
 
-## **Kitchy — Sistema Integral de Punto de Venta con Inteligencia Artificial**
+## **Vesta — Sistema Integral de Punto de Venta con Inteligencia Artificial**
 
 **Última actualización:** 29 de abril de 2026  
 **Versión:** 1.0
 
 ---
 
-Al registrarte, acceder o utilizar la aplicación Kitchy (en adelante, "el Servicio"), aceptas estos Términos y Condiciones en su totalidad. Si no estás de acuerdo con alguno de estos términos, no utilices el Servicio.
+Al registrarte, acceder o utilizar la aplicación Vesta (en adelante, "el Servicio"), aceptas estos Términos y Condiciones en su totalidad. Si no estás de acuerdo con alguno de estos términos, no utilices el Servicio.
 
 ---
 
-## 1. ¿Qué es Kitchy?
+## 1. ¿Qué es Vesta?
 
-Kitchy es un sistema de Punto de Venta (POS) basado en la nube, diseñado para negocios de comida, belleza y fruterías. El Servicio incluye:
+Vesta es un sistema de Punto de Venta (POS) basado en la nube, diseñado para negocios de comida, belleza y fruterías. El Servicio incluye:
 
 - Aplicación móvil (iOS, Android, Web)
 - Panel de administración web
 - Asistente de Inteligencia Artificial ("Caitlyn")
 - Herramientas de inventario, ventas, reportes y gestión de personal
 
-El Servicio es operado por **Gosen Tech**, con domicilio en Panamá Oeste, República de Panamá (en adelante, "Kitchy", "nosotros" o "nos").
+El Servicio es operado por **Gosen Tech**, con domicilio en Panamá Oeste, República de Panamá (en adelante, "Vesta", "nosotros" o "nos").
 
 ---
 
 ## 2. Registro y Cuenta
 
-**2.1.** Para utilizar Kitchy, debes crear una cuenta proporcionando información veraz y completa (nombre, correo electrónico, contraseña, datos del negocio).
+**2.1.** Para utilizar Vesta, debes crear una cuenta proporcionando información veraz y completa (nombre, correo electrónico, contraseña, datos del negocio).
 
 **2.2.** Eres responsable de mantener la confidencialidad de tus credenciales de acceso. Cualquier actividad realizada bajo tu cuenta es tu responsabilidad.
 
@@ -40,7 +40,7 @@ El Servicio es operado por **Gosen Tech**, con domicilio en Panamá Oeste, Repú
 
 ## 3. Planes y Facturación
 
-**3.1. Planes Disponibles.** Kitchy ofrece diferentes planes de suscripción que pueden incluir:
+**3.1. Planes Disponibles.** Vesta ofrece diferentes planes de suscripción que pueden incluir:
 
 - **Plan Piloto:** Acceso con condiciones especiales para primeros usuarios, sujeto a acuerdo individual.
 - **Plan Estándar:** Acceso a funcionalidades principales del sistema.
@@ -61,11 +61,11 @@ Los detalles, precios y funcionalidades de cada plan están disponibles en nuest
 
 ## 4. Uso Aceptable
 
-Al utilizar Kitchy, te comprometes a:
+Al utilizar Vesta, te comprometes a:
 
 ✅ Usar el Servicio únicamente para fines legítimos de gestión de tu negocio.  
 ✅ Proporcionar información veraz en tus registros de productos, ventas e inventario.  
-✅ Respetar la propiedad intelectual de Kitchy y de terceros.
+✅ Respetar la propiedad intelectual de Vesta y de terceros.
 
 **Queda estrictamente prohibido:**
 
@@ -81,7 +81,7 @@ Al utilizar Kitchy, te comprometes a:
 
 ## 5. Inteligencia Artificial — "Caitlyn"
 
-**5.1.** Kitchy integra un asistente de IA llamado **Caitlyn** que ofrece funcionalidades como: sugerencia de recetas, costeo inteligente, análisis de mercado, visión por computadora, y predicción de rutas.
+**5.1.** Vesta integra un asistente de IA llamado **Caitlyn** que ofrece funcionalidades como: sugerencia de recetas, costeo inteligente, análisis de mercado, visión por computadora, y predicción de rutas.
 
 **5.2. Naturaleza Informativa.** Las sugerencias, estimaciones y predicciones de Caitlyn son de carácter **informativo y orientativo**. No constituyen asesoría financiera, contable, ni profesional de ningún tipo.
 
@@ -93,7 +93,7 @@ Al utilizar Kitchy, te comprometes a:
 
 ## 6. Contenido del Usuario
 
-**6.1.** Tú conservas la propiedad de todo el contenido que subas a Kitchy (fotos de productos, datos de ventas, información de clientes, etc.).
+**6.1.** Tú conservas la propiedad de todo el contenido que subas a Vesta (fotos de productos, datos de ventas, información de clientes, etc.).
 
 **6.2.** Al subir contenido, nos otorgas una **licencia limitada, no exclusiva** para almacenarlo, procesarlo y mostrarlo dentro del Servicio con el único fin de operar la plataforma.
 
@@ -118,11 +118,11 @@ Al utilizar Kitchy, te comprometes a:
 
 ## 8. Propiedad Intelectual
 
-**8.1.** Todo el software, código fuente, diseños, algoritmos, modelos de IA, marcas y materiales de Kitchy son propiedad exclusiva del Licenciante y están protegidos por las leyes de propiedad intelectual aplicables.
+**8.1.** Todo el software, código fuente, diseños, algoritmos, modelos de IA, marcas y materiales de Vesta son propiedad exclusiva del Licenciante y están protegidos por las leyes de propiedad intelectual aplicables.
 
 **8.2.** Estos Términos no te otorgan ningún derecho de propiedad sobre el Software, solo un derecho de uso conforme al plan contratado.
 
-**8.3.** La marca "Kitchy", el nombre "Caitlyn" y todos los logotipos asociados son marcas del Licenciante.
+**8.3.** La marca "Vesta", el nombre "Caitlyn" y todos los logotipos asociados son marcas del Licenciante.
 
 ---
 
@@ -130,7 +130,7 @@ Al utilizar Kitchy, te comprometes a:
 
 **9.1.** El Servicio se proporciona **"TAL CUAL"** y **"SEGÚN DISPONIBILIDAD"**.
 
-**9.2.** En la máxima medida permitida por la ley, Kitchy no será responsable por:
+**9.2.** En la máxima medida permitida por la ley, Vesta no será responsable por:
 - Daños indirectos, incidentales, especiales o consecuentes.
 - Pérdida de beneficios, ingresos, datos o oportunidades de negocio.
 - Decisiones comerciales basadas en sugerencias de la IA.

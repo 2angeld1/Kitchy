@@ -63,7 +63,7 @@ export default async function LegalDynamicPage({ params }: { params: Promise<{ s
             <h1 className="text-3xl font-extrabold text-white tracking-tight">
               {data.title || slug.toUpperCase()}
             </h1>
-            <p className="text-white/80 mt-1 font-medium">Documentación Legal de Kitchy</p>
+            <p className="text-white/80 mt-1 font-medium">Documentación Legal de Vesta</p>
           </div>
         </div>
         
@@ -82,7 +82,7 @@ export default async function LegalDynamicPage({ params }: { params: Promise<{ s
 
           {/* Footer del documento */}
           <div className="mt-20 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-400">
-            <p>© 2026 Kitchy POS. Todos los derechos reservados.</p>
+            <p>© 2026 Vesta POS. Todos los derechos reservados.</p>
             <p className="mt-2 sm:mt-0 italic font-medium text-amber-600/60 tracking-widest uppercase text-[10px]">Premium Software</p>
           </div>
         </div>

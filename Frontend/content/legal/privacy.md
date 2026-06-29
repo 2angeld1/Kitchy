@@ -4,16 +4,16 @@ title: Política de Privacidad
 
 # POLÍTICA DE PRIVACIDAD
 
-## **Kitchy — Sistema Integral de Punto de Venta con Inteligencia Artificial**
+## **Vesta — Sistema Integral de Punto de Venta con Inteligencia Artificial**
 
 **Última actualización:** 29 de abril de 2026  
 **Versión:** 1.0
 
 ---
 
-En Kitchy valoramos tu privacidad. Esta Política de Privacidad explica de manera transparente qué datos recopilamos, cómo los usamos, con quién los compartimos, y qué derechos tienes sobre ellos.
+En Vesta valoramos tu privacidad. Esta Política de Privacidad explica de manera transparente qué datos recopilamos, cómo los usamos, con quién los compartimos, y qué derechos tienes sobre ellos.
 
-Al utilizar Kitchy, aceptas las prácticas descritas en este documento.
+Al utilizar Vesta, aceptas las prácticas descritas en este documento.
 
 ---
 
@@ -89,7 +89,7 @@ Cuando utilizas a **Caitlyn** (nuestro asistente de IA), los siguientes datos pu
 
 ## 4. ¿Con quién compartimos tus datos?
 
-Solo compartimos tus datos con los proveedores de servicios estrictamente necesarios para el funcionamiento de Kitchy:
+Solo compartimos tus datos con los proveedores de servicios estrictamente necesarios para el funcionamiento de Vesta:
 
 | Proveedor | Servicio | Datos compartidos |
 |-----------|----------|-------------------|
@@ -111,7 +111,7 @@ Estas fuentes son de acceso público y no se les envían datos personales del us
 
 ### Compartición por obligación legal
 
-Podemos divulgar tus datos si estamos legalmente obligados a hacerlo (orden judicial, solicitud de autoridad competente, o para proteger los derechos y la seguridad de Kitchy y sus usuarios).
+Podemos divulgar tus datos si estamos legalmente obligados a hacerlo (orden judicial, solicitud de autoridad competente, o para proteger los derechos y la seguridad de Vesta y sus usuarios).
 
 ---
 
@@ -123,7 +123,7 @@ Implementamos medidas de seguridad técnicas y organizativas, incluyendo:
 |--------|---------|
 | **Encriptación de contraseñas** | Todas las contraseñas se almacenan encriptadas con bcrypt. Ni nosotros podemos ver tu contraseña. |
 | **Autenticación por token** | Usamos JSON Web Tokens (JWT) para verificar tu identidad en cada solicitud. |
-| **CORS restringido** | Solo los dominios autorizados de Kitchy pueden comunicarse con nuestros servidores. |
+| **CORS restringido** | Solo los dominios autorizados de Vesta pueden comunicarse con nuestros servidores. |
 | **HTTPS** | Todas las comunicaciones están cifradas en tránsito. |
 | **Separación de entornos** | Los entornos de desarrollo y producción están aislados. |
 | **Acceso limitado** | Solo el personal autorizado tiene acceso a la infraestructura de producción. |
@@ -168,13 +168,13 @@ Responderemos a tu solicitud en un plazo máximo de **15 días hábiles**.
 
 ## 8. Menores de Edad
 
-Kitchy está diseñado para ser utilizado por personas mayores de **18 años** o con la mayoría de edad legal en su jurisdicción. No recopilamos intencionalmente datos de menores de edad. Si descubrimos que hemos recopilado datos de un menor, los eliminaremos de inmediato.
+Vesta está diseñado para ser utilizado por personas mayores de **18 años** o con la mayoría de edad legal en su jurisdicción. No recopilamos intencionalmente datos de menores de edad. Si descubrimos que hemos recopilado datos de un menor, los eliminaremos de inmediato.
 
 ---
 
 ## 9. Cookies y Almacenamiento Local
 
-La versión web de Kitchy puede utilizar:
+La versión web de Vesta puede utilizar:
 
 | Tecnología | Propósito |
 |------------|-----------|
@@ -211,4 +211,4 @@ Si tienes preguntas, dudas o solicitudes sobre tus datos personales, contáctano
 
 ---
 
-*Tu privacidad es importante para nosotros. Gracias por confiar en Kitchy.* 🔒
+*Tu privacidad es importante para nosotros. Gracias por confiar en Vesta.* 🔒
