@@ -46,6 +46,12 @@ export const Hero = () => (
           >
             PRUEBA GRATIS <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
           </a>
+          <a 
+            href="mailto:adfp21900@gmail.com"
+            className="glass border border-white/10 hover:border-emerald-500/50 hover:bg-white/5 text-white px-10 py-5 rounded-3xl font-black text-lg flex items-center justify-center transition-all h-16 z-10"
+          >
+            CONTACTAR
+          </a>
 
           {/* Decorative Semi-circle arc (Behind buttons) - Subtle again */}
           <div className="absolute -bottom-40 -left-60 w-[600px] h-[600px] rounded-full border border-emerald-500/10 pointer-events-none hidden md:block" />

@@ -34,18 +34,18 @@ export const Founder = () => (
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-               <div className="flex items-center gap-4 justify-center lg:justify-start group">
+               <a href="mailto:adfp21900@gmail.com" className="flex items-center gap-4 justify-center lg:justify-start group transition-transform hover:scale-105">
                   <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
                      <Mail className="w-5 h-5 text-emerald-500 group-hover:text-white" />
                   </div>
-                  <span className="text-zinc-300 font-bold">adfp21900@gmail.com</span>
-               </div>
-               <div className="flex items-center gap-4 justify-center lg:justify-start group">
+                  <span className="text-zinc-300 font-bold group-hover:text-white transition-colors">adfp21900@gmail.com</span>
+               </a>
+               <a href="https://wa.me/50768014613?text=Quiero%20saber%20m%C3%A1s%20sobre%20Vesta" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 justify-center lg:justify-start group transition-transform hover:scale-105">
                   <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
                      <Phone className="w-5 h-5 text-emerald-500 group-hover:text-white" />
                   </div>
-                  <span className="text-zinc-300 font-bold">+507 6801-4613</span>
-               </div>
+                  <span className="text-zinc-300 font-bold group-hover:text-white transition-colors">+507 6801-4613</span>
+               </a>
             </div>
             
             <a 

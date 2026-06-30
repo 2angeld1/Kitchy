@@ -43,16 +43,25 @@ export const Footer = () => (
         </div>
         <div className="col-span-2 lg:col-span-1">
           <h5 className="text-white font-black text-xs uppercase mb-8 tracking-[4px]">Suscríbete</h5>
-          <div className="relative">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              alert('¡Gracias por suscribirte a Vesta! Pronto recibirás nuestras novedades.');
+              const form = e.target as HTMLFormElement;
+              form.reset();
+            }}
+            className="relative"
+          >
             <input
               type="email"
+              required
               placeholder="CEO@TUEMPRESA.COM"
               className="bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-5 text-xs w-full focus:outline-none focus:border-emerald-500 transition-all text-white font-bold"
             />
-            <button className="absolute right-3 top-3 bg-emerald-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-emerald-700 transition-colors">
+            <button type="submit" className="absolute right-3 top-3 bg-emerald-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-emerald-700 transition-colors">
               <ArrowRight className="w-5 h-5" />
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
