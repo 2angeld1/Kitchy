@@ -36,7 +36,7 @@ export const DashboardGastoModal: React.FC<Props> = ({ visible, onClose, onSave,
                         </TouchableOpacity>
                     </View>
 
-                    <VestaInput label="Descripció" value={form.desc} onChangeText={(t) => setForm({ ...form, desc: t })} placeholder="Luz, Gas, Renta..." />
+                    <VestaInput label="Descripción" value={form.desc} onChangeText={(t) => setForm({ ...form, desc: t })} placeholder="Luz, Gas, Renta..." />
                     <VestaInput label="Monto ($)" value={form.monto} onChangeText={(t) => setForm({ ...form, monto: t })} keyboardType="decimal-pad" placeholder="0.00" />
 
                     <Text style={[styles.cardLabel, { color: colors.textMuted, marginTop: 10, marginBottom: 10 }]}>Categoría</Text>
