@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { ArrowRight, BarChart3, TrendingUp, Zap } from 'lucide-react'
+import { ArrowRight, BarChart3, TrendingUp, Zap, Mail, Phone } from 'lucide-react'
 import Image from 'next/image'
 
 export const Hero = () => (
@@ -46,12 +46,24 @@ export const Hero = () => (
           >
             PRUEBA GRATIS <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
           </a>
-          <a 
-            href="mailto:adfp21900@gmail.com"
-            className="glass border border-white/10 hover:border-emerald-500/50 hover:bg-white/5 text-white px-10 py-5 rounded-3xl font-black text-lg flex items-center justify-center transition-all h-16 z-10"
-          >
-            CONTACTAR
-          </a>
+          <div className="flex gap-4">
+            <a 
+              href="mailto:adfp21900@gmail.com"
+              className="glass border border-white/10 hover:border-emerald-500/50 hover:bg-white/5 text-white w-16 h-16 rounded-3xl flex items-center justify-center transition-all z-10 group"
+              title="Contactar por Email"
+            >
+              <Mail className="w-6 h-6 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
+            </a>
+            <a 
+              href="https://wa.me/50768014613?text=Quiero%20saber%20m%C3%A1s%20sobre%20Vesta"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass border border-white/10 hover:border-emerald-500/50 hover:bg-white/5 text-white w-16 h-16 rounded-3xl flex items-center justify-center transition-all z-10 group"
+              title="Contactar por WhatsApp"
+            >
+              <Phone className="w-6 h-6 text-zinc-400 group-hover:text-emerald-500 transition-colors" />
+            </a>
+          </div>
 
           {/* Decorative Semi-circle arc (Behind buttons) - Subtle again */}
           <div className="absolute -bottom-40 -left-60 w-[600px] h-[600px] rounded-full border border-emerald-500/10 pointer-events-none hidden md:block" />
